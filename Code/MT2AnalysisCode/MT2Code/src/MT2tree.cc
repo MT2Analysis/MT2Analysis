@@ -11,8 +11,11 @@
 
 #include <cmath>
 #include <numeric>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
-using std::vector;
+using namespace std;
 
 // MT2Misc -----------------------------------
 MT2Misc::MT2Misc(){
@@ -297,6 +300,12 @@ Bool_t MT2Jet::IsGoodPFJet(double minJPt, double maxJEta, int PFJID) {
   }
 
   return true;
+}
+
+Bool_t MT2Jet::IsBJet(Int_t algo) {
+  if     (algo==3 && bTagProbSSVHP >2.0 ) return true;
+  else if(algo==2 && bTagProbSSVHE >1.74) return true;
+  else                                    return false;
 }
 
 // MT2GenJet --------------------------------------
@@ -740,6 +749,43 @@ Int_t MT2tree::MaxMetJetDPhiIndex(int PFJID, double minJPt, double maxJEta, int 
   return imax;
 }
 
+Int_t MT2tree::BiasedDPhiIndex(int PFJID, double minJPt, double maxJEta){
+  std::vector<int> indices;
+  for(int i = 0; i<NJets; ++i){
+	if(jet[i].IsGoodPFJet(minJPt,maxJEta,PFJID)==false) continue;
+	indices.push_back(i);
+  }
+  if(indices.size()<2)  return -999;
+  Double_t minDPhi=10.;
+  Int_t    imin;
+  for (int i=0; i<indices.size(); i++){
+    TLorentzVector recoil(0,0,0,0);
+    for(int j=0; j<indices.size(); j++){
+    	if(j==i) continue;
+	recoil -= jet[j].lv;
+    }
+    Double_t dphi = TMath::Abs(jet[i].lv.DeltaPhi(recoil));
+    if(dphi<minDPhi)  {
+      minDPhi=dphi;
+      imin = indices[i];
+    }
+  }
+  return imin;
+}
+
+Double_t MT2tree::BiasedDPhi(int PFJID, double minJPt, double maxJEta) {
+  int index = BiasedDPhiIndex(PFJID, minJPt, maxJEta);
+  TLorentzVector recoil(0,0,0,0);
+  if(index <0) return -999.99;
+  for(int i = 0; i<NJets; ++i){
+	if(jet[i].IsGoodPFJet(minJPt,maxJEta,PFJID)==false) continue;
+	if(i== index) continue;
+	recoil -= jet[i].lv;
+  }
+  return TMath::Abs(jet[index].lv.DeltaPhi(recoil));
+}
+
+
 Bool_t MT2tree::PassMinMetJetDPhi03(){
 	if( NJetsIDLoose < 3)                              return true;
 	if( NJetsIDLoose >=3  && misc.MinMetJetDPhi > 0.3) return true;
@@ -774,7 +820,93 @@ Double_t MT2tree::PseudoJetMetDPhi(){
 	return (fabs(dPhi1) < fabs(dPhi2)) ? fabs(dPhi1) : fabs(dPhi2);
 }
 
+// PseudoJetPtRatio -----------------------------------------------
+Double_t MT2tree::PseudoJetPtRatio(Bool_t inclMET, Bool_t vsHT){
+	if(! inclMET && !vsHT){
+		if(hemi[1].lv1.Pt() > hemi[1].lv2.Pt()) return hemi[1].lv2.Pt()/hemi[1].lv1.Pt();
+		else return hemi[1].lv1.Pt()/hemi[1].lv2.Pt();
+	}else if(inclMET && !vsHT){
+		if(hemi[1].lv1.Pt() > hemi[1].lv2.Pt()) return (hemi[1].lv2.Pt()+misc.MET)/hemi[1].lv1.Pt();
+		else return (hemi[1].lv1.Pt()+misc.MET)/hemi[1].lv2.Pt();
+	}else if(inclMET && vsHT){
+		if(hemi[1].lv1.Pt() > hemi[1].lv2.Pt()) return (hemi[1].lv2.Pt()+misc.MET)/misc.HT;
+		else return (hemi[1].lv1.Pt()+misc.MET)/misc.HT;
+	}else if(!inclMET && vsHT){
+		if(hemi[1].lv1.Pt() > hemi[1].lv2.Pt()) return (hemi[1].lv2.Pt())/misc.HT;
+		else return (hemi[1].lv1.Pt())/misc.HT;
+	}
+}
 
+
+// BJetDR --------------------------------------------------------
+Double_t MT2tree::GetBJetDR(int algo, double value, double minJPt, double maxJEta, int PFJID){
+
+	// get highest pt b-jet index
+	double jpt=0; int jindex=-1;
+	for(int i=0; i<NJets; ++i){
+		if(jet[i].IsGoodPFJet(minJPt,maxJEta,PFJID)==false) continue; 
+		switch(algo){
+			case 0: 
+			if( jet[i].bTagProbTCHE < value ) continue;
+			break;
+			case 1: 
+			if( jet[i].bTagProbTCHP < value ) continue;
+			break;
+			case 2: 
+			if( jet[i].bTagProbSSVHE < value ) continue;
+			break;
+			case 3: 
+			if( jet[i].bTagProbSSVHP < value ) continue;
+			break;
+			default:
+			continue;
+			break;
+		}
+		if(jet[i].lv.Pt()>jpt) jindex=i;
+	}
+	if(jindex==-1) return -999.99;
+
+	// get dR to closest Jet
+	double minDR=100;
+	for(int i=0; i<NJets; ++i){
+		if(jet[i].IsGoodPFJet(20,5,0)==false) continue;
+		if(i==jindex)                         continue;
+		double dR=TMath::Abs(jet[jindex].lv.DeltaR(jet[i].lv));
+		if(dR < minDR) minDR=dR;
+	}
+	if(minDR==100) return -999.99;
+	else           return minDR;
+}
+
+Double_t MT2tree::BJetMETdPhi(int algo, double value, double minJPt, double maxJEta, int PFJID){
+	Double_t minDPhi =10;
+	for(int i=0; i<NJets; ++i){
+		if(jet[i].IsGoodPFJet(minJPt,maxJEta,PFJID)==false) continue; // FIXME: taus don't have JID and BTAG info
+		switch(algo){
+			case 0: 
+			if( jet[i].bTagProbTCHE < value ) continue;
+			break;
+			case 1: 
+			if( jet[i].bTagProbTCHP < value ) continue;
+			break;
+			case 2: 
+			if( jet[i].bTagProbSSVHE < value ) continue;
+			break;
+			case 3: 
+			if( jet[i].bTagProbSSVHP < value ) continue;
+			break;
+			default:
+			continue;
+			break;
+		}
+		Double_t dPhi =TMath::Abs(jet[i].lv.DeltaPhi(pfmet[0]));
+		if(dPhi < minDPhi) minDPhi = dPhi;
+	}
+	if(minDPhi==10) return -999.99;
+	else            return minDPhi;
+
+
+}
 // ----------------------------------------------------------------
 // HT and friends
 Double_t MT2tree::GetHT(int PFJID, double minJPt, double maxJEta){
@@ -1669,6 +1801,112 @@ Double_t MT2tree::GetGenVPt(int pid){
   //if(countNLepts!=2)cout << "[WARNING]: " << countNLepts << " leptons for this boson" << endl;
   return V_p.Pt();
 }
+
+
+// Print-Outs ---------------------------------------------------------------------------------------------------------
+Bool_t MT2tree::PrintOut(Bool_t logfile){
+
+
+	std::ostringstream logStream;
+	// detailed Event Printout
+	logStream << "********************************************************************************************* " << endl;
+	logStream << "Event " << misc.Event   << " Lumi " << misc.LumiSection << " run " <<  misc.Run                 << endl;
+	logStream << "  NJetsIDLoose (pT > 20, |eta| < 2.4, Pf-JID) " << NJetsIDLoose                                 << endl;
+	logStream << "  NEles " << NEles  << ", NMuons "<< NMuons                                                     << endl;
+	logStream << "  NVertices " << pileUp.NVertices                                                               << endl;
+        logStream << "  pf-HT " << misc.HT << ", caloHT50_ID " << misc.caloHT50_ID                                    << endl;
+	logStream << "  pf-MET Pt:" << misc.MET << " Phi " << pfmet[0].Phi()                                          << endl;	
+	if(!misc.isData){
+	logStream << "  gen-met : " << genmet[0].Pt() << " phi " << genmet[0].Phi()                                   << endl;
+	}
+	logStream << " Data quality ------------------------------------------------------------------------------- "  << endl;
+	logStream << "  HBHENoiseFlag " << misc.HBHENoiseFlag << " (1=good),  CrazyHCAL " << misc.CrazyHCAL 
+	     << ", BadEcalTP " << misc.BadEcalTP         << ", BadEcalBE " << misc.BadEcalBE 
+	     << ", CSCTightHaloID " << misc.CSCTightHaloID                                                        << endl;
+        logStream << "  Jet0Pass " << misc.Jet0Pass <<" Jet1Pass " << misc.Jet1Pass << " PassJetID " << misc.PassJetID   << endl;	
+	logStream << "  MinMetJetDPhi " << misc.MinMetJetDPhi                                                          << endl;
+	logStream << " Jet-Info -------------------------------------------------------------------------------------" << endl;
+	for(int i=0; i<NJets; ++i){
+	logStream << "  jet " << i << ":\n"
+	     << "   pt " << jet[i].lv.Pt() << ", eta " << jet[i].lv.Eta() << ", phi " <<   jet[i].lv.Phi() << ", E " << jet[i].lv.E() << ", Mass " << jet[i].lv.M() << "\n"	
+	     << "   JID " << jet[i].isPATPFIDLoose << ", isTau " << jet[i].isTauMatch    << " Flavour " << jet[i].Flavour <<"\n"
+	     << "   CHF " << jet[i].ChHadFrac << ", NHF " << jet[i].NeuHadFrac << ", CEF " << jet[i].ChEmFrac 
+	                  << ", NEF " << jet[i].NeuEmFrac << ", NConstituents " << jet[i].NConstituents  
+	                  << ", Ch Mult " << jet[i].ChMult << ", Neu Mul " << jet[i].NeuMult << "\n"
+	     << "   isBtag SSVHP: " << (jet[i].IsBJet(3)? "true,":"false,") << " isBtag SSVHE: " << (jet[i].IsBJet(2)? "true,":"false,") << "\n"
+	     << "   L1FastL2L3 JE corr factor " << jet[i].Scale << ", L1Fast factor " << jet[i].L1FastJetScale << ", jet Area " <<  jet[i].Area << "\n"
+	     << "   jet-MET-dPhi " << MetJetDPhi(i, 0, 1)  
+	     << endl; 
+	}	
+	if(NEles >0){
+	logStream << " Eles Info ------------------------------------------------------------------------------------" << endl;
+	for (int i=0; i<NEles; ++i){
+	logStream << "   Pt " << ele[i].lv.Pt() << " Eta " << ele[i].lv.Eta() << " Phi " << ele[i].lv.Phi() << " E " << ele[i].lv.E() << endl;
+	logStream << "   Isolation " << ele[i].Iso                                                                     << endl;
+	logStream << "   Charge    " << ele[i].Charge                                                                  << endl;
+	logStream << "   VBTF ID 95 " << ele[i].ID95  << ", ID90 " << ele[i].ID90                                      << endl;
+	logStream << "   transverse Mass with MET " << ele[i].MT                                                       << endl; 
+	}
+	}
+	if(NMuons >0){
+	logStream << " Muons Info -----------------------------------------------------------------------------------"   << endl;
+	for (int i=0; i<NMuons; ++i){
+	logStream << "   Pt " << muo[i].lv.Pt() << " Eta " << muo[i].lv.Eta() << " Phi " << muo[i].lv.Phi() << " E " << muo[i].lv.E() << endl;
+	logStream << "   Isolation " << muo[i].Iso                                                                      << endl;
+	logStream << "   Charge    " << muo[i].Charge                                                                   << endl;
+	logStream << "   transverse Mass with MET " << muo[i].MT                                                        << endl; 
+	}
+	}
+	logStream << " MT2 Info ---------------------------------------------------------------------------------------" << endl;
+	logStream << "  MT2 " << misc.MT2  << " simple MT2 (sqrt{pt1*pt2*(1+cos phi)}) " << SimpleMT2(true, 1) << " UTM " << hemi[1].UTM.Pt()         << endl;
+	logStream << "  MET " << misc.MET  << " HT " << misc.HT << " SqrtSmin " << GetSqrtS(0,true,1,20,2.4,1)          << endl; 
+	logStream << "  Hemi-DPhi " << hemi[1].dPhi                                                                     << endl;
+	logStream << "  PseudoJet1 "                                                                                    << endl;
+	logStream << "   Pt " << hemi[1].lv1.Pt() << " Eta " << hemi[1].lv1.Eta() << " Phi " << hemi[1].lv1.Phi() << " E " << hemi[1].lv1.E() << " M " << hemi[1].lv1.M() << endl; 
+	logStream << "   Contributing Objects "                                                                             << endl;
+	for (int i=0; i<NJets; ++i){
+		if(hemi[1].jindices1[i]>=0) logStream << "    jet " << hemi[1].jindices1[i] << " with Pt " << jet[hemi[1].jindices1[i]].lv.Pt() << endl; 
+	}
+	for (int i=0; i<NEles; ++i){
+		if(hemi[1].eleindices1[i]>=0) logStream << "    ele " << hemi[1].eleindices1[i] << " with Pt " << ele[hemi[1].eleindices1[i]].lv.Pt() << endl; 
+	}
+	for (int i=0; i<NMuons; ++i){
+		if(hemi[1].muoindices1[i]>=0) logStream << "    muo " << hemi[1].muoindices1[i] << " with Pt " << muo[hemi[1].muoindices1[i]].lv.Pt() << endl; 
+	}
+	logStream << "  PseudoJet2 "                                                                                    << endl;
+	logStream << "   Pt " << hemi[1].lv2.Pt() << " Eta " << hemi[1].lv2.Eta() << " Phi " << hemi[1].lv2.Phi() << " E " << hemi[1].lv2.E() << " M " << hemi[1].lv2.M() << endl; 
+	logStream << "   Contributing Objects "                                                                             << endl;
+	for (int i=0; i<NJets; ++i){
+		if(hemi[1].jindices2[i]>=0) logStream << "    jet " << hemi[1].jindices2[i] << " with Pt " << jet[hemi[1].jindices2[i]].lv.Pt() << endl; 
+	}
+	for (int i=0; i<NEles; ++i){
+		if(hemi[1].eleindices2[i]>=0) logStream << "    ele " << hemi[1].eleindices2[i] << " with Pt " << ele[hemi[1].eleindices2[i]].lv.Pt() << endl; 
+	}
+	for (int i=0; i<NMuons; ++i){
+		if(hemi[1].muoindices2[i]>=0) logStream << "    muo " << hemi[1].muoindices2[i] << " with Pt " << muo[hemi[1].muoindices2[i]].lv.Pt() << endl; 
+	}
+	if(!misc.isData){
+	logStream << " GenLevel Info --------------------------------------------------------------------------------"<< endl;
+	for(int i=0; i<NGenLepts; ++i){
+	logStream << " genParticle ID " << genlept[i].ID  << ", with Mother " << genlept[i].MID << ", and GM " << genlept[i].GMID  
+	     << ",  Pt " << genlept[i].lv.Pt() << " Eta " << genlept[i].lv.Eta() << " Phi " << genlept[i].lv.Phi() << " Mass " << genlept[i].lv.M() << endl;	
+	}
+	logStream << " GenJets       ---------------------------------------------------------------------------------"<< endl;
+	for(int i=0; i<NGenJets; ++i){
+	logStream << " GenJet Pt " << genjet[i].lv.Pt() << " Eta " << genjet[i].lv.Eta() << " Phi " << genjet[i].lv.Phi() <<  " E " << genjet[i].lv.E() <<" M " << genjet[i].lv.E() << endl;
+	}
+	}
+
+	if(logfile){
+		ofstream f_log ("PrintOut.log", ios::app);
+		f_log << logStream.str();
+	} else{
+		cout << logStream.str();
+	}
+
+	return true;
+}
+
 
 // ----------------------------------------------------------------------------------------------------------
 ClassImp(MT2Misc)

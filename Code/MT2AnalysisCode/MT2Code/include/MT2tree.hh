@@ -232,6 +232,7 @@ public:
   void Reset();
   void SetLV(const TLorentzVector v);
   Bool_t IsGoodPFJet(double minJPt=20., double maxJEta=2.4, int PFJID=1); // PFJID: 1 - loose, 2 - medium, 3 - tight
+  Bool_t IsBJet(Int_t algo=3); // algo 3 = SSVHP, algo 2 = SSVHE
   TLorentzVector lv;
 
   Double_t bTagProbTCHE;
@@ -426,11 +427,16 @@ public:
   Double_t GetMinR12R21      (int PFJID=0, double minJPt=20, double maxJEta=6., int met=1); // electrons and muons not considered for minDPhi
   Double_t MinMetJetDPhi     (int PFJID=0, double minJPt=20, double maxJEta=6., int met=1); // electrons and muons not considered for minDPhi
   Int_t    MinMetJetDPhiIndex(int PFJID=0, double minJPt=20, double maxJEta=6., int met=1); // electrons and muons not considered for minDPhi
+  Int_t    BiasedDPhiIndex   (int PFJID, double minJPt, double maxJEta);
+  Double_t BiasedDPhi        (int PFJID, double minJPt, double maxJEta);
   Double_t MaxMetJetDPhi     (int PFJID=0, double minJPt=20, double maxJEta=6., int met=1); // electrons and muons not considered for minDPhi
   Int_t    MaxMetJetDPhiIndex(int PFJID=0, double minJPt=20, double maxJEta=6., int met=1); // electrons and muons not considered for minDPhi
   Double_t MinMetJetDPhiL2L3 ();
   Double_t PseudoJetMetDPhi();
   Double_t GetPseudoJetMetDPhi(int hemi_index=1, int pj=1, int whichmet=1, double met=30);
+  Double_t PseudoJetPtRatio(Bool_t inclMET, Bool_t vsHT);
+  Double_t GetBJetDR(int algo, double value, double minJPt, double maxJEta, int PFJID);
+  Double_t BJetMETdPhi(int algo, double value, double minJPt, double maxJEta, int PFJID);
 
   // MT2 & friends
   Double_t GetMT2            (Double_t testmass=0, bool massive=false,       Int_t PFJID=1, Double_t minJPt=20, Double_t maxJEta=2.4, 
@@ -470,6 +476,8 @@ public:
   Bool_t   SLTopAccept(double pt, double eta);
   Double_t SLTopEta(double pt);
   Double_t LeptJetDR(int pid, int index, bool bjet, int ID);
+  // PrintOut 
+  Bool_t   PrintOut(Bool_t logfile);
 
   //Bosons
   Double_t GetGenVPt(int pid);

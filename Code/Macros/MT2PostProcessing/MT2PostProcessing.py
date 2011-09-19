@@ -56,6 +56,10 @@ def MT2PostProcessing():
 
 	FILE   = args[0]
 
+	if not os.path.exists("logs"):
+		print "creating dir 'logs' for log-files"
+		os.mkdir("logs")
+
 	MT2tag = FILE[FILE.find("/MT2_V")+1:FILE.find("/",FILE.find("/MT2_V")+1)]
 	if(len(MT2tag)!=13):
 		print "error parsing MT2_tag from argument"

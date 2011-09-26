@@ -73,8 +73,6 @@ private:
 	bool  fCrazyHCAL;
 	bool  fIsNANObj;
 	bool  fNegativeJEC;
-	int   fNJets_toremove_ele;
-	int   fNJets_toremove_muo;
 
 	
 	//  ---- set of cuts ---
@@ -136,17 +134,17 @@ private:
 	void InitializeEvent();
 	void DeadCellParser(DeadCellFilter &DeadCellFilter_, string file_);
 	//pfJetID
-	bool IsGoodBasicPFJetPAT3(int index, double ptcut, double absetacut);
-	bool IsGoodPFJetMediumPAT3(int index, double ptcut, double absetacut);
-	bool IsGoodPFJetTightPAT3(int index, double ptcut, double absetacut);
+	bool IsGoodBasicPFJetPAT3(int index, float ptcut, float absetacut);
+	bool IsGoodPFJetMediumPAT3(int index, float ptcut, float absetacut);
+	bool IsGoodPFJetTightPAT3(int index, float ptcut, float absetacut);
 	// jets
 	TLorentzVector Jet(int index);
 	TLorentzVector CAJet(int index);
 	TLorentzVector PFJetJESScaled(TLorentzVector j);
 	TLorentzVector CAJetJESScaled(TLorentzVector j);
 	TLorentzVector MET();
-	double GetJECUncertPF(double pt, double eta);
-	double GetJECUncertCalo(double pt, double eta);
+	float GetJECUncertPF(float pt, float eta);
+	float GetJECUncertCalo(float pt, float eta);
 	void Initialize_JetCorrectionUncertainty();
 	JetCorrectionUncertainty *fJecUncPF;   
 	JetCorrectionUncertainty *fJecUncCalo; 

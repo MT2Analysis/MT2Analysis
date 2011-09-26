@@ -203,7 +203,7 @@ void MT2Analysis::FillTree(){
 
 bool MT2Analysis::FillMT2TreeBasics(){
 	// check size of jets electrons muons and genleptons
-	if(fJets.size()   > 40) {cout << "ERROR: fJets.size()   > 40: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(fJets.size()   > 25) {cout << "ERROR: fJets.size()   > 25: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
 	if(fElecs.size()  > 5 ) {cout << "ERROR: fElecs.size()  >  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
 	if(fMuons.size()  > 5 ) {cout << "ERROR: fMuons.size()  >  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
 
@@ -233,7 +233,6 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->jet[i].Scale          = fTR->PF2PAT3JScale         [fJets[i]];
 		fMT2tree->jet[i].L1FastJetScale = fTR->PF2PAT3JL1FastJetScale[fJets[i]];
 		fMT2tree->jet[i].Area           = fTR->PF2PAT3JArea          [fJets[i]];
-		fMT2tree->jet[i].isTau          = false;
 		if(!fisData){
 		fMT2tree->jet[i].Flavour        = fTR->PF2PAT3JFlavour       [fJets[i]];
 		}
@@ -244,9 +243,9 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	for(int i=0; i<fTaus.size(); ++i){
 		TLorentzVector tau;
 		tau.SetPxPyPzE(fTR->PfTau3Px[fTaus[i]],fTR->PfTau3Py[fTaus[i]],fTR->PfTau3Pz[fTaus[i]],fTR->PfTau3E[fTaus[i]]);
-		double mindR =10000; int jindex =-1;
+		float mindR =10000; int jindex =-1;
 		for(int j=0; j<fJets.size(); ++j){
-			double dR = tau.DeltaR(fMT2tree->jet[j].lv);
+			float dR = tau.DeltaR(fMT2tree->jet[j].lv);
 			if(dR < mindR && dR < 0.5) {mindR=dR; jindex = j;} 	
 		}
 		if(jindex ==-1) continue;
@@ -263,7 +262,6 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	fMT2tree->SetNJets         (fJets.size());
 	fMT2tree->SetNGenJets      (fTR->NGenJets > gNGenJets ? gNGenJets: fTR->NGenJets);
 	fMT2tree->SetNJetsIDLoose  (fMT2tree->GetNjets(20, 2.4, 1));
-	fMT2tree->SetNJetsAcc      (fMT2tree->GetNjets(20, 2.4, 0));
 	fMT2tree->SetNBJets        (fMT2tree->GetNBtags(3,2.0,20,2.4,1));
 	fMT2tree->SetNEles         ((Int_t)fElecs.size());
 	fMT2tree->SetNMuons        ((Int_t)fMuons.size());
@@ -277,10 +275,10 @@ bool MT2Analysis::FillMT2TreeBasics(){
 			continue;
 	       	}
 		fMT2tree->genjet[i].lv.SetPtEtaPhiE(fTR->GenJetPt[i], fTR->GenJetEta[i], fTR->GenJetPhi[i], fTR->GenJetE[i]);
-		double mindR=999.99;
+		float mindR=999.99;
 		int    index=-1;
 		for(int j=0; j<fMT2tree->NJets; ++j){
-			double dR=fMT2tree->jet[j].lv.DeltaR(fMT2tree->genjet[i].lv);
+			float dR=fMT2tree->jet[j].lv.DeltaR(fMT2tree->genjet[i].lv);
 			if(dR < mindR) {
 				mindR = dR;
 				index = j;
@@ -330,7 +328,10 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	// Genleptons
 	int NGenLepts=0;
 	for(int i=0; i<fTR->NGenLeptons; ++i){
-		double mass=0;
+		int ID=abs(fTR->GenLeptonID[i]);
+		int MID=abs(fTR->GenLeptonMID[i]);
+		if( (ID == 11 || ID == 12 || ID == 13 || ID == 14 || ID == 15 || ID == 16) && (MID > 24) ) continue;
+		float mass=0;
 		if     (abs(fTR->GenLeptonID[i]) == 15)   mass=1.776; // tau
 		else if(abs(fTR->GenLeptonID[i]) == 13)   mass=0.106; // mu
 		else if(abs(fTR->GenLeptonID[i]) == 11)   mass=0.;    // el 
@@ -343,7 +344,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		else if(abs(fTR->GenLeptonID[i]) == 24 )  mass=80.4;   //  W
 		else   continue;
 		NGenLepts++;
-		if(NGenLepts >= 30 ) {cout << "ERROR: NGenLepts >=30: skipping remaining genlepts for event " << fTR->Event << endl; continue;}
+		if(NGenLepts >= 20 ) {cout << "ERROR: NGenLepts >=20: skipping remaining genlepts for event " << fTR->Event << endl; continue;}
 		fMT2tree->genlept[NGenLepts-1].lv.SetPtEtaPhiM(fTR->GenLeptonPt[i], fTR->GenLeptonEta[i], fTR->GenLeptonPhi[i], mass);
 		fMT2tree->genlept[NGenLepts-1].ID       = fTR->GenLeptonID[i];
 		fMT2tree->genlept[NGenLepts-1].MID      = fTR->GenLeptonMID[i];
@@ -365,17 +366,8 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	fMT2tree->NGenLepts = NGenLepts;
 
 	// --------------------------------------------------------------------
-	// MET and MPT
+	// MET 
 	fMT2tree->pfmet[0]=MET();
-
-	// Fill vector sum of tracks
-	TVector3 tracks(0.,0.,0.);
-	for(int i=0; i< fTR->NTracks; ++i){
-		TVector3 track;
-		track.SetPtEtaPhi(fabs(fTR->TrkPt[i]), fTR->TrkEta[i], fTR->TrkPhi[i]);
-		tracks += track;
-	}	
-	fMT2tree->MPT[0].SetXYZM(-tracks.Px(), -tracks.Py(), 0, 0);
 
 	// Pile UP info and reco vertices
 	if(!fisData){
@@ -444,7 +436,6 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	fMT2tree->misc.NegativeJEC         = fNegativeJEC;
 	fMT2tree->misc.CSCTightHaloID      = fTR->CSCTightHaloID;
 	fMT2tree->misc.HT                  = fHT;
-	fMT2tree->misc.PFMETsign	   = (MET().Pt())/sqrt(fTR->SumEt);
 	
 	fMT2tree->misc.MET                 = MET().Pt();
 	fMT2tree->misc.METPhi              = MET().Phi();
@@ -464,31 +455,23 @@ bool MT2Analysis::FillMT2TreeBasics(){
 void MT2Analysis::FillMT2treeCalculations(){
 	// -----------------------------------------------------------
 	// fill MT2hemi 
+	
 	// hemi 0
-	// testmass 0, massless pseudojets, no PF-JID, JPt > 20, |jet-eta|<2.4, hemi seed =2 (max inv mass), hemi assoc =3, pf-met, hemi-index 0
-	fMT2tree->FillMT2Hemi(0,0,0,20,2.4,2,3,1,0);  
-	
-	// hemi 1
 	// testmass 0, massless pseudojets, PF-JID, JPt > 20, |jet-eta|<2.4, hemi seed =2 (max inv mass), hemi assoc =3, pf-met, hemi-index 1
-	fMT2tree->FillMT2Hemi(0,0,1,20,2.4,2,3,1,1);  
+	fMT2tree->FillMT2Hemi(0,0,1,20,2.4,2,3,1,0);  
 	
-	// hemi 2
-	// testmass 0, massless pseudojets, PF-JID, JPt > 20, |jet-eta|<2.4, minimizing Delta_HT, pf-met, hemi-index 1
-	fMT2tree->FillMT2HemiMinDHT(0,0,1,20,2.4,1,2);  
+	// testmass 0, massless pseudojets, PF-JID, JPt > 20, |jet-eta|<2.4, minimizing Delta_HT, pf-met, hemi-index 1  -> AlphaT version
+	// fMT2tree->FillMT2HemiMinDHT(0,0,1,20,2.4,1,2);  
 	
 	// store MT2 misc variables
-	fMT2tree->misc.MT2                 = fMT2tree->hemi[1].MT2;    // note: this is a bit dangerous, 
-	fMT2tree->misc.MT2all              = fMT2tree->hemi[0].MT2;    
-	fMT2tree->misc.MCT                 = fMT2tree->hemi[1].MCT;
-	fMT2tree->misc.AlphaT              = fMT2tree->hemi[2].AlphaT;
+	fMT2tree->misc.MT2                 = fMT2tree->hemi[0].MT2;    // note: this is a bit dangerous, 
+	fMT2tree->misc.MCT                 = fMT2tree->hemi[0].MCT;
 
 	// other variables to be computed based on MT2tree
 	// ----------------------------------------------------------------------------------
 	fMT2tree->misc.Vectorsumpt	   = fMT2tree->GetMHTminusMET(1, 20, 2.4, true); // including leptons, ID jets only
-	fMT2tree->misc.VectorsumptAll	   = fMT2tree->GetMHTminusMET(0, 20, 2.4, true); // including leptons
 	fMT2tree->misc.MinMetJetDPhi       = fMT2tree->MinMetJetDPhi(0,20,5.0,1);
 	fMT2tree->misc.PassJetID           = fMT2tree->PassJetID(50,2.4,1);
-	fMT2tree->misc.PassJetID20         = fMT2tree->PassJetID(20,2.4,1);
 	if(fMT2tree->NJets > 0) {
 		fMT2tree->misc.Jet0Pass      = (Int_t) fMT2tree->jet[0].IsGoodPFJet(100,2.4,1);
 	} else  fMT2tree->misc.Jet0Pass      = 0; 
@@ -497,49 +480,37 @@ void MT2Analysis::FillMT2treeCalculations(){
 	} else  fMT2tree->misc.Jet1Pass      = 0;
 	
 	// MHT from jets and taus
-	fMT2tree->MHTloose[0]=fMT2tree->GetMHTlv(1, 20, 2.4, true); // only jets satisfying the loose PF-ID and leptons
-	fMT2tree->MHT     [0]=fMT2tree->GetMHTlv(0, 20, 2.4, true); // jets and leptons
-	
-	// DPhiMhtMpt: should be replaced by method to calculate it on the fly. 
-	fMT2tree->misc.DPhiMhtMpt=Util::DeltaPhi(fMT2tree->MHT[0].Phi(), fMT2tree->MPT[0].Phi());	
+	fMT2tree->MHT[0]=fMT2tree->GetMHTlv(1, 20, 2.4, true); // only jets satisfying the loose PF-ID and leptons
 	
 
 	// ---------------------------	
 	// calo HT and MHT
-	float caHT40=0, caHT40_ID=0;
-	TLorentzVector mht40(0,0,0,0), mht40_ID(0,0,0,0);
+	float caHT40=0;
+	TLorentzVector mht40(0,0,0,0);
 	for(int j=0; j<fTR->CANJets; ++j){
 	  	if( CAJet(j).Pt()<40 || fabs(CAJet(j).Eta())>3.0 ) continue;
-
 	    	caHT40   += CAJet(j).Pt();
 	    	mht40    -= CAJet(j);
-	  	
-	  	if(! (fTR->CAJn90[j]>=2 && fTR->CAJEMfrac[j]>=0.000001)) continue;
-		caHT40_ID += CAJet(j).Pt();
-		mht40_ID  -= CAJet(j);
 	}
 	fMT2tree->misc.caloHT40     = caHT40;
-	fMT2tree->misc.caloHT40_ID  = caHT40_ID;
 	fMT2tree->misc.caloMHT40    = mht40.Pt();
-	fMT2tree->misc.caloMHT40_ID = mht40_ID.Pt();
 	fMT2tree->misc.caloHT50     = fCaloHT50;
 	fMT2tree->misc.caloHT50_ID  = fCaloHT50_ID;
 	fMT2tree->misc.caloMHT30    = fCaloMHT30;
-	fMT2tree->misc.caloMHT30_ID = fCaloMHT30_ID;
 
 	// _________
 	// stuff for Z->nunu (close your eyes...)	
 	vector<int>    jindi;
-	vector<double> jpt;
+	vector<float>  jpt;
 	bool PassJetID_matched(true);
-	double HTmatched=0, vectorsumpt_matched_px=0, vectorsumpt_matched_py=0;
+	float HTmatched=0, vectorsumpt_matched_px=0, vectorsumpt_matched_py=0;
 	int    NJetsIDLoose_matched=0;
 	for(int i=0; i<fTR->PF2PAT3NJets; ++i){
 		if(Jet(i).Pt() < 20) continue;  
 		bool jet(true);
 		for(int gen=0; gen<fMT2tree->NGenLepts; ++gen){
 			if( ((abs(fMT2tree->genlept[gen].ID) == 11 || abs(fMT2tree->genlept[gen].ID)==13) && fMT2tree->genlept[gen].MID ==23) ) {
-				double deltaR = Util::GetDeltaR(Jet(i).Eta(), fMT2tree->genlept[gen].lv.Eta(), Jet(i).Phi(), fMT2tree->genlept[gen].lv.Phi());
+				float deltaR = Util::GetDeltaR(Jet(i).Eta(), fMT2tree->genlept[gen].lv.Eta(), Jet(i).Phi(), fMT2tree->genlept[gen].lv.Phi());
 				if(deltaR < 0.4) jet=false;
 			}
 		}
@@ -578,7 +549,7 @@ void MT2Analysis::FillMT2treeCalculations(){
 		bool jet(true);
 		for(int gen=0; gen<fMT2tree->NGenLepts; ++gen){
 			if( ((abs(fMT2tree->genlept[gen].ID) == 11 || abs(fMT2tree->genlept[gen].ID)==13) && fMT2tree->genlept[gen].MID ==23) ) {
-				double deltaR = Util::GetDeltaR(CAJet(j).Eta(), fMT2tree->genlept[gen].lv.Eta(), CAJet(j).Phi(), fMT2tree->genlept[gen].lv.Phi());
+				float deltaR = Util::GetDeltaR(CAJet(j).Eta(), fMT2tree->genlept[gen].lv.Eta(), CAJet(j).Phi(), fMT2tree->genlept[gen].lv.Phi());
 				if(deltaR < 0.4) jet=false;
 			}
 		}
@@ -599,11 +570,11 @@ void MT2Analysis::FillMT2treeCalculations(){
 		bool jet(true);
 		// remove overlap from reco electrons and muons
 		for(int e=0; e<fMT2tree->NEles; ++e){
-			double dR=Util::GetDeltaR(CAJet(j).Eta(), fMT2tree->ele[e].lv.Eta(), CAJet(j).Phi(), fMT2tree->ele[e].lv.Phi());
+			float dR=Util::GetDeltaR(CAJet(j).Eta(), fMT2tree->ele[e].lv.Eta(), CAJet(j).Phi(), fMT2tree->ele[e].lv.Phi());
 			if(dR < 0.4) jet=false;
 		}
 		for(int m=0; m<fMT2tree->NMuons; ++m){
-			double dR=Util::GetDeltaR(CAJet(j).Eta(), fMT2tree->muo[m].lv.Eta(), CAJet(j).Phi(), fMT2tree->muo[m].lv.Phi());
+			float dR=Util::GetDeltaR(CAJet(j).Eta(), fMT2tree->muo[m].lv.Eta(), CAJet(j).Phi(), fMT2tree->muo[m].lv.Phi());
 			if(dR < 0.4) jet=false;
 		}
 		if(jet==false) continue;
@@ -629,13 +600,13 @@ void MT2Analysis::FillMT2treeCalculations(){
 	fMT2tree->Znunu.caloHT50_matchedReco   =caHT50_matchedReco;
 	fMT2tree->Znunu.caloHT50ID_matchedReco =caHT50ID_matchedReco;
 
-	double mindPhi=10;
+	float mindPhi=10;
 	if(jindi.size()<1){mindPhi = -999.99;}
 	else{
 		for(int i=0; i<jindi.size(); ++i){
 			if(Jet(jindi[i]).Pt()       < 20 ) continue;
 			if(fabs(Jet(jindi[i]).Eta())> 5.0) continue;
-			double dphi = TMath::Abs(Jet(jindi[i]).DeltaPhi(met));
+			float dphi = TMath::Abs(Jet(jindi[i]).DeltaPhi(met));
 			if(dphi < mindPhi){ 
 				mindPhi = dphi;
 			}
@@ -660,9 +631,6 @@ void MT2Analysis::FillMT2treeCalculations(){
 	
 	fMT2tree->Znunu.HTmatched                  = HTmatched;
 	fMT2tree->Znunu.NJetsIDLoose_matched       = NJetsIDLoose_matched;
-
-	fMT2tree->Znunu.NJetsToRemoveEle           = fNJets_toremove_ele;
-	fMT2tree->Znunu.NJetsToRemoveMuo           = fNJets_toremove_muo;
 
 	fMT2tree->Znunu.RecoOSee_mll               = fMT2tree->GetDiLeptonInvMass(0, 1, 1, 20, 1); 
 	fMT2tree->Znunu.RecoOSmumu_mll             = fMT2tree->GetDiLeptonInvMass(0, 1, 2, 20, 1); 
@@ -698,7 +666,7 @@ void MT2Analysis::GetLeptonJetIndices(){
 	fTaus.clear();
 	fJets.clear();
 
-	vector<double> mutight;
+	vector<float> mutight;
 	for(int i=0; i< fTR->PfMu3NObjs; ++i){
 		if(std::isnan(fTR->PfMu3Pt[i]))  {fIsNANObj = true; continue;} //protection against objects with NAN-Pt
 		fMuons.push_back(i);
@@ -706,7 +674,7 @@ void MT2Analysis::GetLeptonJetIndices(){
 	}
 	fMuons      = Util::VSort(fMuons     , mutight);
 	
-	vector<double> eltight;
+	vector<float> eltight;
 	for(int i=0; i< fTR->PfEl3NObjs; ++i){
 		if(std::isnan(fTR->PfEl3Pt[i]))  {fIsNANObj = true; continue;} //protection against objects with NAN-Pt
 		fElecs.push_back(i);
@@ -714,17 +682,18 @@ void MT2Analysis::GetLeptonJetIndices(){
 	}
 	fElecs      = Util::VSort(fElecs     , eltight);
 	
-	vector<double> pt1; 
+	vector<float> pt1; 
 	for(int ij=0; ij < fTR->PF2PAT3NJets; ++ij){
 		if(std::isnan(fTR->PF2PAT3JPt[ij])){ fIsNANObj = true; continue; } //protection against objects with NAN-Pt
-		if(Jet(ij).Pt() < 20)       continue;  // note: ETH ntuple only stores PF2PAT3Jets > 15 GeV (defualt config)
-		fJets.push_back(ij);                   // fJets has all jets except for duplicates with selected leptons
+		if(fTR->PF2PAT3JScale[ij]<0) continue;  // ignore jets with negative JEC
+		if(Jet(ij).Pt() < 20)        continue;  // note: ETH ntuple only stores PF2PAT3Jets > 15 GeV (defualt config)
+		fJets.push_back(ij);                    // fJets has all jets except for duplicates with selected leptons
 		pt1.push_back(Jet(ij).Pt());
 	}
 	fJets        = Util::VSort(fJets,       pt1);
 	pt1.clear();
 
-	vector<double> taus;
+	vector<float> taus;
 	for(int i=0; i< fTR->PfTau3NObjs; ++i){
 		if(std::isnan(fTR->PfTau3Pt[i])) { fIsNANObj = true; continue;} //protection against objects with NAN-Pt
 		if(fTR->PfTau3Pt[i]   < 20    ) continue; // note: taus go up to 2.5 in Eta
@@ -807,7 +776,7 @@ bool MT2Analysis::IsSelectedEvent(){
 	}
 
 	// HT from jets + taus
-	double HT=0;
+	float HT=0;
 	for(int j=0; j<fJets.size(); ++j){
 		if(Jet(fJets[j]).Pt() > 50 && fabs(Jet(fJets[j]).Eta())<3.0){
 			HT += Jet(fJets[j]).Pt();
@@ -817,14 +786,12 @@ bool MT2Analysis::IsSelectedEvent(){
 	if(HT<fCut_HT_min){return false;}
 	
 	//caloHT and calo MHT
-	TLorentzVector mht30(0,0,0,0), mht30_ID(0,0,0,0);
+	TLorentzVector mht30(0,0,0,0);
 	fCaloHT50 =0.0, fCaloHT50_ID =0.0;
 	for(int j=0; j<fTR->CANJets; ++j){
 		if( CAJet(j).Pt()<30 || fabs(CAJet(j).Eta())>3.0 ) continue;
 	  	// MHT
 		mht30 -= CAJet(j);
-		// MHT_ID
-		if(fTR->CAJn90[j]>=2 && fTR->CAJEMfrac[j]>=0.000001) mht30_ID -= CAJet(j);	
 		// HT
 		if( CAJet(j).Pt()<50 ) continue;
 		fCaloHT50  += CAJet(j).Pt();
@@ -832,11 +799,9 @@ bool MT2Analysis::IsSelectedEvent(){
 		if(fTR->CAJn90[j]>=2 && fTR->CAJEMfrac[j]>=0.000001) fCaloHT50_ID += CAJet(j).Pt();
 	}
 	fCaloMHT30   =mht30.Pt();
-	fCaloMHT30_ID=mht30_ID.Pt();
 	if(fCaloHT50      < fCut_caloHT50_min   ) return false;
 	if(fCaloHT50_ID   < fCut_caloHT50ID_min ) return false;
 	if(fCaloMHT30     < fCut_caloMHT30_min  ) return false;
-	if(fCaloMHT30_ID  < fCut_caloMHT30ID_min) return false;
 
 	// leading jets including JID for jets
 	bool leadingjets(true);
@@ -864,7 +829,7 @@ bool MT2Analysis::IsSelectedEvent(){
 		if(fTR->PF2PAT3JScale[i]>=0) continue;
 		fNegativeJEC =1;
 	}
-	if(fNegativeJEC) {
+	if(fNegativeJEC && fVerbose >1) {
 		cout << "WARNING: Event with Jets with negative JEC: Run " << fTR->Run << " LS " << fTR->LumiSection << " Event " << fTR->Event
 		     << " N PFJets " << fTR->PF2PAT3NJets << " NCaloJets " << fTR->CANJets << endl; 
 	}
@@ -1021,7 +986,7 @@ void MT2Analysis::DeadCellParser(DeadCellFilter &DeadCellFilter_, string file_){
 // ****************************************************************************************************
 // Jet Selectors
 
-bool MT2Analysis::IsGoodBasicPFJetPAT3(int index, double ptcut, double absetacut){
+bool MT2Analysis::IsGoodBasicPFJetPAT3(int index, float ptcut, float absetacut){
 	// Basic PF jet cleaning and ID cuts
 	// cut at pt of ptcut (default = 30 GeV)
 	// cut at abs(eta) of absetacut (default = 2.5)
@@ -1032,7 +997,7 @@ bool MT2Analysis::IsGoodBasicPFJetPAT3(int index, double ptcut, double absetacut
 	return true;
 }
 
-bool MT2Analysis::IsGoodPFJetMediumPAT3(int index, double ptcut, double absetacut) {
+bool MT2Analysis::IsGoodPFJetMediumPAT3(int index, float ptcut, float absetacut) {
 	// Medium PF JID
 	if ( ! IsGoodBasicPFJetPAT3(index, ptcut, absetacut)  ) return false;
 	if ( !(fTR->PF2PAT3JNeuHadfrac[index] < 0.95)         ) return false;
@@ -1040,7 +1005,7 @@ bool MT2Analysis::IsGoodPFJetMediumPAT3(int index, double ptcut, double absetacu
 	return true;
 }
 
-bool MT2Analysis::IsGoodPFJetTightPAT3(int index, double ptcut, double absetacut) {
+bool MT2Analysis::IsGoodPFJetTightPAT3(int index, float ptcut, float absetacut) {
 	// Tight PF JID
 	if ( ! IsGoodBasicPFJetPAT3(index, ptcut, absetacut)  ) return false;
 	if ( !(fTR->PF2PAT3JNeuHadfrac[index] < 0.90)         ) return false;
@@ -1078,7 +1043,7 @@ TLorentzVector MT2Analysis::PFJetJESScaled(TLorentzVector j){
 	return j_scaled;
 }
 
-double MT2Analysis::GetJECUncertPF(double pt, double eta){
+float MT2Analysis::GetJECUncertPF(float pt, float eta){
 	// pt must be corrected! not raw  	
 
 	// eta cannot be greater than 5! 
@@ -1087,7 +1052,7 @@ double MT2Analysis::GetJECUncertPF(double pt, double eta){
 
 	fJecUncPF->setJetPt(pt);   
 	fJecUncPF->setJetEta(eta); 
-	double uncert= fJecUncPF->getUncertainty(true);
+	float uncert= fJecUncPF->getUncertainty(true);
 	if     (fabs(eta) <=1.5)  uncert = sqrt(uncert*uncert + 0.02*0.02);
 	else if(fabs(eta) <=3.0)  uncert = sqrt(uncert*uncert + 0.06*0.06);
 	else if(fabs(eta) <=5.0)  uncert = sqrt(uncert*uncert + 0.20*0.20);
@@ -1110,7 +1075,7 @@ TLorentzVector MT2Analysis::CAJetJESScaled(TLorentzVector j){
 	return j_scaled;
 }
 
-double MT2Analysis::GetJECUncertCalo(double pt, double eta){
+float MT2Analysis::GetJECUncertCalo(float pt, float eta){
 	// pt must be corrected! not raw  	
 	
 	// eta cannot be greater than 5! 
@@ -1118,7 +1083,7 @@ double MT2Analysis::GetJECUncertCalo(double pt, double eta){
 	else if (eta<-5.0) eta =-5.0;
 	fJecUncCalo->setJetPt(pt);
 	fJecUncCalo->setJetEta(eta);
-	double uncert= fJecUncCalo->getUncertainty(true);
+	float uncert= fJecUncCalo->getUncertainty(true);
 	if     (fabs(eta) <=1.5)  uncert = sqrt(uncert*uncert + 0.02*0.02);
 	else if(fabs(eta) <=3.0)  uncert = sqrt(uncert*uncert + 0.06*0.06);
 	else if(fabs(eta) <=5.0)  uncert = sqrt(uncert*uncert + 0.20*0.20);

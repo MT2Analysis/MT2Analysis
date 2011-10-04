@@ -27,12 +27,14 @@ MT2Misc::~MT2Misc(){
 
 void MT2Misc::Reset() {
   HBHENoiseFlag           =  0;
-  CrazyHCAL               =  0;
-  NegativeJEC             =  0;
-  isData                  =  0;
+  HBHENoiseFlagIso        =  0;
+  RecovRecHitFilterFlag   =  0;
   BadEcalTP               =  0;
   BadEcalBE               =  0;
   CSCTightHaloID          =  0;
+  CrazyHCAL               =  0;
+  NegativeJEC             =  0;
+  isData                  =  0;
   Run                     = -1;	  
   Event		  	  = -1;	  
   LumiSection		  = -1;	  
@@ -48,6 +50,7 @@ void MT2Misc::Reset() {
   SecondJPt               = -99999.99;
   Vectorsumpt		  = -99999.99;
   HT			  = -99999.99;
+  QCDPartonicHT		  = -99999.99;
   caloHT40       	  = -99999.99;
   caloHT50       	  = -99999.99;
   caloHT50_ID             = -99999.99;
@@ -319,6 +322,7 @@ MT2Hemi::~MT2Hemi(){
 void MT2Hemi::Reset(){
   seed_method    = -1;
   assoc_method   = -1;
+  NHemiIter      = -1;
   MT2            = -99999.99;
   MCT            = -99999.99;
   AlphaT         = -99999.99;
@@ -1108,6 +1112,7 @@ Bool_t MT2tree::FillMT2Hemi(Float_t testmass, bool massive, Int_t PFJID, Float_t
   // get hemispheres (seed 2: max inv mass, association method: default 3 = minimal lund distance)
   Hemisphere* hemisp = new Hemisphere(px, py, pz, E, hemi_seed, hemi_association);
   vector<int> grouping = hemisp->getGrouping();
+  int NHemiIterations  = hemisp->GetNumLoop();
 
   TLorentzVector pseudojet1(0.,0.,0.,0.);
   TLorentzVector pseudojet2(0.,0.,0.,0.);
@@ -1153,6 +1158,7 @@ Bool_t MT2tree::FillMT2Hemi(Float_t testmass, bool massive, Int_t PFJID, Float_t
   if(hemi_nr!=-1 && hemi_nr < m_hemiSize){
 	  hemi[hemi_nr].seed_method  = hemi_seed;
 	  hemi[hemi_nr].assoc_method = hemi_association;
+	  hemi[hemi_nr].NHemiIter    = NHemiIterations;
 	  hemi[hemi_nr].MT2          = MT2;
 	  hemi[hemi_nr].dPhi         = Util::DeltaPhi(pseudojet1.Phi(), pseudojet2.Phi());
 	  hemi[hemi_nr].minDHT       = dHT;
@@ -1264,6 +1270,7 @@ Bool_t MT2tree::FillMT2HemiMinDHT(Float_t testmass, bool massive, Int_t PFJID, F
   if(hemi_nr!=-1 && hemi_nr < m_hemiSize){
 	  hemi[hemi_nr].seed_method  = -1;
 	  hemi[hemi_nr].assoc_method = -1;
+	  hemi[hemi_nr].NHemiIter    = -1; 
 	  hemi[hemi_nr].MT2          = CalcMT2(testmass, massive, pseudojet1, pseudojet2, MET);
 	  hemi[hemi_nr].dPhi         = Util::DeltaPhi(pseudojet1.Phi(), pseudojet2.Phi());
 	  hemi[hemi_nr].minDHT       = mDHT;

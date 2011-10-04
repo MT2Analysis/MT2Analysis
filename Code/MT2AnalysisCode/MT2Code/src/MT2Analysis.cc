@@ -55,7 +55,7 @@ void MT2Analysis::Begin(const char* filename){
 	// book tree
 	fMT2tree = new MT2tree();
 	BookTree();
-
+	
 	// define which triggers to fill
 	if(fisData){
 		// HT with dPhi
@@ -231,11 +231,9 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->jet[i].NeuMult        = fTR->PF2PAT3JNeuMult       [fJets[i]];
 		fMT2tree->jet[i].NConstituents  = fTR->PF2PAT3JNConstituents [fJets[i]];
 		fMT2tree->jet[i].Scale          = fTR->PF2PAT3JScale         [fJets[i]];
-		fMT2tree->jet[i].L1FastJetScale = fTR->PF2PAT3JL1FastJetScale[fJets[i]];
 		fMT2tree->jet[i].Area           = fTR->PF2PAT3JArea          [fJets[i]];
-		if(!fisData){
-		fMT2tree->jet[i].Flavour        = fTR->PF2PAT3JFlavour       [fJets[i]];
-		}
+		fMT2tree->jet[i].L1FastJetScale = (fTR->fChain->GetBranch("PF2PAT3JL1FastJetScale")==NULL)    ? -77777.77: fTR->PF2PAT3JL1FastJetScale[fJets[i]]; // Branch added in  V02-04-01
+		fMT2tree->jet[i].Flavour        = (fTR->fChain->GetBranch("PF2PAT3JFlavour")==NULL || fisData)? -77777.77: fTR->PF2PAT3JFlavour[fJets[i]];        // Branch added in  V02-04-01
 	}
 
 	// --------------------------------------------------------------
@@ -371,16 +369,16 @@ bool MT2Analysis::FillMT2TreeBasics(){
 
 	// Pile UP info and reco vertices
 	if(!fisData){
-		fMT2tree->pileUp.PUnumInt          = fTR->PUnumInteractions;
-		fMT2tree->pileUp.PUnumIntLate      = fTR->PUOOTnumInteractionsLate;
-		fMT2tree->pileUp.PUnumIntEarly     = fTR->PUOOTnumInteractionsEarly;
+		fMT2tree->pileUp.PUnumInt          = fTR->PUnumInteractions;        
+		fMT2tree->pileUp.PUnumIntLate      = (fTR->fChain->GetBranch("PUOOTnumInteractionsLate") ==NULL) ? -77777.77: fTR->PUOOTnumInteractionsLate;   // branch added in V02-03-01 
+		fMT2tree->pileUp.PUnumIntEarly     = (fTR->fChain->GetBranch("PUOOTnumInteractionsEarly")==NULL) ? -77777.77: fTR->PUOOTnumInteractionsEarly;  // branch added in V02-03-01 
 		fMT2tree->pileUp.PtHat             = fTR->PtHat;
 		fMT2tree->pileUp.isS3              = (int) isS3;
 		//////////// S3 vs S4
 		if(noPU)
 		  fMT2tree->pileUp.Weight            = 1;
 	        else if(isS3)
-		  fMT2tree->pileUp.Weight            = GetPUWeight(fTR->PUnumInteractions, fTR->PUOOTnumInteractionsLate);
+		  fMT2tree->pileUp.Weight            = (fTR->fChain->GetBranch("PUOOTnumInteractionsLate")==NULL) ? 1: GetPUWeight(fTR->PUnumInteractions, fTR->PUOOTnumInteractionsLate); // branch added in V02-03-01 
 		else
 		  fMT2tree->pileUp.Weight            = GetPUWeight(fTR->PUnumInteractions);
 		
@@ -422,7 +420,9 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		if(fTR->Event       !=fDeadCellFilterTP.event[i]) continue;
 		fMT2tree->misc.BadEcalTP = 1;
 	}
-	if(fTR->EcalDeadTPFilterFlag==0) fMT2tree->misc.BadEcalTP=1;
+	if (fTR->fChain->GetBranch("EcalDeadTPFilterFlag")!=NULL){            // Branch added in  V02-04-00
+	       	fMT2tree->misc.BadEcalTP = (fTR->EcalDeadTPFilterFlag==1) ? 0:1; // store bad events as "true" 
+	}
 	
 	// ------------------------------------------------------------------
 	// fill misc 
@@ -431,10 +431,9 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	fMT2tree->misc.Event		   = fTR->Event;
 	fMT2tree->misc.LumiSection	   = fTR->LumiSection;
 	fMT2tree->misc.LeptConfig          = (int) fLeptConfig;
-	fMT2tree->misc.HBHENoiseFlag	   = fTR->HBHENoiseFlag;
-	fMT2tree->misc.CrazyHCAL           = fCrazyHCAL;
+	fMT2tree->misc.HBHENoiseFlag	   = (fTR->HBHENoiseFlag==1) ? 0:1;  // store bad events as "true"
+	fMT2tree->misc.CrazyHCAL           = fCrazyHCAL;                     // store bad events as "true"
 	fMT2tree->misc.NegativeJEC         = fNegativeJEC;
-	fMT2tree->misc.CSCTightHaloID      = fTR->CSCTightHaloID;
 	fMT2tree->misc.HT                  = fHT;
 	
 	fMT2tree->misc.MET                 = MET().Pt();
@@ -446,6 +445,11 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	// RA2 tracking failure
 	fMT2tree->misc.TrackingFailure     = fTR->TrkPtSum/fHT;
 	fMT2tree->misc.TrackingFailurePVtx = fTR->PrimVtxPtSum/fHT;
+
+	if(fTR->fChain->GetBranch("QCDPartonicHT")        !=NULL) fMT2tree->misc.QCDPartonicHT         = fTR->QCDPartonicHT;                   // Branch added in ntuple V02-04-07
+	if(fTR->fChain->GetBranch("CSCTightHaloID")       !=NULL) fMT2tree->misc.CSCTightHaloID        = fTR->CSCTightHaloID;                  // Branch added in ntuple V02-04-00
+	if(fTR->fChain->GetBranch("RecovRecHitFilterFlag")!=NULL) fMT2tree->misc.RecovRecHitFilterFlag = (fTR->RecovRecHitFilterFlag==1)? 0:1; // Branch added in ntuple V02-04-06	
+	if(fTR->fChain->GetBranch("HBHENoiseFlagIso")     !=NULL) fMT2tree->misc.HBHENoiseFlagIso      = (fTR->HBHENoiseFlagIso==1)     ? 0:1; // Branch added in ntuple V02-04-06 
 
 	// ----------------------------------------------------------------
 	// that was it

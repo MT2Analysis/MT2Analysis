@@ -16,13 +16,15 @@ public:
 
   void Reset();
   
-  Bool_t   HBHENoiseFlag;
-  Bool_t   CrazyHCAL;
-  Bool_t   NegativeJEC;
   Bool_t   isData;
-  Bool_t   BadEcalTP;
-  Bool_t   BadEcalBE;
-  Bool_t   CSCTightHaloID;
+  Bool_t   BadEcalTP;             // store bad events as "true" 
+  Bool_t   BadEcalBE;             // store bad events as "true"
+  Bool_t   CSCTightHaloID;        // store bad events as "true"
+  Bool_t   RecovRecHitFilterFlag; // store bad events as "true"
+  Bool_t   HBHENoiseFlag;         // store bad events as "true"
+  Bool_t   HBHENoiseFlagIso;      // store bad events as "true"
+  Bool_t   CrazyHCAL;             // store bad events as "true"
+  Bool_t   NegativeJEC;           
   Int_t    Run;
   Int_t    Event;
   Int_t    LumiSection;
@@ -39,6 +41,7 @@ public:
   Float_t  Vectorsumpt;
   Float_t  MinMetJetDPhi;
   Float_t  HT;
+  Float_t  QCDPartonicHT;
   Float_t  caloHT40;    
   Float_t  caloHT50;  
   Float_t  caloHT50_ID;
@@ -47,7 +50,7 @@ public:
   Float_t  TrackingFailure;
   Float_t  TrackingFailurePVtx;
   
-  ClassDef(MT2Misc, 23)
+  ClassDef(MT2Misc, 24)
 };
 
 
@@ -280,6 +283,7 @@ public:
   void Reset();
   Int_t         seed_method;
   Int_t         assoc_method;
+  Int_t         NHemiIter;
   Float_t       MT2;
   Float_t       MCT;
   Float_t       AlphaT;
@@ -297,7 +301,7 @@ public:
   TLorentzVector lv2;
   TLorentzVector UTM;
 
-  ClassDef(MT2Hemi, 5)
+  ClassDef(MT2Hemi, 6)
 };
 
 

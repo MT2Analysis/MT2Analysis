@@ -80,6 +80,7 @@ void MT2Analysis::Begin(const char* filename){
 		fTriggerMap["HLT_HT350_v3"]            = &fMT2tree->trigger.HLT_HT350_v3;
 		fTriggerMap["HLT_HT350_v4"]            = &fMT2tree->trigger.HLT_HT350_v4;
 		fTriggerMap["HLT_HT360_v2"]            = &fMT2tree->trigger.HLT_HT360_v2;
+		fTriggerMap["HLT_HT400_v10"]           = &fMT2tree->trigger.HLT_HT400_v10;
 		fTriggerMap["HLT_HT400_v2"]            = &fMT2tree->trigger.HLT_HT400_v2;
 		fTriggerMap["HLT_HT400_v3"]            = &fMT2tree->trigger.HLT_HT400_v3;
 		fTriggerMap["HLT_HT400_v4"]            = &fMT2tree->trigger.HLT_HT400_v4;
@@ -87,7 +88,9 @@ void MT2Analysis::Begin(const char* filename){
 		fTriggerMap["HLT_HT400_v6"]            = &fMT2tree->trigger.HLT_HT400_v6;
 		fTriggerMap["HLT_HT400_v7"]            = &fMT2tree->trigger.HLT_HT400_v7;
 		fTriggerMap["HLT_HT400_v8"]            = &fMT2tree->trigger.HLT_HT400_v8;
+		fTriggerMap["HLT_HT400_v9"]            = &fMT2tree->trigger.HLT_HT400_v9;
 		fTriggerMap["HLT_HT440_v2"]            = &fMT2tree->trigger.HLT_HT440_v2;
+		fTriggerMap["HLT_HT450_v10"]           = &fMT2tree->trigger.HLT_HT450_v10;
 		fTriggerMap["HLT_HT450_v2"]            = &fMT2tree->trigger.HLT_HT450_v2;
 		fTriggerMap["HLT_HT450_v3"]            = &fMT2tree->trigger.HLT_HT450_v3;
 		fTriggerMap["HLT_HT450_v4"]            = &fMT2tree->trigger.HLT_HT450_v4;
@@ -95,6 +98,8 @@ void MT2Analysis::Begin(const char* filename){
 		fTriggerMap["HLT_HT450_v6"]            = &fMT2tree->trigger.HLT_HT450_v6;
 		fTriggerMap["HLT_HT450_v7"]            = &fMT2tree->trigger.HLT_HT450_v7;
 		fTriggerMap["HLT_HT450_v8"]            = &fMT2tree->trigger.HLT_HT450_v8;
+		fTriggerMap["HLT_HT450_v9"]            = &fMT2tree->trigger.HLT_HT450_v9;
+		fTriggerMap["HLT_HT500_v10"]           = &fMT2tree->trigger.HLT_HT500_v10;
 		fTriggerMap["HLT_HT500_v2"]            = &fMT2tree->trigger.HLT_HT500_v2;
 		fTriggerMap["HLT_HT500_v3"]            = &fMT2tree->trigger.HLT_HT500_v3;
 		fTriggerMap["HLT_HT500_v4"]            = &fMT2tree->trigger.HLT_HT500_v4;
@@ -102,6 +107,8 @@ void MT2Analysis::Begin(const char* filename){
 		fTriggerMap["HLT_HT500_v6"]            = &fMT2tree->trigger.HLT_HT500_v6;
 		fTriggerMap["HLT_HT500_v7"]            = &fMT2tree->trigger.HLT_HT500_v7;
 		fTriggerMap["HLT_HT500_v8"]            = &fMT2tree->trigger.HLT_HT500_v8;
+		fTriggerMap["HLT_HT500_v9"]            = &fMT2tree->trigger.HLT_HT500_v9;
+		fTriggerMap["HLT_HT550_v10"]           = &fMT2tree->trigger.HLT_HT550_v10;
 		fTriggerMap["HLT_HT550_v2"]            = &fMT2tree->trigger.HLT_HT550_v2;
 		fTriggerMap["HLT_HT550_v3"]            = &fMT2tree->trigger.HLT_HT550_v3;
 		fTriggerMap["HLT_HT550_v4"]            = &fMT2tree->trigger.HLT_HT550_v4;
@@ -109,7 +116,14 @@ void MT2Analysis::Begin(const char* filename){
 		fTriggerMap["HLT_HT550_v6"]            = &fMT2tree->trigger.HLT_HT550_v6;
 		fTriggerMap["HLT_HT550_v7"]            = &fMT2tree->trigger.HLT_HT550_v7;
 		fTriggerMap["HLT_HT550_v8"]            = &fMT2tree->trigger.HLT_HT550_v8;
+		fTriggerMap["HLT_HT550_v9"]            = &fMT2tree->trigger.HLT_HT550_v9;
 		fTriggerMap["HLT_HT600_v1"]            = &fMT2tree->trigger.HLT_HT600_v1;
+		fTriggerMap["HLT_HT600_v2"]            = &fMT2tree->trigger.HLT_HT600_v2;
+		fTriggerMap["HLT_HT600_v3"]            = &fMT2tree->trigger.HLT_HT600_v3;
+		fTriggerMap["HLT_HT650_v1"]            = &fMT2tree->trigger.HLT_HT650_v1;
+		fTriggerMap["HLT_HT650_v2"]            = &fMT2tree->trigger.HLT_HT650_v2;
+		fTriggerMap["HLT_HT650_v3"]            = &fMT2tree->trigger.HLT_HT650_v3;
+
 		// MHT_HT
 		fTriggerMap["HLT_HT250_MHT60_v2"]      = &fMT2tree->trigger.HLT_HT250_MHT60_v2;
 		fTriggerMap["HLT_HT250_MHT60_v3"]      = &fMT2tree->trigger.HLT_HT250_MHT60_v3;

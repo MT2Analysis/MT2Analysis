@@ -114,6 +114,7 @@ void MT2Trigger::Reset(){
 	HLT_HT350_v3            = false;
 	HLT_HT350_v4            = false;
 	HLT_HT360_v2            = false;
+	HLT_HT400_v10           = false;
 	HLT_HT400_v2            = false;
 	HLT_HT400_v3            = false;
 	HLT_HT400_v4            = false;
@@ -121,7 +122,9 @@ void MT2Trigger::Reset(){
 	HLT_HT400_v6            = false;
 	HLT_HT400_v7            = false;
 	HLT_HT400_v8            = false;
+	HLT_HT400_v9            = false;
 	HLT_HT440_v2            = false;
+	HLT_HT450_v10           = false;
 	HLT_HT450_v2            = false;
 	HLT_HT450_v3            = false;
 	HLT_HT450_v4            = false;
@@ -129,6 +132,8 @@ void MT2Trigger::Reset(){
 	HLT_HT450_v6            = false;
 	HLT_HT450_v7            = false;
 	HLT_HT450_v8            = false;
+	HLT_HT450_v9            = false;
+	HLT_HT500_v10           = false;
 	HLT_HT500_v2            = false;
 	HLT_HT500_v3            = false;
 	HLT_HT500_v4            = false;
@@ -136,6 +141,8 @@ void MT2Trigger::Reset(){
 	HLT_HT500_v6            = false;
 	HLT_HT500_v7            = false;
 	HLT_HT500_v8            = false;
+	HLT_HT500_v9            = false;
+	HLT_HT550_v10           = false;
 	HLT_HT550_v2            = false;
 	HLT_HT550_v3            = false;
 	HLT_HT550_v4            = false;
@@ -143,7 +150,13 @@ void MT2Trigger::Reset(){
 	HLT_HT550_v6            = false;
 	HLT_HT550_v7            = false;
 	HLT_HT550_v8            = false;
+	HLT_HT550_v9            = false;
 	HLT_HT600_v1            = false;
+	HLT_HT600_v2            = false;
+	HLT_HT600_v3            = false;
+	HLT_HT650_v1            = false;
+	HLT_HT650_v2            = false;
+	HLT_HT650_v3            = false;
 	// HT_MHT
 	HLT_HT250_MHT60_v2      = false;
 	HLT_HT250_MHT60_v3      = false;

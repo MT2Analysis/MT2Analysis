@@ -104,6 +104,7 @@ public:
 	Bool_t HLT_HT350_v3;
 	Bool_t HLT_HT350_v4;
 	Bool_t HLT_HT360_v2;
+	Bool_t HLT_HT400_v10;
 	Bool_t HLT_HT400_v2;
 	Bool_t HLT_HT400_v3;
 	Bool_t HLT_HT400_v4;
@@ -111,7 +112,9 @@ public:
 	Bool_t HLT_HT400_v6;
 	Bool_t HLT_HT400_v7;
 	Bool_t HLT_HT400_v8;
+	Bool_t HLT_HT400_v9;
 	Bool_t HLT_HT440_v2;
+	Bool_t HLT_HT450_v10;
 	Bool_t HLT_HT450_v2;
 	Bool_t HLT_HT450_v3;
 	Bool_t HLT_HT450_v4;
@@ -119,6 +122,8 @@ public:
 	Bool_t HLT_HT450_v6;
 	Bool_t HLT_HT450_v7;
 	Bool_t HLT_HT450_v8;
+	Bool_t HLT_HT450_v9;
+	Bool_t HLT_HT500_v10;
 	Bool_t HLT_HT500_v2;
 	Bool_t HLT_HT500_v3;
 	Bool_t HLT_HT500_v4;
@@ -126,6 +131,8 @@ public:
 	Bool_t HLT_HT500_v6;
 	Bool_t HLT_HT500_v7;
 	Bool_t HLT_HT500_v8;
+	Bool_t HLT_HT500_v9;
+	Bool_t HLT_HT550_v10;
 	Bool_t HLT_HT550_v2;
 	Bool_t HLT_HT550_v3;
 	Bool_t HLT_HT550_v4;
@@ -133,7 +140,13 @@ public:
 	Bool_t HLT_HT550_v6;
 	Bool_t HLT_HT550_v7;
 	Bool_t HLT_HT550_v8;
+	Bool_t HLT_HT550_v9;
 	Bool_t HLT_HT600_v1;
+	Bool_t HLT_HT600_v2;
+	Bool_t HLT_HT600_v3;
+	Bool_t HLT_HT650_v1;
+	Bool_t HLT_HT650_v2;
+	Bool_t HLT_HT650_v3;
 	// HT_MHT
 	Bool_t HLT_HT250_MHT60_v2;
 	Bool_t HLT_HT250_MHT60_v3;

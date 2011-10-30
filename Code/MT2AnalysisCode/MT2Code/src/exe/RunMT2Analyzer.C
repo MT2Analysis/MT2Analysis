@@ -16,27 +16,30 @@ using namespace std;
 //________________________________________________________________________________________
 // Print out usage
 void usage( int status = 0 ) {
-	cout << "Usage: RunMT2Analyzer [-d dir] [-o filename] [-v verbose] [-j json] " << endl;
-	cout << "                              [-m set_of_cuts] [-n maxEvents] [-t type] " << endl;
-	cout << "                              [-p data_PileUp] [-P mc_PileUP]                " << endl; 
-        cout << "                              [-s S3,noPU]                                        " << endl;
-	cout << "                              [-l] file1 [... filen]"                          << endl;
-	cout << "  where:" << endl;
-	cout << "     dir           is the output directory                                   " << endl;
-	cout << "                   default is TempOutput/                                    " << endl;
-	cout << "     filename      is the output filename for the MassAnalysis               " << endl;
-	cout << "     verbose       sets the verbose level                                    " << endl;
-	cout << "                   default is 0 (quiet mode)                                 " << endl;
-	cout << "     json          json file to be read                                      " << endl;
-	cout << "     set_of_cuts   optional cuts for MT2Analysis                             " << endl;
-	cout << "     data_PileUp   root file from which the expected # pile-up               " << endl;
-	cout << "                   interactions is read                                      " << endl;
-	cout << "     mc_PileUP     root file from which the generated # pile up              " << endl;
-	cout << "                   interactions is read                                      " << endl;
-	cout << "     type          data or mc=default                                        " << endl;
-	cout << "     filen         are the input files (by default: ROOT files)              " << endl;
-	cout << "                   with option -l, these are read as text files              " << endl;
-	cout << "                   with one ROOT file name per line                          " << endl;
+	cout << "Usage: RunMT2Analyzer [-d dir] [-o filename] [-v verbose] [-j json]                  " << endl;
+	cout << "                      [-m set_of_cuts] [-n maxEvents] [-t type]                      " << endl;
+	cout << "                      [-p data_PileUp] [-P mc_PileUP]                                " << endl; 
+        cout << "                      [-s S3,noPU] [-C JEC]                                          " << endl;
+	cout << "                      [-l] file1 [... filen]"                                          << endl;
+	cout << "  where:"                                                                              << endl;
+	cout << "     dir           is the output directory                                           " << endl;
+	cout << "                   default is TempOutput/                                            " << endl;
+	cout << "     filename      is the output filename for the MassAnalysis                       " << endl;
+	cout << "     verbose       sets the verbose level                                            " << endl;
+	cout << "                   default is 0 (quiet mode)                                         " << endl;
+	cout << "     json          json file to be read                                              " << endl;
+	cout << "     set_of_cuts   optional cuts for MT2Analysis                                     " << endl;
+	cout << "     data_PileUp   root file from which the expected # pile-up                       " << endl;
+	cout << "                   interactions is read                                              " << endl;
+	cout << "     mc_PileUP     root file from which the generated # pile up                      " << endl;
+	cout << "                   interactions is read                                              " << endl;
+	cout << "     type          data or mc=default                                                " << endl;
+	cout << "     JEC           redo JEC: dir of JEC to be used                                   " << endl;
+	cout << "                   /shome/pnef/MT2Analysis/Code/JetEnergyCorrection/[JEC]            " << endl;
+	cout << "                   ak5 pf-jets will be corrected with L1FastL2L3 (+RES if type=data) " << endl;
+	cout << "     filen         are the input files (by default: ROOT files)                      " << endl;
+	cout << "                   with option -l, these are read as text files                      " << endl;
+	cout << "                   with one ROOT file name per line                                  " << endl;
 	cout << endl;
 	exit(status);
 }
@@ -48,11 +51,12 @@ int main(int argc, char* argv[]) {
 	TString outputdir = "TempOutput/";
 	TString filename  = "MassTree.root";
 	TString setofcuts = "default";
-	string puScenario = "";
+	string  puScenario = "";
   	string  jsonFileName = "";
 	string  data_PileUp = "";
 	string  mc_PileUp = "";
-	string type = "mc";
+	string  type = "mc";
+	string  JEC="";
 	bool isData = false;
 	int verbose  = 0;
 	int maxEvents=-1;
@@ -61,7 +65,7 @@ int main(int argc, char* argv[]) {
 
 // Parse options
 	char ch;
-	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:x:lh?")) != -1 ) {
+	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:C:lh?")) != -1 ) {
 	  switch (ch) {
 	  case 'd': outputdir       = TString(optarg); break;
 	  case 'o': filename        = TString(optarg); break;
@@ -73,6 +77,7 @@ int main(int argc, char* argv[]) {
 	  case 'P': mc_PileUp       = string(optarg); break;
 	  case 't': type            = string(optarg); break;
 	  case 's': puScenario      = string(optarg); break;
+          case 'C': JEC             = "/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+string(optarg)+"/"; break;
 	  case 'l': isList          = true; break;
 	    //case 'noPU': noPU = true; break;  
 	  case '?':
@@ -136,6 +141,9 @@ int main(int argc, char* argv[]) {
 	if(noPU) cout << "WARNING: NoPU option set, all the PU weights will be set to 1" << endl;
 	cout << "Set of Cuts is:                 " << setofcuts << endl;
 	cout << "Number of events:               " << theChain->GetEntries() << endl;
+	if(JEC.length()!=0){
+	cout << "Redo JEC with set               " << JEC << endl;
+	}
 	cout << "--------------" << endl;
 
 	MT2Analyzer *tA = new MT2Analyzer(theChain);
@@ -145,7 +153,7 @@ int main(int argc, char* argv[]) {
 	tA->isS3 = isS3;
 	tA->noPU = noPU;
   	if (jsonFileName!="") tA->ReadJSON(jsonFileName.c_str());
-	tA->BeginJob(filename, setofcuts, isData, data_PileUp, mc_PileUp);
+	tA->BeginJob(filename, setofcuts, isData, data_PileUp, mc_PileUp, JEC);
 	tA->Loop();
 	tA->EndJob();
 

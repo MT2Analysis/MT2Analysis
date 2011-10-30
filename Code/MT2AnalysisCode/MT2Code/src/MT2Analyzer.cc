@@ -49,16 +49,16 @@ void MT2Analyzer::Loop(){
 }
 
 // Method called before starting the event loop
-void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, string data_PileUp, string mc_PileUp){
+void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, string data_PileUp, string mc_PileUp, string JEC){
 	fMT2Analysis             ->ReadCuts(setofcuts);
 	fMT2Analysis             ->SetType(isData);
 	fMT2Analysis             ->SetPileUpSrc(data_PileUp, mc_PileUp);
 	fMT2Analysis             ->SetOutputDir(fOutputDir);
 	fMT2Analysis             ->fVerbose        = fVerbose;
-	fMT2Analysis             ->Begin(filename);
-
+	fMT2Analysis             ->SetJEC(JEC);
         fMT2Analysis             ->isS3        = isS3;
 	fMT2Analysis             ->noPU        = noPU;
+	fMT2Analysis             ->Begin(filename);
 }
 
 // Method called after finishing the event loop

@@ -484,6 +484,8 @@ public:
   Int_t   NJets;
   Int_t   NGenJets;
   Int_t   NJetsIDLoose;
+  Int_t   NJetsIDLoose40;
+  Int_t   NJetsIDLoose50;
   Int_t   NBJets;
   Int_t   NEles;
   Int_t   NMuons;
@@ -505,7 +507,7 @@ public:
   TLorentzVector MHT[2];
 
   
-  ClassDef(MT2tree, 19)
+  ClassDef(MT2tree, 20)
 };
 
 #endif

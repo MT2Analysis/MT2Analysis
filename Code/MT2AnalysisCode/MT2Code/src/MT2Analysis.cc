@@ -31,6 +31,17 @@ MT2Analysis::MT2Analysis(TreeReader *tr) : UserAnalysisBase(tr){
 MT2Analysis::~MT2Analysis(){
 	delete fJecUncPF;    
 	delete fJecUncCalo;  
+	
+	delete fJecCaloL2;
+	delete fJecCaloL3; 
+	delete fJecPFL1;   
+	delete fJecPFL2;   
+	delete fJecPFL3;   
+	delete fJecPFRES;  
+
+	delete fJetCorrectorPF;
+	delete fJetCorrectorCalo;
+
 }
 
 void MT2Analysis::End(){
@@ -166,6 +177,30 @@ void MT2Analysis::Begin(const char* filename){
 		MT2Analysis::DeadCellParser(fDeadCellFilterBE, fBEfiles[i]);
 	}
 
+	if(fJEC.length()!=0){
+	// initialize JEC and JESuncertainty
+	cout << "--------------------- " << endl;
+	cout << " -> initialize JetEnergyCorrection & JetCorrectionUncertainty " << endl;
+	Initialize_JetEnergyCorrection();
+	Initialize_JetCorrectionUncertainty();
+	cout << "--------------------- " << endl;
+	}else{
+		fJecUncPF         =NULL;
+		fJecUncCalo       =NULL;
+	        fJecCaloL2        =NULL;
+	        fJecCaloL3        =NULL;
+	        fJecPFL1          =NULL;
+	        fJecPFL2          =NULL; 
+	        fJecPFL3          =NULL;
+	        fJecPFRES         =NULL;
+	        fJetCorrectorPF   =NULL;
+	        fJetCorrectorCalo =NULL;
+	}
+	if(fDoJESUncertainty && fJEC.length()==0){
+		cout << "ERROR: need to know JEC set to upscale/downscale the Jet Energy" << endl;
+		exit(-1);
+	}
+
 
 }
 
@@ -192,7 +227,7 @@ void MT2Analysis::Analyze(){
 
 	// Fill complicated MT2tree variables;
 	if(basicfilled) FillMT2treeCalculations();
-	
+
 	// FillTree
 	FillTree();
 }
@@ -244,10 +279,16 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->jet[i].ChMult         = fTR->PF2PAT3JChMult        [fJets[i]];
 		fMT2tree->jet[i].NeuMult        = fTR->PF2PAT3JNeuMult       [fJets[i]];
 		fMT2tree->jet[i].NConstituents  = fTR->PF2PAT3JNConstituents [fJets[i]];
-		fMT2tree->jet[i].Scale          = fTR->PF2PAT3JScale         [fJets[i]];
 		fMT2tree->jet[i].Area           = fTR->PF2PAT3JArea          [fJets[i]];
-		fMT2tree->jet[i].L1FastJetScale = (fTR->fChain->GetBranch("PF2PAT3JL1FastJetScale")==NULL)    ? -77777.77: fTR->PF2PAT3JL1FastJetScale[fJets[i]]; // Branch added in  V02-04-01
 		fMT2tree->jet[i].Flavour        = (fTR->fChain->GetBranch("PF2PAT3JFlavour")==NULL || fisData)? -77777.77: fTR->PF2PAT3JFlavour[fJets[i]];        // Branch added in  V02-04-01
+		// JET energy correction factors
+		// full correction factor
+		if      (fJEC.length()!=0) fMT2tree->jet[i].Scale = GetPFJEC(fTR->PF2PAT3JPt   [fJets[i]], fTR->PF2PAT3JScale[fJets[i]], fTR->PF2PAT3JEta[fJets[i]], fTR->PF2PAT3JArea[fJets[i]], fTR->Rho, fisData?1230:123);
+		else                       fMT2tree->jet[i].Scale = fTR->PF2PAT3JScale[fJets[i]];
+		// L1FastScale
+		if      (fTR->fChain->GetBranch("PF2PAT3JL1FastJetScale")==NULL) fMT2tree->jet[i].L1FastJetScale=-77777.77;  // Branch added in  V02-04-01
+		else if (fJEC.length()!=0) fMT2tree->jet[i].L1FastJetScale=GetPFJEC(fTR->PF2PAT3JPt   [fJets[i]], fTR->PF2PAT3JScale[fJets[i]], fTR->PF2PAT3JEta[fJets[i]], fTR->PF2PAT3JArea[fJets[i]], fTR->Rho, 1);
+		else                       fMT2tree->jet[i].L1FastJetScale=fTR->PF2PAT3JL1FastJetScale[fJets[i]];
 	}
 
 	// --------------------------------------------------------------
@@ -278,6 +319,8 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	fMT2tree->SetNEles         ((Int_t)fElecs.size());
 	fMT2tree->SetNMuons        ((Int_t)fMuons.size());
 	fMT2tree->SetNTaus         ((Int_t)fTaus.size());
+	fMT2tree->NJetsIDLoose40 = fMT2tree->GetNjets(40, 2.4, 1);
+	fMT2tree->NJetsIDLoose50 = fMT2tree->GetNjets(50, 2.4, 1);
 	
 	// --------------------------------------------------------------
 	// Fill GenJets
@@ -396,7 +439,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		else
 		  fMT2tree->pileUp.Weight            = GetPUWeight(fTR->PUnumInteractions);
 		
-		fMT2tree->pileUp.Rho               = fTR->Rho;
+		fMT2tree->pileUp.Rho               = fTR->Rho; // ATTENTION: this rho is from KT6 PF jets without pf-CHS
 		
 		if(fVerbose > 3) {
 			cout << "fTR->PUnumInteractions " <<  fTR->PUnumInteractions << " weight "  
@@ -960,15 +1003,6 @@ void MT2Analysis::ReadCuts(const char* SetofCuts="MT2_cuts/default.dat"){
 		}
 		cout << "--------------"    << endl;	
 	}			
-	if(fDoJESUncertainty){
-		cout << "--------------------- " << endl;
-		cout << " -> initialize JetCorrectionUncertainty " << endl;
-		Initialize_JetCorrectionUncertainty();
-		cout << "--------------------- " << endl;
-	}else{
-		fJecUncPF   =NULL; 
- 		fJecUncCalo =NULL; 
-	}
 }
 
 // BE file parser
@@ -1033,8 +1067,8 @@ bool MT2Analysis::IsGoodPFJetTightPAT3(int index, float ptcut, float absetacut) 
 
 // Jets and JES uncertainty
 void MT2Analysis::Initialize_JetCorrectionUncertainty(){
-	string Calo="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/JESuncertainty/Fall10_AK5Calo_Uncertainty.txt";
-	string PF  ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/JESuncertainty/Fall10_AK5PF_Uncertainty.txt";
+	string Calo=fJEC+"/GR_R_42_V19_AK5PF_Uncertainty.txt";
+	string PF  =fJEC+"/GR_R_42_V19_AK5Calo_Uncertainty.txt";
 
 	ifstream fileCalo(Calo.c_str());
 	ifstream filePF  (PF.c_str());
@@ -1046,18 +1080,74 @@ void MT2Analysis::Initialize_JetCorrectionUncertainty(){
 	fJecUncCalo = new JetCorrectionUncertainty(Calo);
 	fJecUncPF   = new JetCorrectionUncertainty(PF); 
 }
+
+void MT2Analysis::Initialize_JetEnergyCorrection(){
+	string Calo_L2  =fJEC+"/GR_R_42_V19_AK5Calo_L2Relative.txt";
+	string Calo_L3  =fJEC+"/GR_R_42_V19_AK5Calo_L3Absolute.txt";
+	string Calo_RES =fJEC+"/GR_R_42_V19_AK5Calo_L2L3Residual.txt";
+	string PF_L1    =fJEC+"/GR_R_42_V19_AK5PF_L1FastJet.txt";
+	string PF_L2    =fJEC+"/GR_R_42_V19_AK5PF_L2Relative.txt";
+	string PF_L3    =fJEC+"/GR_R_42_V19_AK5PF_L3Absolute.txt";
+	string PF_RES   =fJEC+"/GR_R_42_V19_AK5PF_L2L3Residual.txt";
+
+	ifstream fileCaloL2  (Calo_L2.c_str());
+	ifstream fileCaloL3  (Calo_L3.c_str());
+	ifstream fileCaloRES (Calo_RES.c_str());
+	ifstream filePFL1    (PF_L1.c_str());
+	ifstream filePFL2    (PF_L2.c_str());
+	ifstream filePFL3    (PF_L3.c_str());
+	ifstream filePFRES   (PF_RES.c_str());
+	if(! filePFL1   ) {cout << "ERROR: cannot open file " << PF_L1     << endl; exit(1); }
+	else              {cout << "  using file "            << PF_L1     << endl;          }
+	if(! filePFL2   ) {cout << "ERROR: cannot open file " << PF_L2     << endl; exit(1); }
+	else              {cout << "  using file "            << PF_L2     << endl;          }
+	if(! filePFL3   ) {cout << "ERROR: cannot open file " << PF_L3     << endl; exit(1); }
+	else              {cout << "  using file "            << PF_L3     << endl;          }
+	if(! filePFRES  ) {cout << "ERROR: cannot open file " << PF_RES    << endl; exit(1); }
+	else              {cout << "  using file "            << PF_RES    << endl;          }
+	if(! fileCaloL2 ) {cout << "ERROR: cannot open file " << Calo_L2   << endl; exit(1); }
+	else              {cout << "  using file "            << Calo_L2   << endl;          } 
+	if(! fileCaloL3 ) {cout << "ERROR: cannot open file " << Calo_L3   << endl; exit(1); }
+	else              {cout << "  using file "            << Calo_L3   << endl;          } 
+	if(! fileCaloRES) {cout << "ERROR: cannot open file " << Calo_RES   << endl; exit(1); }
+	else              {cout << "  using file "            << Calo_RES   << endl;          } 
+
+	fJecCaloL2  = new JetCorrectorParameters(Calo_L2);
+	fJecCaloL3  = new JetCorrectorParameters(Calo_L3);
+	fJecCaloRES = new JetCorrectorParameters(Calo_RES);
+	fJecPFL1    = new JetCorrectorParameters(PF_L1); 
+	fJecPFL2    = new JetCorrectorParameters(PF_L2); 
+	fJecPFL3    = new JetCorrectorParameters(PF_L3); 
+	fJecPFRES   = new JetCorrectorParameters(PF_RES); 
+
+	vector<JetCorrectorParameters> JecPF;
+	vector<JetCorrectorParameters> JecCalo;
+	// ATTENTION: order matters here!
+	JecPF.push_back(*fJecPFL1);     JecPF.push_back(*fJecPFL2);     JecPF.push_back(*fJecPFL3);     JecPF.push_back(*fJecPFRES);
+	JecCalo.push_back(*fJecCaloL2); JecCalo.push_back(*fJecCaloL3); JecCalo.push_back(*fJecCaloRES); 
+	
+	fJetCorrectorPF   = new FactorizedJetCorrector(JecPF);
+	fJetCorrectorCalo = new FactorizedJetCorrector(JecCalo);
+}
+
 // pf
 TLorentzVector MT2Analysis::Jet(int index){
 	TLorentzVector j(0,0,0,0);
 	j.SetPtEtaPhiE(fTR->PF2PAT3JPt[index], fTR->PF2PAT3JEta[index], fTR->PF2PAT3JPhi[index], fTR->PF2PAT3JE[index]);
-	if  (! fDoJESUncertainty) return j;
-	else                      return MT2Analysis::PFJetJESScaled(j);
+	if      (fJEC.length()==0) return j;
+	else                       return MT2Analysis::PFJetScaled(j, fTR->PF2PAT3JScale[index], fTR->PF2PAT3JArea[index], fTR->Rho);
 }
 
-TLorentzVector MT2Analysis::PFJetJESScaled(TLorentzVector j){
+TLorentzVector MT2Analysis::PFJetScaled(TLorentzVector j, float old_scale, float area, float rho){
+	// get new correction factor from DB dumpled txt files
+	float new_scale = GetPFJEC(j.Pt(), old_scale, j.Eta(), area, rho, (fisData)?1230:123); // get new scale factor: L1FastL2L3 for MC, L1fastL2L3+RES for data
+
 	TLorentzVector j_scaled(0.,0.,0.,0);
-	if(fJESUpDown== 1) j_scaled.SetPtEtaPhiM(j.Perp()*(1+GetJECUncertPF(j.Pt(),j.Eta())), j.Eta(), j.Phi(), j.M());
-	if(fJESUpDown==-1) j_scaled.SetPtEtaPhiM(j.Perp()*(1-GetJECUncertPF(j.Pt(),j.Eta())), j.Eta(), j.Phi(), j.M());
+	j_scaled.SetPtEtaPhiM(j.Perp()*new_scale/old_scale, j.Eta(), j.Phi(), j.M());
+
+	// optionally up or downscale jet: JES uncertainty is a function of corrected Pt
+	if(fJESUpDown== 1) j_scaled.SetPtEtaPhiM(j_scaled.Perp()*(1+GetJECUncertPF(j_scaled.Pt(),j_scaled.Eta())), j_scaled.Eta(), j_scaled.Phi(), j_scaled.M());
+	if(fJESUpDown==-1) j_scaled.SetPtEtaPhiM(j_scaled.Perp()*(1-GetJECUncertPF(j_scaled.Pt(),j_scaled.Eta())), j_scaled.Eta(), j_scaled.Phi(), j_scaled.M());
 	return j_scaled;
 }
 
@@ -1071,25 +1161,56 @@ float MT2Analysis::GetJECUncertPF(float pt, float eta){
 	fJecUncPF->setJetPt(pt);   
 	fJecUncPF->setJetEta(eta); 
 	float uncert= fJecUncPF->getUncertainty(true);
-	if     (fabs(eta) <=1.5)  uncert = sqrt(uncert*uncert + 0.02*0.02);
-	else if(fabs(eta) <=3.0)  uncert = sqrt(uncert*uncert + 0.06*0.06);
-	else if(fabs(eta) <=5.0)  uncert = sqrt(uncert*uncert + 0.20*0.20);
 	return uncert; 
+}
+
+float MT2Analysis::GetPFJEC(float corrpt, float scale, float eta, float area, float rho, int level){
+
+	fJetCorrectorPF->setJetPt(corrpt/scale); // WARNING: JEC is a function of RAW pt
+	fJetCorrectorPF->setJetEta(eta);
+	fJetCorrectorPF->setJetA(area);
+	fJetCorrectorPF->setRho(rho);
+	
+	vector<float> factors = fJetCorrectorPF->getSubCorrections();
+	// convention for correction factors as follows: 0->L1, 1->L1L2, 2->L1L2L3, 3->L1L2L3Res
+	// see MT2Analysis::Initialize_JetEnergyCorrection()
+	
+	if(!fisData && level==1230){
+		cout << "ERROR: residual corrections are only applied on data, this is MC!"<<endl;
+		exit(-1);
+	}
+
+	float scalefactor=-1;
+	if     (level==1)    scalefactor=factors[0];
+	else if(level==12)   scalefactor=factors[1];
+	else if(level==123)  scalefactor=factors[2];
+	else if(level==1230) scalefactor=factors[3];
+	else {
+		cout << "ERROR: convention for correction factors as follows: 0->L1, 1->L1L2, 2->L1L2L3, 3->L1L2L3Res" << endl;
+		exit(-1);	
+	}
+	return scalefactor;
 }
 
 // Calo
 TLorentzVector MT2Analysis::CAJet(int index){
 	TLorentzVector j(0,0,0,0);
 	j.SetPtEtaPhiE(fTR->CAJPt[index], fTR->CAJEta[index], fTR->CAJPhi[index], fTR->CAJE[index]);
-	if  (! fDoJESUncertainty) return j;
-	else                      return MT2Analysis::CAJetJESScaled(j);
+	if  (fJEC.length()==0)    return j;
+	else                      return MT2Analysis::CAJetScaled(j, fTR->CAJScale[index]);
 }
 
 
-TLorentzVector MT2Analysis::CAJetJESScaled(TLorentzVector j){
+TLorentzVector MT2Analysis::CAJetScaled(TLorentzVector j, float old_scale){
+	// get new correction factor from DB dumpled txt files
+	float new_scale = GetCaloJEC(j.Pt(), old_scale, j.Eta(), (fisData)?230:23); // get new scale factor: L2L3 for MC, L2L3+RES for data
+
 	TLorentzVector j_scaled(0.,0.,0.,0);
-	if(fJESUpDown== 1) j_scaled.SetPtEtaPhiM(j.Perp()*(1+GetJECUncertCalo(j.Pt(),j.Eta())), j.Eta(), j.Phi(), j.M());
-	if(fJESUpDown==-1) j_scaled.SetPtEtaPhiM(j.Perp()*(1-GetJECUncertCalo(j.Pt(),j.Eta())), j.Eta(), j.Phi(), j.M());
+	j_scaled.SetPtEtaPhiM(j.Perp()*new_scale/old_scale, j.Eta(), j.Phi(), j.M());
+
+	// optionally up or downscale jet: JES uncertainty is a function of corrected Pt
+	if(fJESUpDown== 1) j_scaled.SetPtEtaPhiM(j_scaled.Perp()*(1+GetJECUncertCalo(j_scaled.Pt(),j_scaled.Eta())), j_scaled.Eta(), j_scaled.Phi(), j_scaled.M());
+	if(fJESUpDown==-1) j_scaled.SetPtEtaPhiM(j_scaled.Perp()*(1-GetJECUncertCalo(j_scaled.Pt(),j_scaled.Eta())), j_scaled.Eta(), j_scaled.Phi(), j_scaled.M());
 	return j_scaled;
 }
 
@@ -1102,10 +1223,24 @@ float MT2Analysis::GetJECUncertCalo(float pt, float eta){
 	fJecUncCalo->setJetPt(pt);
 	fJecUncCalo->setJetEta(eta);
 	float uncert= fJecUncCalo->getUncertainty(true);
-	if     (fabs(eta) <=1.5)  uncert = sqrt(uncert*uncert + 0.02*0.02);
-	else if(fabs(eta) <=3.0)  uncert = sqrt(uncert*uncert + 0.06*0.06);
-	else if(fabs(eta) <=5.0)  uncert = sqrt(uncert*uncert + 0.20*0.20);
 	return uncert; 
+}
+
+float MT2Analysis::GetCaloJEC(float corrpt, float scale, float eta, int level){
+	fJetCorrectorCalo->setJetEta(eta);
+	fJetCorrectorCalo->setJetPt(corrpt/scale); // WARNING: JEC is a function of RAW pt
+	
+	vector<float> factors = fJetCorrectorCalo->getSubCorrections();
+	// convention for correction factors as follows: 0->L2, 1->L2L3, 2->L2L3+RES
+	// see MT2Analysis::Initialize_JetEnergyCorrection()
+	
+	if     (level==2)     return factors[0];
+	else if(level==23)    return factors[1];
+	else if(level==230)   return factors[2];
+	else {
+		cout << "ERROR: convention for correction factors as follows: 0->L2, 1->L2L3, 2->L2L3+RES" << endl;
+		exit(-1);	
+	}
 }
 
 // pfMET 

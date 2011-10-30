@@ -2,7 +2,7 @@ ROOTCFLAGS     = $(shell root-config --cflags)
 ROOTLIBS       = $(shell root-config --libs)
 ROOTGLIBS      = $(shell root-config --glibs)
 
-INCLUDES       = -I./include -I../TESCO/include -I${CMSSW_RELEASE_BASE}/src/CondFormats/JetMETObjects/interface
+INCLUDES       = -I./include -I../TESCO/include -I${CMSSW_RELEASE_BASE}/src/CondFormats/JetMETObjects/interface -I${CMSSW_RELEASE_BASE}/src/
 
 CXX            = g++
 CXXFLAGS       = -g -fPIC -Wno-deprecated -D_GNU_SOURCE -O2 $(INCLUDES) 
@@ -15,7 +15,7 @@ SOFLAGS        = -O --no_exceptions -shared   -flat_namespace
 CXXFLAGS      += $(ROOTCFLAGS)
 LIBS           = $(ROOTLIBS) 
 
-NGLIBS         = $(ROOTGLIBS) -lMinuit -lMinuit2 -lTreePlayer -L${CMSSW_RELEASE_BASE}/lib/slc5_amd64_gcc434 -lFWCoreFWLite -lCondFormatsJetMETObjects  
+NGLIBS         = $(ROOTGLIBS) -lMinuit -lMinuit2 -lTreePlayer -L${CMSSW_RELEASE_BASE}/lib/slc5_amd64_gcc434 -lFWCoreFWLite -lCondFormatsJetMETObjects
 GLIBS          = $(filter-out -lNew, $(NGLIBS))
 
 SRCS           = ../TESCO/src/base/TreeClassBase.C ../TESCO/src/base/TreeReader.cc ../TESCO/src/base/TreeAnalyzerBase.cc ../TESCO/src/base/UserAnalysisBase.cc \
@@ -197,7 +197,6 @@ src/MT2Analysis.o: /usr/include/bits/mathcalls.h
 src/MT2Analysis.o: ../TESCO/include/helper/TMctLib.h
 src/MT2Analysis.o: ../TESCO/include/helper/mctlib.h
 src/MT2Analysis.o: ../TESCO/include/helper/Hemisphere.hh ./include/MT2tree.hh
-src/MT2Analysis.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 ../TESCO/src/helper/TMctLib.o: ../TESCO/include/helper/TMctLib.h
 ../TESCO/src/helper/TMctLib.o: ../TESCO/include/helper/mctlib.h
 ../TESCO/src/helper/TMctLib.o: /usr/include/math.h /usr/include/features.h
@@ -284,7 +283,6 @@ src/MT2Analyzer.o: /usr/include/bits/mathcalls.h
 src/MT2Analyzer.o: ../TESCO/include/helper/TMctLib.h
 src/MT2Analyzer.o: ../TESCO/include/helper/mctlib.h
 src/MT2Analyzer.o: ../TESCO/include/helper/Hemisphere.hh ./include/MT2tree.hh
-src/MT2Analyzer.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 src/MassPlotter.o: ./include/MassPlotter.hh ./include/MT2tree.hh
 src/MassPlotter.o: ../TESCO/include/helper/Utilities.hh /usr/include/stdio.h
 src/MassPlotter.o: /usr/include/features.h /usr/include/sys/cdefs.h

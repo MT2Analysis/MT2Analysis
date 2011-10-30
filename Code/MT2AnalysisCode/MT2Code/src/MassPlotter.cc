@@ -2535,6 +2535,10 @@ void MassPlotter::loadSamples(const char* filename){
 			IN.getline(buffer, 200, '\n');
 			sscanf(buffer, "SName\t%s", StringValue);
 			s.sname = TString(StringValue);
+			
+			IN.getline(buffer, 200, '\n');
+			sscanf(buffer, "ShapeName\t%s", StringValue);
+			s.shapename = TString(StringValue);
 
 			IN.getline(buffer, 200, '\n');
 			sscanf(buffer, "File\t%s", StringValue);

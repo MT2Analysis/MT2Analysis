@@ -14,7 +14,7 @@ public:
 	MT2Analyzer(TTree *tree = 0);
 	virtual ~MT2Analyzer();
 	void BeginJob(TString filename="MassTree.root" , TString setofcuts="default",
-	              bool isData=false, string data_PileUp="", string mc_PileUp="");
+	              bool isData=false, string data_PileUp="", string mc_PileUp="", string JEC="");
 	void EndJob();
 	void Loop();
 	void SetMaxEvents(int a){fMaxEvents=a;}

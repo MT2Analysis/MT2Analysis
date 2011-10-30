@@ -17,6 +17,8 @@
 #include "MT2tree.hh"
 #include <TLorentzVector.h>
 #include "JetCorrectionUncertainty.h" 
+#include "JetCorrectorParameters.h" 
+#include "FactorizedJetCorrector.h" 
 
 static const int gNHemispheres = 4;
 static const int gNGenJets     = 20;
@@ -32,6 +34,9 @@ public:
 	void SetType(bool isData=false){
 		fisData=isData;
 	};
+
+	// redo JEC
+	void SetJEC(string JEC){fJEC=JEC;};
 	// parser
 	void ReadCuts(const char* SetofCuts);
 
@@ -49,8 +54,9 @@ private:
 
 	// data members-----------------------------------------
 	bool fisData;
-	int   fCounter;
+	int  fCounter;
 	bool fBasicMT2treeFilled;
+	string fJEC;
 
 	// vectors for jets and lepton indices
 	vector<int> fElecs;
@@ -140,14 +146,28 @@ private:
 	// jets
 	TLorentzVector Jet(int index);
 	TLorentzVector CAJet(int index);
-	TLorentzVector PFJetJESScaled(TLorentzVector j);
-	TLorentzVector CAJetJESScaled(TLorentzVector j);
+	TLorentzVector PFJetScaled(TLorentzVector j, float old_scale, float area, float rho);
+	TLorentzVector CAJetScaled(TLorentzVector j, float old_scale);
 	TLorentzVector MET();
 	float GetJECUncertPF(float pt, float eta);
 	float GetJECUncertCalo(float pt, float eta);
+	float GetPFJEC  (float corrpt, float scale, float eta, float area, float rho, int level);
+	float GetCaloJEC(float corrpt, float scale, float eta, int level);
 	void Initialize_JetCorrectionUncertainty();
+	void Initialize_JetEnergyCorrection();
 	JetCorrectionUncertainty *fJecUncPF;   
 	JetCorrectionUncertainty *fJecUncCalo; 
+
+	JetCorrectorParameters* fJecCaloL2;
+	JetCorrectorParameters* fJecCaloL3; 
+	JetCorrectorParameters* fJecCaloRES; 
+	JetCorrectorParameters* fJecPFL1;   
+	JetCorrectorParameters* fJecPFL2;   
+	JetCorrectorParameters* fJecPFL3;   
+	JetCorrectorParameters* fJecPFRES;  
+
+	FactorizedJetCorrector* fJetCorrectorPF;
+	FactorizedJetCorrector* fJetCorrectorCalo;
 
 };
 #endif

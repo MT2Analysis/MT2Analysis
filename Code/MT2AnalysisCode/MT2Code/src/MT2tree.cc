@@ -438,6 +438,8 @@ void MT2tree::Reset() {
   NJets            = 0;
   NTaus            = 0;
   NJetsIDLoose     = 0;
+  NJetsIDLoose40   = 0;
+  NJetsIDLoose50   = 0;
   NEles            = 0;
   NMuons           = 0;
   NGenLepts        = 0;
@@ -1912,32 +1914,32 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	}
 
 	logStream << " MT2 Info ---------------------------------------------------------------------------------------" << endl;
-	logStream << "  MT2 " << misc.MT2  << " simple MT2 (sqrt{pt1*pt2*(1+cos phi)}) " << SimpleMT2(true, 1) << " UTM " << hemi[1].UTM.Pt()         << endl;
+	logStream << "  MT2 " << misc.MT2  << " simple MT2 (sqrt{pt1*pt2*(1+cos phi)}) " << SimpleMT2(true, 1) << " UTM " << hemi[0].UTM.Pt()         << endl;
 	logStream << "  MET " << misc.MET  << " HT " << misc.HT << " SqrtSmin " << GetSqrtS(0,true,1,20,2.4,1)          << endl; 
-	logStream << "  Hemi-DPhi " << hemi[1].dPhi                                                                     << endl;
+	logStream << "  Hemi-DPhi " << hemi[0].dPhi                                                                     << endl;
 	logStream << "  PseudoJet1 "                                                                                    << endl;
-	logStream << "   Pt " << hemi[1].lv1.Pt() << " Eta " << hemi[1].lv1.Eta() << " Phi " << hemi[1].lv1.Phi() << " E " << hemi[1].lv1.E() << " M " << hemi[1].lv1.M() << endl; 
+	logStream << "   Pt " << hemi[0].lv1.Pt() << " Eta " << hemi[0].lv1.Eta() << " Phi " << hemi[0].lv1.Phi() << " E " << hemi[0].lv1.E() << " M " << hemi[0].lv1.M() << endl; 
 	logStream << "   Contributing Objects "                                                                             << endl;
 	for (int i=0; i<NJets; ++i){
-		if(hemi[1].jindices1[i]>=0) logStream << "    jet " << hemi[1].jindices1[i] << " with Pt " << jet[hemi[1].jindices1[i]].lv.Pt() << endl; 
+		if(hemi[0].jindices1[i]>=0) logStream << "    jet " << hemi[0].jindices1[i] << " with Pt " << jet[hemi[0].jindices1[i]].lv.Pt() << endl; 
 	}
 	for (int i=0; i<NEles; ++i){
-		if(hemi[1].eleindices1[i]>=0) logStream << "    ele " << hemi[1].eleindices1[i] << " with Pt " << ele[hemi[1].eleindices1[i]].lv.Pt() << endl; 
+		if(hemi[0].eleindices1[i]>=0) logStream << "    ele " << hemi[0].eleindices1[i] << " with Pt " << ele[hemi[0].eleindices1[i]].lv.Pt() << endl; 
 	}
 	for (int i=0; i<NMuons; ++i){
-		if(hemi[1].muoindices1[i]>=0) logStream << "    muo " << hemi[1].muoindices1[i] << " with Pt " << muo[hemi[1].muoindices1[i]].lv.Pt() << endl; 
+		if(hemi[0].muoindices1[i]>=0) logStream << "    muo " << hemi[0].muoindices1[i] << " with Pt " << muo[hemi[0].muoindices1[i]].lv.Pt() << endl; 
 	}
 	logStream << "  PseudoJet2 "                                                                                    << endl;
-	logStream << "   Pt " << hemi[1].lv2.Pt() << " Eta " << hemi[1].lv2.Eta() << " Phi " << hemi[1].lv2.Phi() << " E " << hemi[1].lv2.E() << " M " << hemi[1].lv2.M() << endl; 
+	logStream << "   Pt " << hemi[0].lv2.Pt() << " Eta " << hemi[0].lv2.Eta() << " Phi " << hemi[0].lv2.Phi() << " E " << hemi[0].lv2.E() << " M " << hemi[0].lv2.M() << endl; 
 	logStream << "   Contributing Objects "                                                                             << endl;
 	for (int i=0; i<NJets; ++i){
-		if(hemi[1].jindices2[i]>=0) logStream << "    jet " << hemi[1].jindices2[i] << " with Pt " << jet[hemi[1].jindices2[i]].lv.Pt() << endl; 
+		if(hemi[0].jindices2[i]>=0) logStream << "    jet " << hemi[0].jindices2[i] << " with Pt " << jet[hemi[0].jindices2[i]].lv.Pt() << endl; 
 	}
 	for (int i=0; i<NEles; ++i){
-		if(hemi[1].eleindices2[i]>=0) logStream << "    ele " << hemi[1].eleindices2[i] << " with Pt " << ele[hemi[1].eleindices2[i]].lv.Pt() << endl; 
+		if(hemi[0].eleindices2[i]>=0) logStream << "    ele " << hemi[0].eleindices2[i] << " with Pt " << ele[hemi[0].eleindices2[i]].lv.Pt() << endl; 
 	}
 	for (int i=0; i<NMuons; ++i){
-		if(hemi[1].muoindices2[i]>=0) logStream << "    muo " << hemi[1].muoindices2[i] << " with Pt " << muo[hemi[1].muoindices2[i]].lv.Pt() << endl; 
+		if(hemi[0].muoindices2[i]>=0) logStream << "    muo " << hemi[0].muoindices2[i] << " with Pt " << muo[hemi[0].muoindices2[i]].lv.Pt() << endl; 
 	}
 	if(!misc.isData){
 	logStream << " GenLevel Info --------------------------------------------------------------------------------"<< endl;

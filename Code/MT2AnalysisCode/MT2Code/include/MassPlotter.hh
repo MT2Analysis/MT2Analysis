@@ -71,6 +71,7 @@ public:
 	struct sample{
 		TString name;
 		TString sname;
+		TString shapename;
 		TString type;
 		TFile *file;
 		TTree *tree;

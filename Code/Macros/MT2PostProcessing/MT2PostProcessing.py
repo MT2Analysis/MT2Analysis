@@ -25,22 +25,25 @@ def MT2PostProcessing():
 	   the all subdirectories contraining MT2trees
 
 	Options:
-	 --skim=shlib: set path to shlib of MT2trees that was used to generate the MT2trees. 
-	               make sure the shlib corresponds to the correct MT2tag!
-	               in case this option is set, the MT2trees will be skimmed according 
-		       to the cuts specified in 'MT2treeSkimming.C'
-	 --verbose:    set this option to get more prints
-	 --dryRun:     if this option is set, no jobs to the T3 batch system
-	               will be submitted. 
+	 --skim=shlib:    set path to shlib of MT2trees that was used to generate the MT2trees. 
+	                  make sure the shlib corresponds to the correct MT2tag!
+	                  in case this option is set, the MT2trees will be skimmed according 
+		          to the cuts specified in 'MT2treeSkimming.C'
+	 --prefix=PREFIX: prefix for skimmed MT2trees, default is "skimmed" 
+	 --verbose:       set this option to get more prints
+	 --dryRun:        if this option is set, no jobs to the T3 batch system
+	                  will be submitted. 
 
 	Example:
-	./MT2PostProcessing.py --skim=~/MT2Analysis/Code/MT2AnalysisCode_V01-00-00/MT2Code/shlib/libDiLeptonAnalysis.so [file]
+	./MT2PostProcessing.py --skim=~/MT2Analysis/Code/MT2AnalysisCode_V01-00-00/MT2Code/shlib/libDiLeptonAnalysis.so --prefix=skimmed_highMT2 [file]
 	with [file]=/store/user//pnef/SUSY/MassTrees/MT2_V01-00-00/20110915_MSSM_MC_nocuts/
 
 	"""
 	parser = OptionParser(usage)
 
 	parser.add_option("--skim"   ,dest="shlib",      help="shlib: path to shlib used to generate the MT2trees")
+	parser.add_option("--MT2tag" ,dest="tag",        help="MT2tag: to set the tag manually")
+	parser.add_option("--prefix" ,dest="prefix",     help="prefix: default is 'skimmed'")
 	parser.add_option("--verbose",dest="verbose",    help="set verbose", action="store_true")
 	parser.add_option("--dryRun", dest="dryRun",     help="dry Run: don't do anything", action="store_true")
 
@@ -60,12 +63,15 @@ def MT2PostProcessing():
 		print "creating dir 'logs' for log-files"
 		os.mkdir("logs")
 
-	MT2tag = FILE[FILE.find("/MT2_V")+1:FILE.find("/",FILE.find("/MT2_V")+1)]
-	if(len(MT2tag)!=13):
-		print "error parsing MT2_tag from argument"
-		exit(-1)
+	if not options.tag==None:
+		MT2tag = options.tag
 	else:
-		print "setting MT2tag= " +MT2tag
+		MT2tag = FILE[FILE.find("/MT2_V")+1:FILE.find("/",FILE.find("/MT2_V")+1)]
+		if(len(MT2tag)!=13):
+			print "error parsing MT2_tag from argument"
+			exit(-1)
+		else:
+			print "setting MT2tag= " +MT2tag
 	
 	# get list of files
 	t3_se_dir       ="srm://t3se01.psi.ch:8443/srm/managerv2?SFN=/pnfs/psi.ch/cms/trivcat/"
@@ -75,9 +81,10 @@ def MT2PostProcessing():
 		print output  
 	subdirs =output.splitlines()
 	if(len(subdirs) >1): subdirs.pop(0)  # remove base dir from list in case there are sub-directories 
+	subdirs.sort()
 
 	for subdir in subdirs:
-		command   ="srmls "+ t3_se_dir + subdir +" | grep .root | awk '{print $2}' | awk -F trivcat '{print $2}'"
+		command   ="srmls "+ t3_se_dir + subdir +" | grep .root | awk '{print $2}' | awk -F trivcat '{print $2}' | sort "
 		status, files  = commands.getstatusoutput(command)
 		if(options.verbose):
 			print files
@@ -92,6 +99,10 @@ def MT2PostProcessing():
 			cmd = cmd+ " " + options.shlib
 		else:
 			cmd = cmd+ " " + "none"
+		if(options.prefix!=None):
+			cmd = cmd+ " " + options.prefix
+		else:
+			cmd = cmd+ " " + "skimmed"
 		cmd = cmd + " "+ filelist
 		print cmd
 		if not options.dryRun:

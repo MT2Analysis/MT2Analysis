@@ -40,6 +40,8 @@ public:
   Float_t  SecondJPt;
   Float_t  Vectorsumpt;
   Float_t  MinMetJetDPhi;
+  Int_t    MinMetJetDPhiIndex;
+  Float_t  MinMetBJetDPhi;
   Float_t  HT;
   Float_t  QCDPartonicHT;
   Float_t  caloHT40;    
@@ -50,7 +52,7 @@ public:
   Float_t  TrackingFailure;
   Float_t  TrackingFailurePVtx;
   
-  ClassDef(MT2Misc, 24)
+  ClassDef(MT2Misc, 25)
 };
 
 

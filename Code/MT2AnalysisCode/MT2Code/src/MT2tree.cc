@@ -57,6 +57,8 @@ void MT2Misc::Reset() {
   caloMHT30       	  = -99999.99;
   caloMHT40       	  = -99999.99;
   MinMetJetDPhi           = -99999.99;
+  MinMetJetDPhiIndex      = -1;
+  MinMetBJetDPhi          = -99999.99;
   TrackingFailure         = -99999.99;
   TrackingFailurePVtx     = -99999.99;
 

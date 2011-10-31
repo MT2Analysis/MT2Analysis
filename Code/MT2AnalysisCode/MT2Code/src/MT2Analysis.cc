@@ -532,6 +532,8 @@ void MT2Analysis::FillMT2treeCalculations(){
 	// ----------------------------------------------------------------------------------
 	fMT2tree->misc.Vectorsumpt	   = fMT2tree->GetMHTminusMET(1, 20, 2.4, true); // including leptons, ID jets only
 	fMT2tree->misc.MinMetJetDPhi       = fMT2tree->MinMetJetDPhi(0,20,5.0,1);
+	fMT2tree->misc.MinMetJetDPhiIndex  = fMT2tree->MinMetJetDPhiIndex(0,20,5.0,1);
+	fMT2tree->misc.MinMetBJetDPhi      = fMT2tree->BJetMETdPhi(2,1.74,20,5,1);  // minmetjet dPhi w.r.t SSVHEM bjets with pt > 20 and no eta restriction. 
 	fMT2tree->misc.PassJetID           = fMT2tree->PassJetID(50,2.4,1);
 	if(fMT2tree->NJets > 0) {
 		fMT2tree->misc.Jet0Pass      = (Int_t) fMT2tree->jet[0].IsGoodPFJet(100,2.4,1);
@@ -1067,8 +1069,8 @@ bool MT2Analysis::IsGoodPFJetTightPAT3(int index, float ptcut, float absetacut) 
 
 // Jets and JES uncertainty
 void MT2Analysis::Initialize_JetCorrectionUncertainty(){
-	string Calo=fJEC+"/GR_R_42_V19_AK5PF_Uncertainty.txt";
-	string PF  =fJEC+"/GR_R_42_V19_AK5Calo_Uncertainty.txt";
+	string Calo=fJEC+"/AK5PF_Uncertainty.txt";
+	string PF  =fJEC+"/AK5Calo_Uncertainty.txt";
 
 	ifstream fileCalo(Calo.c_str());
 	ifstream filePF  (PF.c_str());
@@ -1082,13 +1084,13 @@ void MT2Analysis::Initialize_JetCorrectionUncertainty(){
 }
 
 void MT2Analysis::Initialize_JetEnergyCorrection(){
-	string Calo_L2  =fJEC+"/GR_R_42_V19_AK5Calo_L2Relative.txt";
-	string Calo_L3  =fJEC+"/GR_R_42_V19_AK5Calo_L3Absolute.txt";
-	string Calo_RES =fJEC+"/GR_R_42_V19_AK5Calo_L2L3Residual.txt";
-	string PF_L1    =fJEC+"/GR_R_42_V19_AK5PF_L1FastJet.txt";
-	string PF_L2    =fJEC+"/GR_R_42_V19_AK5PF_L2Relative.txt";
-	string PF_L3    =fJEC+"/GR_R_42_V19_AK5PF_L3Absolute.txt";
-	string PF_RES   =fJEC+"/GR_R_42_V19_AK5PF_L2L3Residual.txt";
+	string Calo_L2  =fJEC+"/AK5Calo_L2Relative.txt";
+	string Calo_L3  =fJEC+"/AK5Calo_L3Absolute.txt";
+	string Calo_RES =fJEC+"/AK5Calo_L2L3Residual.txt";
+	string PF_L1    =fJEC+"/AK5PF_L1FastJet.txt";
+	string PF_L2    =fJEC+"/AK5PF_L2Relative.txt";
+	string PF_L3    =fJEC+"/AK5PF_L3Absolute.txt";
+	string PF_RES   =fJEC+"/AK5PF_L2L3Residual.txt";
 
 	ifstream fileCaloL2  (Calo_L2.c_str());
 	ifstream fileCaloL3  (Calo_L3.c_str());

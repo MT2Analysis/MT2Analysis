@@ -818,6 +818,124 @@ void MassPlotter::PrintCutFlow(int njets, int nleps, TString trigger, TString cu
 
 }
 
+// MT2 vs HT cutflot  --------------------------------------------------------------------
+void MassPlotter::PrintCutFlowMT2vsHT(TString trigger, TString cuts){
+  
+  // define here the HT & MT2 sampling to be used
+  int   numHTbins   =  15;
+  float minHT       = 400;
+  float HTgridsize  =  50;
+  float minMT2cut   = 100;
+  float maxMT2cut   = 700;
+  float MT2gridsize =  25;
+  
+  const int   nProc      = 17;  
+  TString  cnames[nProc] = {"QCD", "W+jets", "Z+jets", "Top", "Other", "Total Bkg.", "data", "LM1", "LM2", "LM3", "LM4", "LM5", "LM8", "LM9", "LM11", "LM12", "LM13"};
+  Monitor Monitors[numHTbins][nProc];
+  Monitor counters[fSamples.size()];
+
+  // Loop over samples
+  for(size_t i = 0; i < fSamples.size(); ++i){
+
+    Double_t sample_weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents);
+    if(fVerbose>2) cout << "PrintCutFlow: looping over " << fSamples[i].name << endl;
+    if(fVerbose>2) cout << "              sample has weight " << sample_weight << " and input tree has " << fSamples[i].tree->GetEntries() << " entries" << endl; 
+
+    fMT2tree = new MT2tree();
+    fSamples[i].tree->SetBranchAddress("MT2tree", &fMT2tree);
+    Long64_t nentries =  fSamples[i].tree->GetEntries();
+    Long64_t nbytes = 0, nb = 0;
+    int nev =0;
+
+    // don't do anything for empty trees: (maybe tree already skimmed)
+    if (fSamples[i].tree->GetEntries()==0) continue;
+
+    //leo tweak - filtering out the TTree
+    TString myCuts = cuts;
+
+    if( fSamples[i].type=="data" && trigger!="") myCuts += " && " + trigger; //cuts to be aplied only on data
+    cout << "              Cuts for Flow: " << myCuts << endl;
+    fSamples[i].tree->Draw(">>selList", myCuts);
+
+
+    TEventList *myEvtList = (TEventList*)gDirectory->Get("selList");
+    fSamples[i].tree->SetEventList(myEvtList);
+    int counter=0;
+    cout << "              Filtering done, size=" <<myEvtList->GetN()  << endl;
+    
+    if(myEvtList->GetSize()==0) continue;
+    
+    // loop over entried in MT2trees
+    while(myEvtList->GetEntry(counter++) !=-1){
+      
+      int jentry = myEvtList->GetEntry(counter-1);
+      
+      nb =  fSamples[i].tree->GetEntry(jentry);   nbytes += nb;
+      fSamples[i].tree->SetBranchAddress("MT2tree", &fMT2tree);
+      
+      if ( fVerbose>2 && jentry % 50000 == 0 )  cout << "+++ Proccessing event " << jentry << endl;
+      
+      Double_t weight = sample_weight;
+      if (!fMT2tree->misc.isData ) weight = weight * fMT2tree->pileUp.Weight; // pile-up reweighting for MC 
+
+	counters[i].fill("All events",weight); // fill all events that pass selection, without MT2 cut
+	float MT2cut =minMT2cut; // initial cut on MT2
+	while(MT2cut <=maxMT2cut ){
+		if(fMT2tree->misc.MT2 >MT2cut){
+			TString cutname = TString::Format("MT2 > %.0f GeV",MT2cut);
+			counters[i].fill(cutname.Data(),weight);
+			for(int HTbin=0; HTbin< numHTbins; ++HTbin){
+				float HTcut = minHT + HTbin*HTgridsize;
+				if( fMT2tree->misc.HT > HTcut)   FillMonitor(Monitors[HTbin], fSamples[i].sname, fSamples[i].type,cutname.Data() , weight);
+			
+			}
+		}
+		MT2cut+=MT2gridsize;
+	}
+    }
+    delete fMT2tree;
+  }
+
+  std::ostringstream logStream;
+  // by sample, no HT cuts
+  logStream << setfill('=') << std::setw(70) << "" << std::endl;
+  logStream << "Statistics - by sample, no HT cut" << std::endl;
+  logStream << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;
+  for ( size_t i = 0; i < fSamples.size(); ++i){
+    logStream << "++++  " << fSamples[i].name << std::endl;  
+    logStream << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;    
+    logStream << counters[i];
+    logStream << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;    
+  }  
+  ofstream f_log ("Cutflow_bySample_defaultcuts.log", ios::app);
+  f_log << logStream.str();
+  logStream.str(""); // clear the ostringstream
+
+  for ( int HTbin =0; HTbin < numHTbins; ++HTbin){
+	  logStream << setfill('=') << std::setw(70) << "" << std::endl;
+	  TString HTcut= TString::Format("%.0f", minHT+HTbin*HTgridsize);
+	  logStream << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;
+	  logStream << "the following cuts were applied: " << std::endl;
+	  logStream << cuts                                << std::endl;
+ 	  logStream << "with pfHT > " << HTcut	<< " GeV " << std::endl;  
+	  logStream << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;
+	  logStream << "Statistics - by process (HT > " << HTcut << " GeV)" << std::endl;
+	  logStream << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;
+	  for ( size_t i = 0; i < nProc; ++i){
+	    logStream << "++++  " << cnames[i] << std::endl;  
+	    logStream << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;    
+	    logStream << Monitors[HTbin][i];
+	    logStream << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;    
+	  }  
+
+	TString cutflowlog = "Cutflow_HT" +HTcut + "_byProcess.log";
+	ofstream f_log (cutflowlog.Data(), ios::app);
+	f_log << logStream.str();
+	logStream.str(""); // clear the ostringstream
+  }
+
+}
+
 //________________________________________________________________________
 
 void MassPlotter::FillMonitor(Monitor *count, TString sname, TString type, TString cut, double weight){

@@ -126,6 +126,7 @@ public:
 	Bool_t HLT_HT450_v8;
 	Bool_t HLT_HT450_v9;
 	Bool_t HLT_HT500_v10;
+	Bool_t HLT_HT500_v11;
 	Bool_t HLT_HT500_v2;
 	Bool_t HLT_HT500_v3;
 	Bool_t HLT_HT500_v4;
@@ -135,6 +136,7 @@ public:
 	Bool_t HLT_HT500_v8;
 	Bool_t HLT_HT500_v9;
 	Bool_t HLT_HT550_v10;
+	Bool_t HLT_HT550_v11;
 	Bool_t HLT_HT550_v2;
 	Bool_t HLT_HT550_v3;
 	Bool_t HLT_HT550_v4;
@@ -146,9 +148,15 @@ public:
 	Bool_t HLT_HT600_v1;
 	Bool_t HLT_HT600_v2;
 	Bool_t HLT_HT600_v3;
+	Bool_t HLT_HT600_v4;
 	Bool_t HLT_HT650_v1;
 	Bool_t HLT_HT650_v2;
 	Bool_t HLT_HT650_v3;
+	Bool_t HLT_HT650_v4;
+	Bool_t HLT_HT700_v2;
+	Bool_t HLT_HT750_v3;
+	Bool_t HLT_HT750_L1FastJet_v3;
+	Bool_t HLT_PFHT650_v1;
 	// HT_MHT
 	Bool_t HLT_HT250_MHT60_v2;
 	Bool_t HLT_HT250_MHT60_v3;
@@ -174,12 +182,85 @@ public:
 	Bool_t HLT_HT350_MHT70_v2;
 	Bool_t HLT_HT350_MHT80_v1;
 	Bool_t HLT_HT350_MHT80_v2;
+	Bool_t HLT_HT350_MHT90_v1;
+	Bool_t HLT_HT350_MHT100_v3;
+	Bool_t HLT_HT400_MHT80_v1;
+	Bool_t HLT_HT400_MHT90_v3;
+	Bool_t HLT_PFHT350_PFMHT90_v1;
+	Bool_t HLT_PFHT350_PFMHT100_v1;
+        Bool_t HLT_PFHT400_PFMHT80_v1;
+        Bool_t HLT_PFHT400_PFMHT90_v1;
 	// Muons
 	Bool_t HLT_DoubleMu3_HT160_v2;
 	Bool_t HLT_Mu8_Jet40_v2;
 	Bool_t HLT_DoubleMu3_v3;
-	
-	ClassDef(MT2Trigger, 10);
+        // **** MET Dataset ****
+        // CentralJet+MET
+        Bool_t HLT_PFMHT150_v1;
+        Bool_t HLT_PFMHT150_v2;
+        Bool_t HLT_PFMHT150_v4;
+        Bool_t HLT_PFMHT150_v6;
+        Bool_t HLT_PFMHT150_v7;
+        Bool_t HLT_PFMHT150_v8;
+        Bool_t HLT_PFMHT150_v9;
+        Bool_t HLT_PFMHT150_v11;
+        Bool_t HLT_PFMHT150_v12;
+        Bool_t HLT_PFMHT150_v16;
+        Bool_t HLT_CentralJet80_MET65_v1;
+        Bool_t HLT_CentralJet80_MET65_v2;
+        Bool_t HLT_CentralJet80_MET65_v3;
+        Bool_t HLT_CentralJet80_MET65_v4;
+        Bool_t HLT_CentralJet80_MET65_v5;
+        Bool_t HLT_CentralJet80_MET65_v6;
+        Bool_t HLT_CentralJet80_MET65_v7;
+        Bool_t HLT_CentralJet80_MET65_v10;
+        Bool_t HLT_CentralJet80_MET80_v1;
+        Bool_t HLT_CentralJet80_MET80_v2;
+        Bool_t HLT_CentralJet80_MET80HF_v2;
+        Bool_t HLT_CentralJet80_MET80HF_v3;
+        Bool_t HLT_CentralJet80_MET80HF_v4;
+        Bool_t HLT_CentralJet80_MET80HF_v5;
+        Bool_t HLT_CentralJet80_MET80_v6;
+        Bool_t HLT_CentralJet80_MET80_v9;
+        Bool_t HLT_CentralJet80_MET95_v3;
+        Bool_t HLT_CentralJet80_MET110_v3;
+        Bool_t HLT_CentralJet80_MET100_v1;
+        Bool_t HLT_CentralJet80_MET100_v2;
+        Bool_t HLT_CentralJet80_MET100_v3;
+        Bool_t HLT_CentralJet80_MET100_v4;
+        Bool_t HLT_CentralJet80_MET100_v5;
+        Bool_t HLT_CentralJet80_MET100_v6;
+        Bool_t HLT_CentralJet80_MET100_v7;
+        // DiCentralJet+MET
+        Bool_t HLT_DiCentralJet20_MET80_v1;
+        Bool_t HLT_DiCentralJet20_MET80_v2;
+        Bool_t HLT_DiCentralJet20_MET80_v3;
+        Bool_t HLT_DiCentralJet20_MET80_v4;
+        Bool_t HLT_DiCentralJet20_MET80_v5;
+        Bool_t HLT_DiCentralJet20_MET80_v8;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v2;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v3;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v4;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v5;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v6;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v7;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v10;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v11;
+        Bool_t HLT_DiCentralJet20_MET100_HBHENoiseFiltered_v1;
+        Bool_t HLT_DiCentralJet20_MET100_HBHENoiseFiltered_v4;
+        Bool_t HLT_DiCentralPFJet30_PFMHT80_v1;
+        Bool_t HLT_DiCentralPFJet50_PFMHT80_v1;
+        // DiJet+MET
+        Bool_t HLT_DiJet60_MET45_v1;
+        Bool_t HLT_DiJet60_MET45_v2;
+        Bool_t HLT_DiJet60_MET45_v3;
+        Bool_t HLT_DiJet60_MET45_v4;
+        Bool_t HLT_DiJet60_MET45_v5;
+        Bool_t HLT_DiJet60_MET45_v6;
+        Bool_t HLT_DiJet60_MET45_v7;
+        Bool_t HLT_DiJet60_MET45_v10;
+
+	ClassDef(MT2Trigger, 11);
 };
 
 // MT2Znunu --------------------------------
@@ -435,6 +516,8 @@ public:
   Float_t MinMetJetDPhiL2L3 ();
   Float_t PseudoJetMetDPhi();
   Float_t GetPseudoJetMetDPhi(int hemi_index=1, int pj=1, int whichmet=1, float met=30);
+  Float_t GetPseudoJetsdPhi(int hemi_seed=2, int hemi_association=3, int PFJID=0, double minJPt=20, double maxJEta=2.4);
+  Float_t GetPseudoJetsdPhiOnline(int PFJID=0, double minJPt=20, double maxJEta=2.4);
   Float_t PseudoJetPtRatio(Bool_t inclMET, Bool_t vsHT);
   Float_t GetBJetDR(int algo, float value, float minJPt, float maxJEta, int PFJID);
   Float_t BJetMETdPhi(int algo, float value, float minJPt, float maxJEta, int PFJID);

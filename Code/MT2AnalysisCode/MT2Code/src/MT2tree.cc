@@ -136,6 +136,7 @@ void MT2Trigger::Reset(){
 	HLT_HT450_v8            = false;
 	HLT_HT450_v9            = false;
 	HLT_HT500_v10           = false;
+	HLT_HT500_v11           = false;
 	HLT_HT500_v2            = false;
 	HLT_HT500_v3            = false;
 	HLT_HT500_v4            = false;
@@ -145,6 +146,7 @@ void MT2Trigger::Reset(){
 	HLT_HT500_v8            = false;
 	HLT_HT500_v9            = false;
 	HLT_HT550_v10           = false;
+	HLT_HT550_v11           = false;
 	HLT_HT550_v2            = false;
 	HLT_HT550_v3            = false;
 	HLT_HT550_v4            = false;
@@ -156,9 +158,15 @@ void MT2Trigger::Reset(){
 	HLT_HT600_v1            = false;
 	HLT_HT600_v2            = false;
 	HLT_HT600_v3            = false;
+	HLT_HT600_v4            = false;
 	HLT_HT650_v1            = false;
 	HLT_HT650_v2            = false;
 	HLT_HT650_v3            = false;
+	HLT_HT650_v4            = false;
+	HLT_HT700_v2            = false;
+	HLT_HT750_v3            = false;
+	HLT_HT750_L1FastJet_v3  = false;
+	HLT_PFHT650_v1          = false;
 	// HT_MHT
 	HLT_HT250_MHT60_v2      = false;
 	HLT_HT250_MHT60_v3      = false;
@@ -184,10 +192,82 @@ void MT2Trigger::Reset(){
 	HLT_HT350_MHT70_v2      = false;
 	HLT_HT350_MHT80_v1      = false;
 	HLT_HT350_MHT80_v2      = false;
+	HLT_HT350_MHT90_v1      = false;
+	HLT_HT350_MHT100_v3     = false;
+	HLT_HT400_MHT80_v1      = false;
+	HLT_HT400_MHT90_v3      = false;
+	HLT_PFHT350_PFMHT90_v1  = false;
+	HLT_PFHT350_PFMHT100_v1 = false;
+        HLT_PFHT400_PFMHT80_v1  = false;
+        HLT_PFHT400_PFMHT90_v1  = false;
 	// Muons
 	HLT_DoubleMu3_HT160_v2  = false;
 	HLT_Mu8_Jet40_v2        = false;
 	HLT_DoubleMu3_v3        = false;
+        // **** MET Dataset ****
+        // CentralJet+MET
+        HLT_PFMHT150_v1             = false;
+        HLT_PFMHT150_v2             = false;
+        HLT_PFMHT150_v4             = false;
+        HLT_PFMHT150_v6             = false;
+        HLT_PFMHT150_v7             = false;
+        HLT_PFMHT150_v8             = false;
+        HLT_PFMHT150_v9             = false;
+        HLT_PFMHT150_v11            = false;
+        HLT_PFMHT150_v12            = false;
+        HLT_PFMHT150_v16            = false;
+        HLT_CentralJet80_MET65_v1   = false;
+        HLT_CentralJet80_MET65_v2   = false;
+        HLT_CentralJet80_MET65_v3   = false;
+        HLT_CentralJet80_MET65_v4   = false;
+        HLT_CentralJet80_MET65_v5   = false;
+        HLT_CentralJet80_MET65_v6   = false;
+        HLT_CentralJet80_MET65_v7   = false;
+        HLT_CentralJet80_MET65_v10  = false;
+        HLT_CentralJet80_MET80_v1   = false;
+        HLT_CentralJet80_MET80_v2   = false;
+        HLT_CentralJet80_MET80HF_v2 = false;
+        HLT_CentralJet80_MET80HF_v3 = false;
+        HLT_CentralJet80_MET80HF_v4 = false;
+        HLT_CentralJet80_MET80HF_v5 = false;
+        HLT_CentralJet80_MET80_v6   = false;
+        HLT_CentralJet80_MET80_v9   = false;
+        HLT_CentralJet80_MET95_v3   = false;
+        HLT_CentralJet80_MET110_v3  = false;
+        HLT_CentralJet80_MET100_v1  = false;
+        HLT_CentralJet80_MET100_v2  = false;
+        HLT_CentralJet80_MET100_v3  = false;
+        HLT_CentralJet80_MET100_v4  = false;
+        HLT_CentralJet80_MET100_v5  = false;
+        HLT_CentralJet80_MET100_v6  = false;
+        HLT_CentralJet80_MET100_v7  = false;
+        // DiCentralJet+MET
+        HLT_DiCentralJet20_MET80_v1 = false;
+        HLT_DiCentralJet20_MET80_v2 = false;
+        HLT_DiCentralJet20_MET80_v3 = false;
+        HLT_DiCentralJet20_MET80_v4 = false;
+        HLT_DiCentralJet20_MET80_v5 = false;
+        HLT_DiCentralJet20_MET80_v8 = false;
+        HLT_DiCentralJet20_BTagIP_MET65_v2  = false;
+        HLT_DiCentralJet20_BTagIP_MET65_v3  = false;
+        HLT_DiCentralJet20_BTagIP_MET65_v4  = false;
+        HLT_DiCentralJet20_BTagIP_MET65_v5  = false;
+        HLT_DiCentralJet20_BTagIP_MET65_v6  = false;
+        HLT_DiCentralJet20_BTagIP_MET65_v7  = false;
+        HLT_DiCentralJet20_BTagIP_MET65_v10 = false;
+        HLT_DiCentralJet20_BTagIP_MET65_v11 = false;
+        HLT_DiCentralJet20_MET100_HBHENoiseFiltered_v1 = false;
+        HLT_DiCentralJet20_MET100_HBHENoiseFiltered_v4 = false;
+        HLT_DiCentralPFJet30_PFMHT80_v1 = false;
+        HLT_DiCentralPFJet50_PFMHT80_v1 = false;
+        HLT_DiJet60_MET45_v1            = false;
+        HLT_DiJet60_MET45_v2            = false;
+        HLT_DiJet60_MET45_v3            = false;
+        HLT_DiJet60_MET45_v4            = false;
+        HLT_DiJet60_MET45_v5            = false;
+        HLT_DiJet60_MET45_v6            = false;
+        HLT_DiJet60_MET45_v7            = false;
+        HLT_DiJet60_MET45_v10           = false;
 }
 
 
@@ -809,6 +889,93 @@ Float_t MT2tree::PseudoJetMetDPhi(){
 	return (fabs(dPhi1) < fabs(dPhi2)) ? fabs(dPhi1) : fabs(dPhi2);
 }
 
+// Pseudojets-DPhi ------------------------------------------------------------
+Float_t MT2tree::GetPseudoJetsdPhi(int hemi_seed, int hemi_association, int PFJID, double minJPt, double maxJEta){
+  vector<float> px, py, pz, E;
+  for(int i=0; i<NJets; ++i){
+	if(jet[i].IsGoodPFJet(minJPt, maxJEta, PFJID) ==false) continue;
+  	px.push_back(jet[i].lv.Px());
+	py.push_back(jet[i].lv.Py());
+	pz.push_back(jet[i].lv.Pz());
+	 E.push_back(jet[i].lv.E());
+  }
+  if (px.size()<2) return -999;
+
+  // get hemispheres (seed 2: max inv mass, association method: default 3 = minimal lund distance)
+  Hemisphere* hemi = new Hemisphere(px, py, pz, E, hemi_seed, hemi_association);
+  vector<int> grouping = hemi->getGrouping();
+
+  TLorentzVector pseudojet1(0.,0.,0.,0.);
+  TLorentzVector pseudojet2(0.,0.,0.,0.);
+	
+  for(int i=0; i<px.size(); ++i){
+	if(grouping[i]==1){
+		pseudojet1.SetPx(pseudojet1.Px() + px[i]);
+		pseudojet1.SetPy(pseudojet1.Py() + py[i]);
+		pseudojet1.SetPz(pseudojet1.Pz() + pz[i]);
+		pseudojet1.SetE( pseudojet1.E()  + E[i]);	
+	}else if(grouping[i] == 2){
+		pseudojet2.SetPx(pseudojet2.Px() + px[i]);
+		pseudojet2.SetPy(pseudojet2.Py() + py[i]);
+		pseudojet2.SetPz(pseudojet2.Pz() + pz[i]);
+		pseudojet2.SetE( pseudojet2.E()  + E[i]);
+	}
+  }
+  delete hemi;
+  return Util::DeltaPhi(pseudojet1.Phi(), pseudojet2.Phi());
+}
+
+// Pseudojets-DPhi - trigger implementation ---------------------------------------------------
+Float_t MT2tree::GetPseudoJetsdPhiOnline(int PFJID, double minJPt, double maxJEta){
+  vector<TLorentzVector> JETS;
+  for(int i=0; i<NJets; ++i){
+    //if(jet[i].IsGoodPFJet(minJPt, maxJEta, PFJID) ==false) continue;
+  	JETS.push_back(jet[i].lv);
+  }
+
+  int N_comb(1); // compute the number of combinations of jets possible
+  for(unsigned int i = 0; i < JETS.size(); i++){
+    N_comb *= 2;                
+  }
+  //Make the hemispheres
+  TLorentzVector j1R(0.1, 0., 0., 0.1);
+  TLorentzVector j2R(0.1, 0., 0., 0.1);
+  double M_minR = 9999999999.0;
+  int j_count;
+  for (int i = 0; i < N_comb; i++) {       
+    TLorentzVector j_temp1, j_temp2;
+    int itemp = i;
+    j_count = N_comb/2;
+    int count = 0;
+    while (j_count > 0) {
+      if (itemp/j_count == 1){
+	j_temp1 += JETS.at(count);
+      } else {
+	j_temp2 += JETS.at(count);
+      }
+      itemp -= j_count * (itemp/j_count);
+      j_count /= 2;
+      count++;
+    }
+    double M_temp = j_temp1.M2() + j_temp2.M2();
+    if (M_temp < M_minR) {
+      M_minR = M_temp;
+      j1R = j_temp1; 
+      j2R = j_temp2; 
+    }
+  }
+  double phi1 = j1R.Phi(), phi2 = j2R.Phi();
+
+  //double dphi = Util::DeltaPhi(phi1, phi2);
+
+  double dphi = 50.;
+  double diff = fabs(phi2-phi1);
+  double corr = 2*acos(-1.) - diff;
+  dphi =  (diff < acos(-1.)) ? diff : corr; 
+
+  return dphi;
+}
+
 // PseudoJetPtRatio -----------------------------------------------
 Float_t MT2tree::PseudoJetPtRatio(Bool_t inclMET, Bool_t vsHT){
 	if(! inclMET && !vsHT){
@@ -894,8 +1061,8 @@ Float_t MT2tree::BJetMETdPhi(int algo, float value, float minJPt, float maxJEta,
 	if(minDPhi==10) return -999.99;
 	else            return minDPhi;
 
-
 }
+
 // ----------------------------------------------------------------
 // HT and friends
 Float_t MT2tree::GetHT(int PFJID, float minJPt, float maxJEta){

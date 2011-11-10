@@ -22,7 +22,7 @@ def MT2PostProcessing():
 	Argument:
 	file=lfn of the sample on the T3 SE
 	-> in case the specified path contains subdirectories, the script will process
-	   the all subdirectories contraining MT2trees
+	   all the subdirectories contraining MT2trees (here you can wildcard subdirectories)
 
 	Options:
 	 --skim=shlib:    set path to shlib of MT2trees that was used to generate the MT2trees. 
@@ -33,10 +33,11 @@ def MT2PostProcessing():
 	 --verbose:       set this option to get more prints
 	 --dryRun:        if this option is set, no jobs to the T3 batch system
 	                  will be submitted. 
+	 --rootFile:   process only given root files (accepts wildcards)
 
 	Example:
-	./MT2PostProcessing.py --skim=~/MT2Analysis/Code/MT2AnalysisCode_V01-00-00/MT2Code/shlib/libDiLeptonAnalysis.so --prefix=skimmed_highMT2 [file]
-	with [file]=/store/user//pnef/SUSY/MassTrees/MT2_V01-00-00/20110915_MSSM_MC_nocuts/
+	./MT2PostProcessing.py --skim=~/MT2Analysis/Code/MT2AnalysisCode_V01-00-00/MT2Code/shlib/libDiLeptonAnalysis.so --prefix=skimmed_highMT2 [file]  --rootFile=myfile*.root
+	with [file]=/store/user//pnef/SUSY/MassTrees/MT2_V01-00-00/20110915_MSSM_MC_nocuts/QCD*/
 
 	"""
 	parser = OptionParser(usage)
@@ -45,7 +46,8 @@ def MT2PostProcessing():
 	parser.add_option("--MT2tag" ,dest="tag",        help="MT2tag: to set the tag manually")
 	parser.add_option("--prefix" ,dest="prefix",     help="prefix: default is 'skimmed'")
 	parser.add_option("--verbose",dest="verbose",    help="set verbose", action="store_true")
-	parser.add_option("--dryRun", dest="dryRun",     help="dry Run: don't do anything", action="store_true")
+	parser.add_option("--dryRun", dest="dryRun",     help="dry Run: do not do anything", action="store_true")
+	parser.add_option("--rootFile", dest="rootFile", help="rootFile: choose root files to process (accepts wildcards)")
 
 	global options, args, MT2tag
 	(options, args) = parser.parse_args()
@@ -53,7 +55,7 @@ def MT2PostProcessing():
 	if(options.verbose): print options
 	
 	if(len(args)!=1):
-		print "exactly one argument must be given!"
+	        print "exactly one argument must be given!"
 		print "try --help option"
 		exit(-1)
 
@@ -74,20 +76,33 @@ def MT2PostProcessing():
 			print "setting MT2tag= " +MT2tag
 	
 	# get list of files
+	WILDCARD = ""
+	if (FILE.find("*")!=-1):
+	        indx = FILE.rfind("/",0,FILE.find("*"))
+		WILDCARD = FILE[indx+1:].replace("*",".*")
+		FILE = FILE[0:indx]
 	t3_se_dir       ="srm://t3se01.psi.ch:8443/srm/managerv2?SFN=/pnfs/psi.ch/cms/trivcat/"
-	command   ="srmls "+ t3_se_dir + FILE+ " | grep -v .root | awk '{print $2}' | awk -F trivcat '{print $2}'"
+	if (WILDCARD!=""):
+	        command   ="srmls "+ t3_se_dir + FILE+ " | grep -v .root | grep '" + WILDCARD + "' | awk '{print $2}' | awk -F trivcat '{print $2}'"
+	else:
+	        command   ="srmls "+ t3_se_dir + FILE+ " | grep -v .root | awk '{print $2}' | awk -F trivcat '{print $2}'"
 	status, output  = commands.getstatusoutput(command)
-	if options.verbose: 
+	if options.verbose:
+	        print command
 		print output  
 	subdirs =output.splitlines()
 	if(len(subdirs) >1): subdirs.pop(0)  # remove base dir from list in case there are sub-directories 
 	subdirs.sort()
 
 	for subdir in subdirs:
-		command   ="srmls "+ t3_se_dir + subdir +" | grep .root | awk '{print $2}' | awk -F trivcat '{print $2}' | sort "
+	        if (options.rootFile!=None):
+		        command   ="srmls "+ t3_se_dir + subdir +" | grep .root | grep '" + options.rootFile.replace('*','.*') + "' | awk '{print $2}' | awk -F trivcat '{print $2}' | sort "
+		else:
+		        command   ="srmls "+ t3_se_dir + subdir +" | grep .root | awk '{print $2}' | awk -F trivcat '{print $2}' | sort "
 		status, files  = commands.getstatusoutput(command)
 		if(options.verbose):
 			print files
+			print command
 			print ""
 		filelist =""
 		for file in files.splitlines():

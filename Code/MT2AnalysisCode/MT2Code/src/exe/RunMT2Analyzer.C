@@ -20,6 +20,7 @@ void usage( int status = 0 ) {
 	cout << "                      [-m set_of_cuts] [-n maxEvents] [-t type]                      " << endl;
 	cout << "                      [-p data_PileUp] [-P mc_PileUP]                                " << endl; 
         cout << "                      [-s S3,noPU] [-C JEC]                                          " << endl;
+	cout << "                      [-r photon ] [-i ID ]                                          " << endl;
 	cout << "                      [-l] file1 [... filen]"                                          << endl;
 	cout << "  where:"                                                                              << endl;
 	cout << "     dir           is the output directory                                           " << endl;
@@ -34,6 +35,9 @@ void usage( int status = 0 ) {
 	cout << "     mc_PileUP     root file from which the generated # pile up                      " << endl;
 	cout << "                   interactions is read                                              " << endl;
 	cout << "     type          data or mc=default                                                " << endl;
+	cout << "     photon        add Photon to MET and remove jets/ele matched to photon           " << endl;
+	cout << "     ID            ProcessID: 0=data, 1=Znunu, 2=Zll, 3=WJets, 4=Top,                " << endl;
+	cout << "                              5=Gamma+jets, 6=QCD ,[empty], 9=Other, 10=Signal       " << endl;
 	cout << "     JEC           redo JEC: dir of JEC to be used                                   " << endl;
 	cout << "                   /shome/pnef/MT2Analysis/Code/JetEnergyCorrection/[JEC]            " << endl;
 	cout << "                   ak5 pf-jets will be corrected with L1FastL2L3 (+RES if type=data) " << endl;
@@ -56,26 +60,31 @@ int main(int argc, char* argv[]) {
 	string  data_PileUp = "";
 	string  mc_PileUp = "";
 	string  type = "mc";
-	string  JEC="";
-	bool isData = false;
+	string  JEC  ="";
+	bool isData  = false;
 	int verbose  = 0;
 	int maxEvents=-1;
-	bool isS3 = false;
-	bool noPU = false;
+	int ID       =-1;
+	bool isS3    = false;
+	bool noPU    = false;
+	bool removePhoton = false;
+	string photon = "";
 
 // Parse options
 	char ch;
-	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:C:lh?")) != -1 ) {
+	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:r:i:C:lh?")) != -1 ) {
 	  switch (ch) {
-	  case 'd': outputdir       = TString(optarg); break;
-	  case 'o': filename        = TString(optarg); break;
-	  case 'v': verbose         = atoi(optarg); break;
+	  case 'd': outputdir       = TString(optarg);break;
+	  case 'o': filename        = TString(optarg);break;
+	  case 'v': verbose         = atoi(optarg);   break;
 	  case 'j': jsonFileName    = string(optarg); break;
-	  case 'm': setofcuts       = TString(optarg); break;
-	  case 'n': maxEvents       = atoi(optarg); break;
+	  case 'm': setofcuts       = TString(optarg);break;
+	  case 'n': maxEvents       = atoi(optarg);   break;
 	  case 'p': data_PileUp     = string(optarg); break;
 	  case 'P': mc_PileUp       = string(optarg); break;
 	  case 't': type            = string(optarg); break;
+	  case 'r': photon          = string(optarg); break;
+	  case 'i': ID              = atoi(optarg);   break;
 	  case 's': puScenario      = string(optarg); break;
           case 'C': JEC             = "/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+string(optarg)+"/"; break;
 	  case 'l': isList          = true; break;
@@ -98,8 +107,9 @@ int main(int argc, char* argv[]) {
 	if      (type=="data") isData =true;
 	else if (type=="mc"  ) isData =false;
 	else    usage(-1);
+	if      (photon == "photon") removePhoton=true;
 	if      (!isData && data_PileUp.length()==0  ) {
-		cout << "WARNING: need data_PileUp to run on MC " << endl;
+		cout << "                        WARNING: need data_PileUp to run on MC " << endl;
 	}
 	if      ( isData && (data_PileUp.length() >0 || mc_PileUp.length() >0)  ) {
 		cout << "ERROR: you are running on data, no reweighting needed... " << endl; exit(-1);
@@ -144,14 +154,19 @@ int main(int argc, char* argv[]) {
 	if(JEC.length()!=0){
 	cout << "Redo JEC with set               " << JEC << endl;
 	}
+	if(removePhoton){
+	cout << "WARNING: Photon is added to MET and jet/ele match to photon is removed!!" << endl;
+	}
 	cout << "--------------" << endl;
 
 	MT2Analyzer *tA = new MT2Analyzer(theChain);
 	tA->SetOutputDir(outputdir);
 	tA->SetVerbose(verbose);
 	tA->SetMaxEvents(maxEvents);
+	tA->SetProcessID(ID);
 	tA->isS3 = isS3;
 	tA->noPU = noPU;
+	tA->removePhoton = removePhoton;
   	if (jsonFileName!="") tA->ReadJSON(jsonFileName.c_str());
 	tA->BeginJob(filename, setofcuts, isData, data_PileUp, mc_PileUp, JEC);
 	tA->Loop();

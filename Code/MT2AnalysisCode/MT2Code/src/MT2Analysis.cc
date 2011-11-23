@@ -21,11 +21,15 @@ MT2Analysis::MT2Analysis(TreeReader *tr) : UserAnalysisBase(tr){
 	fDoJESUncertainty                   = false;
 	fJESUpDown                          = 0;
 
+	fRemovePhoton                       = 0;
+	fID                                 = -1;
+
 	fRequiredHLT.clear();
 	fVetoedHLT.clear();
 	
 	fBEfiles.clear();
 	fTPfiles.clear();
+
 }
 
 MT2Analysis::~MT2Analysis(){
@@ -309,6 +313,7 @@ void MT2Analysis::Analyze(){
 	// Fill complicated MT2tree variables;
 	if(basicfilled) FillMT2treeCalculations();
 
+
 	// FillTree
 	FillTree();
 }
@@ -333,9 +338,10 @@ void MT2Analysis::FillTree(){
 
 bool MT2Analysis::FillMT2TreeBasics(){
 	// check size of jets electrons muons and genleptons
-	if(fJets.size()   > 25) {cout << "ERROR: fJets.size()   > 25: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
-	if(fElecs.size()  > 5 ) {cout << "ERROR: fElecs.size()  >  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
-	if(fMuons.size()  > 5 ) {cout << "ERROR: fMuons.size()  >  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(fJets.size()     > 25) {cout << "ERROR: fJets.size()   > 25: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(fElecs.size()    > 5 ) {cout << "ERROR: fElecs.size()  >  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(fMuons.size()    > 5 ) {cout << "ERROR: fMuons.size()  >  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(fPhotons.size()  > 5 ) {cout << "ERROR: fPhotons.size()>  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
 
 	// ---------------------------------------------------------------
 	// Fill jets 4-momenta & ID's 
@@ -390,6 +396,25 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->jet[jindex].TauDPt     = fMT2tree->jet[jindex].lv.Pt()-tau.Pt();
 	}
 
+	// -----------------------------------------------------------------
+	// Photons
+	for(int i=0; i<fPhotons.size(); ++i){
+		fMT2tree->photon[i].lv.SetPtEtaPhiM(fTR->PhoPt[fPhotons[i]], fTR->PhoEta[fPhotons[i]], fTR->PhoPhi[fPhotons[i]], 0.);
+		fMT2tree->photon[i].TrkIso              =fTR->PhoIso04TrkHollow[fPhotons[i]]; 
+		fMT2tree->photon[i].EcalIso             =fTR->PhoIso04Ecal[fPhotons[i]];
+		fMT2tree->photon[i].HcalIso             =fTR->PhoIso04Hcal[fPhotons[i]];
+		fMT2tree->photon[i].SigmaIEtaIEta       =fTR->PhoSigmaIetaIeta[fPhotons[i]];
+		fMT2tree->photon[i].HoverE              =fTR->PhoHoverE[fPhotons[i]];
+		fMT2tree->photon[i].isEGMloose          =IsGoodPhotonEGMLoose(fPhotons[i]);
+		fMT2tree->photon[i].JetRemoved          =fPhotonJetOverlapRemoved[i];
+		fMT2tree->photon[i].MCmatchexitcode     =fTR->PhoMCmatchexitcode[fPhotons[i]]; 
+		// exit code meaning:  
+		//                     0 = matched to particle that is not a photon -> fake
+		//                     1 = photon  with status 3 quark or gluon as mother (hard scatter) (gluon happens, though gamma does not have color..)
+		//                     2 = PromptPhoton with status 3 photon as mother,  
+		//                     3 = other particle, i.e. showering.. 
+		//                     negative values: no MC match. 
+	}
 	
 	// ---------------------------------------------------------------
 	// Set NJets, NElecs, NMuons
@@ -400,6 +425,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	fMT2tree->SetNEles         ((Int_t)fElecs.size());
 	fMT2tree->SetNMuons        ((Int_t)fMuons.size());
 	fMT2tree->SetNTaus         ((Int_t)fTaus.size());
+	fMT2tree->SetNPhotons      ((Int_t)fPhotons.size());
 	fMT2tree->NJetsIDLoose40 = fMT2tree->GetNjets(40, 2.4, 1);
 	fMT2tree->NJetsIDLoose50 = fMT2tree->GetNjets(50, 2.4, 1);
 	
@@ -499,11 +525,15 @@ bool MT2Analysis::FillMT2TreeBasics(){
 			}
 		}
 	}
+	// add GenPhotons
 	fMT2tree->NGenLepts = NGenLepts;
+
 
 	// --------------------------------------------------------------------
 	// MET 
 	fMT2tree->pfmet[0]=MET();
+	// raw, uncorrected and not modified pfmet
+	fMT2tree->rawpfmet[0].SetPtEtaPhiM(fTR->PFMETPAT, 0, fTR->PFMETPATphi, 0);
 
 	// Pile UP info and reco vertices
 	if(!fisData){
@@ -565,6 +595,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	// ------------------------------------------------------------------
 	// fill misc 
 	fMT2tree->misc.isData              = fisData;
+	fMT2tree->misc.ProcessID           = fID;
 	fMT2tree->misc.Run                 = fTR->Run;
 	fMT2tree->misc.Event		   = fTR->Event;
 	fMT2tree->misc.LumiSection	   = fTR->LumiSection;
@@ -588,6 +619,35 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	if(fTR->fChain->GetBranch("CSCTightHaloID")       !=NULL) fMT2tree->misc.CSCTightHaloID        = fTR->CSCTightHaloID;                  // Branch added in ntuple V02-04-00
 	if(fTR->fChain->GetBranch("RecovRecHitFilterFlag")!=NULL) fMT2tree->misc.RecovRecHitFilterFlag = (fTR->RecovRecHitFilterFlag==1)? 0:1; // Branch added in ntuple V02-04-06	
 	if(fTR->fChain->GetBranch("HBHENoiseFlagIso")     !=NULL) fMT2tree->misc.HBHENoiseFlagIso      = (fTR->HBHENoiseFlagIso==1)     ? 0:1; // Branch added in ntuple V02-04-06 
+	
+	// add gen photon
+	if(fTR->fChain->GetBranch("NGenPhotons") !=NULL && !fisData){
+		TLorentzVector photon(0,0,0,0);			
+		for(int i=0; i<fTR->NGenPhotons; ++i){
+			// mother status ==3 means mother takes part in hard statter: 
+			// this means the mother can be photon itself or e.g. quark
+			if(fTR->GenPhotonMotherStatus[i]==3) { 
+				photon.SetPtEtaPhiM(fTR->GenPhotonPt[i], fTR->GenPhotonEta[i],fTR->GenPhotonPhi[i],0);
+				break;
+			} 
+		}
+		fMT2tree->GenPhoton[0]=photon;
+	}
+	// add gen Z
+	vector<int> indices;
+	for(int i=0; i<fTR->NGenLeptons; ++i){
+		int ID  =abs(fTR->GenLeptonID[i]);
+		int MID =fTR->GenLeptonMID[i];
+		if((ID == 11 || ID == 12 || ID == 13 || ID == 14 || ID == 15 || ID == 16) && MID==23){
+			indices.push_back(i);
+		} 
+	}
+	if(indices.size()==2){
+		TLorentzVector l1(0,0,0,0), l2(0,0,0,0);
+		l1.SetPtEtaPhiM(fTR->GenLeptonPt[indices[0]], fTR->GenLeptonEta[indices[0]],fTR->GenLeptonPhi[indices[0]],0);
+		l2.SetPtEtaPhiM(fTR->GenLeptonPt[indices[1]], fTR->GenLeptonEta[indices[1]],fTR->GenLeptonPhi[indices[1]],0);
+		fMT2tree->GenZ[0]=l1+l2;
+	}
 
 	// ----------------------------------------------------------------
 	// that was it
@@ -809,6 +869,8 @@ void MT2Analysis::GetLeptonJetIndices(){
 	fMuons.clear();
 	fTaus.clear();
 	fJets.clear();
+	fPhotons.clear();
+	fPhotonJetOverlapRemoved.clear();
 
 	vector<float> mutight;
 	for(int i=0; i< fTR->PfMu3NObjs; ++i){
@@ -835,8 +897,8 @@ void MT2Analysis::GetLeptonJetIndices(){
 		pt1.push_back(Jet(ij).Pt());
 	}
 	fJets        = Util::VSort(fJets,       pt1);
-	pt1.clear();
 
+	// Warning: taus are also contained in the jet-collection.
 	vector<float> taus;
 	for(int i=0; i< fTR->PfTau3NObjs; ++i){
 		if(std::isnan(fTR->PfTau3Pt[i])) { fIsNANObj = true; continue;} //protection against objects with NAN-Pt
@@ -845,7 +907,69 @@ void MT2Analysis::GetLeptonJetIndices(){
 		taus.push_back(fTR->PfTau3Pt[i]);
 	}
 	fTaus          = Util::VSort(fTaus     , taus);
+
+	// Photons ---------------------------------------------------------------------------------
+	if(fTR->fChain->GetBranch("NPhotons")     ==NULL){return;} 	     // protection for TESCO ntuples without photon info
+	vector<float> photon_pts;
+	for(int i=0; i<fTR->NPhotons; ++i){
+		if(std::isnan(fTR->PhoPt[i]))  {fIsNANObj = true; continue;} //protection against objects with NAN-Pt	
+		if(! IsGoodPhoton(i))                             continue; 
+		fPhotons.push_back(i);
+		photon_pts.push_back(fTR->PhoPt[i]);
+		fPhotonJetOverlapRemoved.push_back(false);
+	}
+	fPhotons     = Util::VSort(fPhotons, photon_pts);
+
+	// remove jet or ele matched to photon ----------------------------------------------------
+	if(! fRemovePhoton)   return;
+
+	vector<int> removeEleIndices;
+	vector<int> removeJetIndices;
 	
+	if(fRemovePhoton){
+		// find jet or ele index to be removed
+		for(int iphoton=0; iphoton<fPhotons.size(); ++iphoton){
+			float minDR=10; int index=-1; bool jetmatch(false);
+			TLorentzVector phot(0,0,0,0);
+			phot.SetPtEtaPhiM(fTR->PhoPt[fPhotons[iphoton]], fTR->PhoEta[fPhotons[iphoton]], fTR->PhoPhi[fPhotons[iphoton]], 0.);
+			for(int el=0; el<fElecs.size(); ++el){
+				TLorentzVector ele(0,0,0,0);
+				ele.SetPtEtaPhiM(fTR->PfEl3Pt[fElecs[el]], fTR->PfEl3Eta[fElecs[el]], fTR->PfEl3Phi[fElecs[el]], 0.);
+				float dR = phot.DeltaR(ele);
+				if (dR< minDR) {minDR= dR; index =fElecs[el];} 
+			}
+			for(int ijet=0; ijet<fJets.size(); ++ijet){
+				TLorentzVector jet(0,0,0,0);
+				jet.SetPtEtaPhiE(fTR->PF2PAT3JPt[fJets[ijet]], fTR->PF2PAT3JEta[fJets[ijet]], fTR->PF2PAT3JPhi[fJets[ijet]], fTR->PF2PAT3JE[fJets[ijet]]);
+				float dR = phot.DeltaR(jet);
+				if (dR< minDR) {minDR= dR; index =fJets[ijet]; jetmatch=true;} 
+			}
+			if(minDR<0.2){ // require match within dR=0.2
+				if(jetmatch){removeJetIndices.push_back(index);}
+				else        {removeEleIndices.push_back(index);}
+				fPhotonJetOverlapRemoved[iphoton]=true; // set mark that for photon "iphoton", the corresponding jet was found (will be) removed 
+			}	
+		}
+	}
+	if(fRemovePhoton && fPhotons.size()>0){	
+		for(int i=0; i<removeEleIndices.size(); ++i){
+			for(int j=0; j<fElecs.size(); ++j){
+				if(fElecs[j]==removeEleIndices[i]) {
+					fElecs    .erase(fElecs.begin()   +j);
+					eltight   .erase(eltight.begin()  +j);
+				}
+			}
+		}
+		for(int i=0; i<removeJetIndices.size(); ++i){
+			for(int j=0; j<fJets.size(); ++j){
+				if(fJets[j]==removeJetIndices[i]) {
+					fJets .erase(fJets.begin()   +j);
+					pt1   .erase(pt1.begin()     +j);
+				}
+			}
+		}
+	}
+	// -----------
 }
 
 void MT2Analysis::FindLeptonConfig(){
@@ -1118,6 +1242,40 @@ void MT2Analysis::DeadCellParser(DeadCellFilter &DeadCellFilter_, string file_){
 	}
 }
 
+//****************************************************************************************************
+// Photon Selectors
+
+bool MT2Analysis::IsGoodPhotonEGMLoose(int i){
+	// EGM-10-006 Loose Photon selection
+	bool isGood(true);
+	if(!IsGoodPhoton(i)                                                    ) isGood=false;
+	if( fabs(fTR->PhoEta[i]) < 1.4442 && fTR->PhoSigmaIetaIeta[i] > 0.01   ) isGood=false;
+	if( fabs(fTR->PhoEta[i]) > 1.566  && fTR->PhoSigmaIetaIeta[i] > 0.03   ) isGood=false;
+	return isGood;
+}
+
+bool MT2Analysis::IsGoodPhoton(int i){
+	if( fTR->fChain->GetBranch("PhoPt")             ==NULL   ) {cout << "WARNING: Photon variable not found" << endl; return false; }
+	if( fTR->fChain->GetBranch("PhoEta")            ==NULL   ) {cout << "WARNING: Photon variable not found" << endl; return false; } 
+	if( fTR->fChain->GetBranch("PhoEta")            ==NULL   ) {cout << "WARNING: Photon variable not found" << endl; return false; }  
+	if( fTR->fChain->GetBranch("PhoHoverE")         ==NULL   ) {cout << "WARNING: Photon variable not found" << endl; return false; }  
+	if( fTR->fChain->GetBranch("PhoSigmaIetaIeta")  ==NULL   ) {cout << "WARNING: Photon variable not found" << endl; return false; }  
+	if( fTR->fChain->GetBranch("PhoIso04TrkHollow") ==NULL   ) {cout << "WARNING: Photon variable not found" << endl; return false; }  
+	if( fTR->fChain->GetBranch("PhoIso04Ecal")      ==NULL   ) {cout << "WARNING: Photon variable not found" << endl; return false; }  
+	if( fTR->fChain->GetBranch("PhoIso04Hcal")      ==NULL   ) {cout << "WARNING: Photon variable not found" << endl; return false; }  
+	if( fTR->fChain->GetBranch("PhoHasPixSeed")     ==NULL   ) {cout << "WARNING: Photon variable not found" << endl; return false; }  
+
+	if( fTR->PhoPt[i] < 20                                                 ) return false; // pt cut
+	if( fabs(fTR->PhoEta[i])> 2.4                                          ) return false;
+	if( fabs(fTR->PhoEta[i])> 1.4442 && fabs(fTR->PhoEta[i])<1.566         ) return false; // veto EB-EE gap
+	if( fTR->PhoHoverE[i]   > 0.05                                         ) return false; // H/E cut
+	if( fTR->PhoIso04TrkHollow[i] > 2.0                                    ) return false; // trk Iso
+	if( fTR->PhoIso04Ecal[i] > 4.2                                         ) return false; // Ecal ISo
+	if( fTR->PhoIso04Hcal[i] > 2.2                                         ) return false; // Hcal Iso
+	if( fTR->PhoHasPixSeed[i]==1                                           ) return false; // veto pixel seed for electron rejection 
+	return true;
+}
+
 // ****************************************************************************************************
 // Jet Selectors
 
@@ -1330,7 +1488,14 @@ float MT2Analysis::GetCaloJEC(float corrpt, float scale, float eta, int level){
 TLorentzVector MT2Analysis::MET(){
 	TLorentzVector MET(0,0,0,0);
 	if(!fDoJESUncertainty){
-		MET.SetPtEtaPhiM(fTR->PFMETPAT, 0., fTR->PFMETPATphi, 0);
+		if(fRemovePhoton && fPhotons.size()==1){
+			TLorentzVector trueMET(0,0,0,0), photon(0,0,0,0);
+			trueMET.SetPtEtaPhiM(fTR->PFMETPAT, 0., fTR->PFMETPATphi, 0);
+			photon .SetPtEtaPhiM(fTR->PhoPt[fPhotons[0]], 0., fTR->PhoPhi[fPhotons[0]],   0);
+			MET    = photon + trueMET; 
+		}else{
+			MET.SetPtEtaPhiM(fTR->PFMETPAT, 0., fTR->PFMETPATphi, 0);
+		}
 		return MET;
 	} else{
 		if      (fJESUpDown==1){

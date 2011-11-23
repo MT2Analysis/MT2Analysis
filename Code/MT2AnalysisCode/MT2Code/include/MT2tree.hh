@@ -5,7 +5,7 @@
 #include "TLorentzVector.h"
 #include "TVector3.h"
 
-enum {m_jetSize = 25, m_genjetSize = 20, m_eleSize = 5, m_muoSize = 5, m_genleptSize=20, m_hemiSize=2};
+enum {m_jetSize = 25, m_genjetSize = 20, m_eleSize = 5, m_muoSize = 5, m_phoSize = 5, m_genleptSize=20, m_hemiSize=2};
 
 // MT2Misc ----------------------------------
 class MT2Misc : public TObject {
@@ -28,6 +28,7 @@ public:
   Int_t    Run;
   Int_t    Event;
   Int_t    LumiSection;
+  Int_t    ProcessID;             // 0=data, 1=Znunu, 2=Zll, 3=WJets, 4=ttbar, 5=Gamma+jets, 6=QCD ,[empty], 9=Other, 10=Signal
   Int_t    LeptConfig;
   Int_t    Jet0Pass;
   Int_t    Jet1Pass;
@@ -52,7 +53,7 @@ public:
   Float_t  TrackingFailure;
   Float_t  TrackingFailurePVtx;
   
-  ClassDef(MT2Misc, 25)
+  ClassDef(MT2Misc, 26)
 };
 
 
@@ -445,6 +446,30 @@ public:
   ClassDef(MT2Muon, 7)
 };
 
+// MT2Photon  ----------------------------------
+class MT2Photon : public TObject {
+
+public:
+  MT2Photon();
+  virtual ~MT2Photon();
+
+  void Reset();
+  void SetLV(const TLorentzVector v);
+
+  TLorentzVector lv;
+  Float_t TrkIso;
+  Float_t EcalIso; 
+  Float_t HcalIso;
+  Float_t SigmaIEtaIEta;
+  Float_t HoverE;
+  Int_t   MCmatchexitcode;
+  Bool_t  JetRemoved;
+  Bool_t  isEGMloose;
+  Bool_t  hasPixelSeed;
+
+  ClassDef(MT2Photon, 4)
+};
+
 
 // MT2GenLept ----------------------------------
 class MT2GenLept : public TObject {
@@ -484,6 +509,7 @@ public:
   void SetNBJets        (int n);
   void SetNEles         (int n);
   void SetNMuons        (int n);
+  void SetNPhotons      (int n);
   void SetNTaus         (int n);
   
   // My functions here
@@ -560,6 +586,13 @@ public:
   Bool_t  SLTopAccept(float pt, float eta);
   Float_t SLTopEta(float pt);
   Float_t LeptJetDR(int pid, int index, bool bjet, int ID);
+  
+  // Photons
+  Int_t   PhotonJetDRJIndex(int ph_index, float minJPt, float maxJEta, int PFJID );
+  Float_t PhotonJetDR(int ph_index, float minJPt, float maxJEta, int PFJID );
+  Int_t   PhotonEleDREIndex(int ph_index, float minEPt, float maxEEta);
+  Float_t PhotonEleDR(int ph_index, float minEPt, float maxEEta);
+
   // PrintOut 
   Bool_t   PrintOut(Bool_t logfile);
 
@@ -574,6 +607,7 @@ public:
   Int_t   NBJets;
   Int_t   NEles;
   Int_t   NMuons;
+  Int_t   NPhotons;
   Int_t   NTaus;
   Int_t   NGenLepts;
 
@@ -586,13 +620,18 @@ public:
   MT2Hemi        hemi[m_hemiSize];
   MT2Elec        ele[m_eleSize];
   MT2Muon        muo[m_muoSize];
+  MT2Photon      photon[m_phoSize];
   MT2GenLept     genlept[m_genleptSize];
   TLorentzVector pfmet[2];
   TLorentzVector genmet[2];
   TLorentzVector MHT[2];
+  TLorentzVector GenPhoton[2];
+  TLorentzVector GenZ[2];
+  TLorentzVector rawpfmet[2]; // this is raw, uncorrected and not scaled pf-met. 
+                              // identical to pfmet unless met is JEScales or modified in data-driven estimates
 
   
-  ClassDef(MT2tree, 20)
+  ClassDef(MT2tree, 23)
 };
 
 #endif

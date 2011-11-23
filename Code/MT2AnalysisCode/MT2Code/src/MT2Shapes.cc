@@ -57,6 +57,7 @@ using namespace std;
 
 //____________________________________________________________________________
 MT2Shapes::MT2Shapes(){
+	fPrintSummary=false;
 // Default constructor, no samples are set
 }
 
@@ -64,6 +65,7 @@ MT2Shapes::MT2Shapes(){
 MT2Shapes::MT2Shapes(TString outputdir){
 // Explicit constructor with output directory
 	setOutputDir(outputdir);
+	fPrintSummary=false;
 }
 
 //____________________________________________________________________________
@@ -71,6 +73,7 @@ MT2Shapes::MT2Shapes(TString outputdir, TString outputfile){
 // Explicit constructor with output directory and output file
 	setOutputDir(outputdir);
 	setOutputFile(outputfile);
+	fPrintSummary=false;
 }
 
 //____________________________________________________________________________
@@ -127,7 +130,7 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 	// vector of all histos
 	vector<TH1D*>   h_shapes;
 	vector<TString> ShapeNames;
-	int nShapes=0;
+	nShapes=0; // reset n shapes
 
 	for(size_t i = 0; i < fSamples.size(); ++i){
 		// see if sample should be added to existing shape or not
@@ -159,8 +162,9 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 		if(fSamples[i].type=="data" && HLT!="") theCuts += " &&("+HLT+")"; // triggers for data
 
 		TString selection;
-		if(fSamples[i].type!="data") selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,theCuts.Data());
-		else                         selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
+//		if(fSamples[i].type!="data") selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,theCuts.Data());
+//		else                         selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
+		selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data());
 		  
 		int nev = fSamples[i].tree->Draw(variable.Data(),selection.Data(),"goff");
 
@@ -191,6 +195,18 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 		if(ShapeNames[iShape]=="Data") {h_shapes[iShape]->SetMarkerStyle(20);h_shapes[iShape]->SetMarkerColor(kBlack);}
 		DrawHisto(h_shapes[iShape], h_shapes[iShape]->GetName(),ShapeNames[iShape]=="Data"?"EX0":"hist");
 		h_shapes[iShape]->Write();
+	
+		fh_shapes[iShape]=(TH1D*) h_shapes[iShape]->Clone(h_shapes[iShape]->GetName());
+	}
+	if(fPrintSummary){
+		cout << "--------------------------------------" << endl;
+		TH1D* hdummy;
+		for(int iShape=0; iShape<h_shapes.size(); ++iShape){
+			hdummy=(TH1D*) h_shapes[iShape]->Clone();
+			hdummy->Rebin(hdummy->GetNbinsX());
+			cout << h_shapes[iShape]->GetName() << " gives: " << hdummy->GetBinContent(1) << " pm " << hdummy->GetBinError(1) << endl;
+		}
+		delete hdummy;
 	}
 
 	// cleanup
@@ -209,8 +225,8 @@ void MT2Shapes::loadSamples(const char* filename){
 	char ParName[100], StringValue[1000];
 	float ParValue;
 
-	if(fVerbose > 0) cout << "------------------------------------" << endl;
-	if(fVerbose > 0) cout << "Sample File  " << filename << endl;
+	if(fVerbose > 3) cout << "------------------------------------" << endl;
+	if(fVerbose > 3) cout << "Sample File  " << filename << endl;
 	int counter(0);
 	
 	while( IN.getline(buffer, 200, '\n') ){
@@ -224,7 +240,7 @@ void MT2Shapes::loadSamples(const char* filename){
 			fPath = StringValue;	
 			cout << fPath << endl;
 			
-			if(fVerbose >0){
+			if(fVerbose >3){
 				cout << " ----  " << endl;
 				cout << "  Path " << fPath << endl;
 			}
@@ -276,7 +292,7 @@ void MT2Shapes::loadSamples(const char* filename){
 			sscanf(buffer, "Color\t%f", &ParValue);
 			s.color = ParValue;
 
-			if(fVerbose > 0){
+			if(fVerbose > 3){
 				cout << " ---- " << endl;
 				cout << "  New sample added: " << s.name << endl;
 				cout << "   Sample no.      " << counter << endl;
@@ -295,7 +311,7 @@ void MT2Shapes::loadSamples(const char* filename){
 			counter++;
 		}
 	}
-	if(fVerbose > 0) cout << "------------------------------------" << endl;
+	if(fVerbose > 3) cout << "------------------------------------" << endl;
 }
 
 //______________________________________________________________________________

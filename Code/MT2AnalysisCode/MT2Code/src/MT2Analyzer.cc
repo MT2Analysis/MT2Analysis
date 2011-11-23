@@ -9,6 +9,8 @@ using namespace std;
 MT2Analyzer::MT2Analyzer(TTree *tree) : TreeAnalyzerBase(tree) {
 	fMT2Analysis             = new MT2Analysis(fTR);
 	Util::SetStyle();
+	removePhoton =false;
+	fID          =-1;  //default process ID
 }
 
 MT2Analyzer::~MT2Analyzer(){
@@ -56,8 +58,10 @@ void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, str
 	fMT2Analysis             ->SetOutputDir(fOutputDir);
 	fMT2Analysis             ->fVerbose        = fVerbose;
 	fMT2Analysis             ->SetJEC(JEC);
-        fMT2Analysis             ->isS3        = isS3;
-	fMT2Analysis             ->noPU        = noPU;
+        fMT2Analysis             ->fRemovePhoton = removePhoton;
+	fMT2Analysis             ->SetProcessID(fID);
+        fMT2Analysis             ->isS3         = isS3;
+	fMT2Analysis             ->noPU         = noPU;
 	fMT2Analysis             ->Begin(filename);
 }
 

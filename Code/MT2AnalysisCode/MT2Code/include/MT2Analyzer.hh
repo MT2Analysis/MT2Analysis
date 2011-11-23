@@ -17,11 +17,14 @@ public:
 	              bool isData=false, string data_PileUp="", string mc_PileUp="", string JEC="");
 	void EndJob();
 	void Loop();
-	void SetMaxEvents(int a){fMaxEvents=a;}
+	void SetMaxEvents(int a){fMaxEvents=a;};
+	void SetProcessID(int ID){fID=ID;};
   	bool isS3;
   	bool noPU;  
+	bool removePhoton;
 private:
 	MT2Analysis             *fMT2Analysis;
-  	int fMaxEvents;
+  	int fMaxEvents;   
+	int fID;
 };
 #endif

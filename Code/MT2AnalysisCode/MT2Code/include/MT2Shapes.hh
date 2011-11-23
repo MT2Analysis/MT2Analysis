@@ -11,6 +11,16 @@
 #include "THStack.h"
 #include "TTree.h"
 #include <map>
+#include <sstream>
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <math.h>
+#include <vector>
+#include <stdlib.h>
+#include <stdio.h>
+
+using namespace std;
 
 //________________________________________________________________________________
 class MT2Shapes  {
@@ -24,6 +34,9 @@ public:
 
 	void init(TString filename = "samples.dat");
 	void loadSamples(const char* filename = "samples.dat");
+	int  GetNSamples(){return fSamples.size();};
+	int  GetNShapes(){return nShapes;};
+	void SetPrintSummary(bool printsummary){fPrintSummary=printsummary;};
 
 	struct sample{
 		TString name;
@@ -40,6 +53,7 @@ public:
 	};
 	std::vector<sample>  fSamples;
 	
+	TH1D* fh_shapes[100];
 
 	void setVerbose(int v){ fVerbose = v;};
 	void setOutputDir(TString dir){ fOutputDir = Util::MakeOutputDir(dir); };
@@ -48,6 +62,7 @@ public:
 			         TString xtitle, const int nbins, const double *bins);
 	void GetShapes(TString var, TString cuts, int njets, int nleps, TString selection_name, TString HLT,
 			         TString xtitle, const int nbins, const double min, const double max);
+	int test;
 
 private:
 
@@ -55,6 +70,8 @@ private:
 	TFile *fOutputFile;
 	int fVerbose;
 	TString fPath;
+	int nShapes;
+	bool fPrintSummary;
 
 	MT2tree* fMT2tree;
 	TTree*   fTree;

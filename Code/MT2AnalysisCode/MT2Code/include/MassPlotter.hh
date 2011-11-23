@@ -67,6 +67,8 @@ public:
 
 	void makePlots();
 	void makeSmallCopy(int nevents, int sample);
+	void SetSave(bool save=true){fSave=save;};
+	void SetIsPhoton(bool isphoton=true){fisPhoton=isphoton;};
 	
 	struct sample{
 		TString name;
@@ -215,6 +217,8 @@ private:
 	TFile *fOutputFile;
 	int fVerbose;
 	TString fPath;
+	bool fSave;
+	bool fisPhoton;
 
 	MT2tree* fMT2tree;
 	TTree*   fTree;

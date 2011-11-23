@@ -57,6 +57,8 @@ using namespace std;
 
 //____________________________________________________________________________
 MassPlotter::MassPlotter(){
+	fSave=true;
+	fisPhoton=false;
 // Default constructor, no samples are set
 }
 
@@ -64,6 +66,8 @@ MassPlotter::MassPlotter(){
 MassPlotter::MassPlotter(TString outputdir){
 // Explicit constructor with output directory
 	setOutputDir(outputdir);
+	fSave=true;
+	fisPhoton=false;
 }
 
 //____________________________________________________________________________
@@ -71,6 +75,8 @@ MassPlotter::MassPlotter(TString outputdir, TString outputfile){
 // Explicit constructor with output directory and output file
 	setOutputDir(outputdir);
 	setOutputFile(outputfile);
+	fSave=true;
+	fisPhoton=false;
 }
 
 //____________________________________________________________________________
@@ -552,7 +558,7 @@ void MassPlotter::PrintZllEfficiency(int sample_index , bool data, std::string l
 	h_Z    ->SetDrawOption("E");
 	h_Z    ->Draw();
 	string name  ="GenDYToLL_"+lept+"_"+(string) Sample.name; 
-	Util::PrintEPS(col, name, fOutputDir);
+	if(fSave) Util::PrintEPS(col, name, fOutputDir);
 	
 
 	//__________________________________
@@ -1213,6 +1219,11 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 	  }
 	  h_composited[i] -> SetMarkerColor(ccolor[i]);
 	  h_composited[i] -> SetStats(false);
+	}
+	if(fisPhoton){
+		h_composited[4] -> SetFillColor(kMagenta+2); 
+		h_composited[4] -> SetLineColor(kMagenta+2);
+		cnames[4]="Photons";
 	}
 
 	// legend
@@ -2090,7 +2101,7 @@ void MassPlotter::plotRatioStack(THStack* hstack, TH1* h1_orig, TH1* h2_orig, bo
  	c1->Update();
 
 	TString save=name+"_ratio";
-	Util::Print(c1, save, fOutputDir, fOutputFile);	
+	if(fSave) Util::Print(c1, save, fOutputDir, fOutputFile);	
 
 // 	delete h1;
 // 	delete h2;
@@ -2231,7 +2242,7 @@ void MassPlotter::plotRatioStack(THStack* hstack, TH1* h1_orig, TH1* h2_orig, TH
  	c1->Update();
 
 	TString save=name+"_ratio";
-	Util::Print(c1, save, fOutputDir, fOutputFile);	
+	if(fSave)Util::Print(c1, save, fOutputDir, fOutputFile);	
 
 // 	delete h1;
 // 	delete h2;
@@ -2359,7 +2370,7 @@ void MassPlotter::plotRatio(TH1* h1_orig, TH1* h2_orig, bool logflag, bool norma
  	c1->Update();
 
 	TString save=name+"_ratio";
-	Util::PrintEPS(c1, save, fOutputDir);	
+	if(fSave)Util::PrintEPS(c1, save, fOutputDir);	
 
 // 	delete h1;
 //	delete h2;
@@ -2385,7 +2396,7 @@ void MassPlotter::printHisto(TH1* h_orig, TString canvname,  Option_t *drawopt, 
 	h->SetStats(false);
 	h->DrawCopy(drawopt);
 	gPad->RedrawAxis();
-	Util::PrintNoEPS(col, canvname, fOutputDir, fOutputFile);
+	if(fSave)Util::PrintNoEPS(col, canvname, fOutputDir, fOutputFile);
 	h->Write();
 	delete col;
 	delete h;
@@ -2405,7 +2416,7 @@ void MassPlotter::printHisto(THStack* h, TString canvname, Option_t *drawopt, bo
 	gPad->RedrawAxis();
 	col ->Update();
 	gPad->RedrawAxis();
-	Util::PrintNoEPS(col, canvname, fOutputDir, fOutputFile);
+	if(fSave)Util::PrintNoEPS(col, canvname, fOutputDir, fOutputFile);
 	delete col;
 
 }
@@ -2475,8 +2486,8 @@ void MassPlotter::printHisto(THStack* h, TH1* h_data, TH1* h_mc_sum, TLegend* le
 	float ypos = xtitle.Contains("slash") || xtitle.Contains("_") || xtitle.Contains("^") ? 0.1 : 0.06;
 	lat.DrawLatex(0.9, ypos, xtitle);
 	gPad->RedrawAxis();
-	Util::PrintNoEPS(col, canvname, fOutputDir, fOutputFile);
-	Util::PrintEPS(col, canvname, fOutputDir);
+	if(fSave)Util::PrintNoEPS(col, canvname, fOutputDir, fOutputFile);
+	if(fSave)Util::PrintEPS(col, canvname, fOutputDir);
 // 	delete col;
 
 }
@@ -2549,8 +2560,8 @@ void MassPlotter::printHisto(THStack* h, TH1* h_data, TH1* h_mc_sum, TH1* h_susy
 	float ypos = xtitle.Contains("slash") || xtitle.Contains("_") || xtitle.Contains("^") ? 0.1 : 0.06;
 	lat.DrawLatex(0.9, ypos, xtitle);
 	gPad->RedrawAxis();
-	Util::PrintNoEPS(col, canvname, fOutputDir, fOutputFile);
-	Util::PrintEPS(col, canvname, fOutputDir);
+	if(fSave)Util::PrintNoEPS(col, canvname, fOutputDir, fOutputFile);
+	if(fSave)Util::PrintEPS(col, canvname, fOutputDir);
 // 	delete col;
 
 }
@@ -2609,7 +2620,7 @@ void MassPlotter::printHisto(THStack* h, TH1* h_data, TLegend* leg,  TString can
 	lat.DrawLatex(0.9, ypos, xtitle);
 	gPad->RedrawAxis();
 	col ->Update();
-	Util::PrintNoEPS(col, canvname, fOutputDir, fOutputFile);
+	if(fSave) Util::PrintNoEPS(col, canvname, fOutputDir, fOutputFile);
 	delete col;
 
 }

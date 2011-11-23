@@ -31,9 +31,8 @@ public:
 	void Begin(const char* filename = "Mass_histos.root");
 	void Analyze();
 	void End();
-	void SetType(bool isData=false){
-		fisData=isData;
-	};
+	void SetType(bool isData=false){fisData=isData;};
+	void SetProcessID(int ID){fID=ID;};
 
 	// redo JEC
 	void SetJEC(string JEC){fJEC=JEC;};
@@ -43,6 +42,9 @@ public:
   	//  reweight::LumiReWeighting *LumiReW;
   	bool isS3;
   	bool noPU;
+
+	// remove Photon
+	bool fRemovePhoton;
 private:
 	// files and trees ----------------------------------------------------------------
 	// file for histograms:
@@ -54,15 +56,18 @@ private:
 
 	// data members-----------------------------------------
 	bool fisData;
+	int  fID;
 	int  fCounter;
 	bool fBasicMT2treeFilled;
 	string fJEC;
 
 	// vectors for jets and lepton indices
 	vector<int> fElecs;
+	vector<int> fPhotons;
 	vector<int> fTaus;
 	vector<int> fMuons;
 	vector<int> fJets;
+	vector<bool>fPhotonJetOverlapRemoved;
 	
 	// MT2 and hemisphere
 	Davismt2 *fMT2;
@@ -139,6 +144,9 @@ private:
 	bool IsSelectedEvent();
 	void InitializeEvent();
 	void DeadCellParser(DeadCellFilter &DeadCellFilter_, string file_);
+	// photons
+	bool IsGoodPhotonEGMLoose(int index);
+	bool IsGoodPhoton(int index);
 	//pfJetID
 	bool IsGoodBasicPFJetPAT3(int index, float ptcut, float absetacut);
 	bool IsGoodPFJetMediumPAT3(int index, float ptcut, float absetacut);

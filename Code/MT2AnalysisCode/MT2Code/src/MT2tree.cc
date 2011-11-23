@@ -38,6 +38,7 @@ void MT2Misc::Reset() {
   Run                     = -1;	  
   Event		  	  = -1;	  
   LumiSection		  = -1;	  
+  ProcessID               = -1; 
   LeptConfig		  = -1;	  
   PassJetID               = -1;
   Jet0Pass                = -1;
@@ -485,6 +486,31 @@ void MT2Muon::SetLV(const TLorentzVector v) {
   lv = v;
 }
 
+// MT2Photon -----------------------------------
+MT2Photon::MT2Photon(){
+  Reset();
+}
+
+MT2Photon::~MT2Photon(){
+}
+
+void MT2Photon::Reset() {
+  lv.SetPxPyPzE(0, 0, 0, 0);
+  TrkIso          = -999.99;
+  EcalIso         = -999.99;
+  HcalIso         = -999.99;
+  SigmaIEtaIEta   = -999.99;
+  HoverE          = -999.99; 
+  MCmatchexitcode = -999;
+  isEGMloose      = 0;
+  JetRemoved      = 0;
+  hasPixelSeed    = 0;
+}
+
+void MT2Photon::SetLV(const TLorentzVector v) {
+  lv = v;
+}
+
 // MT2Elec -----------------------------------
 MT2Elec::MT2Elec(){
   Reset();
@@ -524,6 +550,7 @@ void MT2tree::Reset() {
   NJetsIDLoose50   = 0;
   NEles            = 0;
   NMuons           = 0;
+  NPhotons         = 0;
   NGenLepts        = 0;
   NGenJets         = 0;
 
@@ -544,15 +571,21 @@ void MT2tree::Reset() {
   for (int i = 0; i < m_muoSize; ++i) {
     muo[i].Reset();
   }
+  for (int i = 0; i < m_phoSize; ++i) {
+    photon[i].Reset();
+  }
   for (int i = 0; i < m_genleptSize; ++i) {
     genlept[i].Reset();
   }
   for (int i = 0; i < m_hemiSize; ++i) {
     hemi[i].Reset();
   }
+  rawpfmet  [0].SetPxPyPzE(0., 0., 0., 0.);
   pfmet     [0].SetPxPyPzE(0., 0., 0., 0.);
   genmet    [0].SetPxPyPzE(0., 0., 0., 0.);
   MHT       [0].SetPxPyPzE(0., 0., 0., 0.);
+  GenZ      [0].SetPxPyPzE(0., 0., 0., 0.);
+  GenPhoton [0].SetPxPyPzE(0., 0., 0., 0.);
 }
 
 void MT2tree::SetNJets(int n) {
@@ -573,6 +606,10 @@ void MT2tree::SetNBJets(int n) {
 
 void MT2tree::SetNEles(int n) {
   NEles = n;
+}
+
+void MT2tree::SetNPhotons(int n) {
+  NPhotons = n;
 }
 
 void MT2tree::SetNMuons(int n) {
@@ -1960,7 +1997,46 @@ Float_t MT2tree::GetGenVPt(int pid){
   return V_p.Pt();
 }
 
+// Photons  ************************************************************************************************************
+Int_t MT2tree::PhotonJetDRJIndex(int ph_index, float minJPt, float maxJEta, int PFJID ){
+	double minDR=100;
+	int    index=-1;
+	for(int i=0; i<NJets; ++i){
+		if(jet[i].IsGoodPFJet(minJPt,maxJEta,PFJID)==false) continue;
+		double dR = photon[ph_index].lv.DeltaR(jet[i].lv);
+		if(dR < minDR) {
+			minDR=dR;
+			index = i;
+		}
+	}
+	return index;
+}
 
+Float_t MT2tree::PhotonJetDR(int ph_index, float minJPt, float maxJEta, int PFJID ){
+	Int_t index = PhotonJetDRJIndex(ph_index, minJPt, maxJEta, PFJID);
+	if(index >=0) return photon[ph_index].lv.DeltaR(jet[index].lv);
+	else          return -999.99;
+}
+
+Int_t MT2tree::PhotonEleDREIndex(int ph_index, float minEPt, float maxEEta){
+	double minDR=100;
+	int    index=-1;
+	for(int i=0; i<NEles; ++i){
+		if(ele[i].lv.Pt() < minEPt || fabs(ele[i].lv.Eta())>maxEEta) continue;
+		double dR = photon[ph_index].lv.DeltaR(ele[i].lv);
+		if(dR < minDR) {
+			minDR=dR;
+			index = i;
+		}
+	}
+	return index;
+}
+
+Float_t MT2tree::PhotonEleDR(int ph_index, float minEPt, float maxEEta){
+	Int_t index = PhotonEleDREIndex(ph_index, minEPt, maxEEta);
+	if(index >=0) return photon[ph_index].lv.DeltaR(ele[index].lv);
+	else          return -999.99;
+}
 
 // Print-Outs ---------------------------------------------------------------------------------------------------------
 Bool_t MT2tree::PrintOut(Bool_t logfile){
@@ -1983,6 +2059,7 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	     << ", CSCTightHaloID " << misc.CSCTightHaloID                                                        << endl;
         logStream << "  Jet0Pass " << misc.Jet0Pass <<" Jet1Pass " << misc.Jet1Pass << " PassJetID " << misc.PassJetID   << endl;	
 	logStream << "  MinMetJetDPhi " << misc.MinMetJetDPhi                                                          << endl;
+	logStream << "  Vectorsumpt " << misc.Vectorsumpt                                                              << endl;
 	logStream << " Jet-Info -------------------------------------------------------------------------------------" << endl;
 	for(int i=0; i<NJets; ++i){
 	logStream << "  jet " << i << ":\n"
@@ -2000,6 +2077,19 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	     << "   jet-MET-dPhi " << MetJetDPhi(i, 0, 1)  
 	     << endl; 
 	}	
+	if(NPhotons >0){
+	logStream << " Photons Info ------------------------------------------------------------------------------------" << endl;
+	for(int i=0; i<NPhotons; ++i){
+	logStream << "   Photon   " << i << ":\n";
+	logStream << "    Pt      " << photon[i].lv.Et() << " Eta " << photon[i].lv.Eta() << " Phi " << photon[i].lv.Phi() << endl;
+	logStream << "    TrkIso  " << photon[i].TrkIso  << " EcalIso " << photon[i].EcalIso << " HcalIso " << photon[i].HcalIso << endl;
+	logStream << "    HoverE  " << photon[i].HoverE  << " SigmaIEtaIEta " << photon[i].SigmaIEtaIEta  << endl;
+	if(NEles >0){
+	logStream << "    Closest Ele " << PhotonEleDREIndex(i,10,5)   << " with dR " << PhotonEleDR(i,10,5) << endl;
+	}
+	logStream << "    Closest Jet " << PhotonJetDRJIndex(i,20,5,0) << " with dR " << PhotonJetDR(i,20,5,0) << endl;
+	}
+	}
 	if(NEles >0){
 	logStream << " Eles Info ------------------------------------------------------------------------------------" << endl;
 	for (int i=0; i<NEles; ++i){
@@ -2140,6 +2230,7 @@ ClassImp(MT2Trigger)
 ClassImp(MT2Jet)
 ClassImp(MT2Elec)
 ClassImp(MT2Muon)
+ClassImp(MT2Photon)
 ClassImp(MT2Hemi)
 ClassImp(MT2GenLept)
 ClassImp(MT2tree)

@@ -23,7 +23,10 @@ SRCS           = ../TESCO/src/base/TreeClassBase.C ../TESCO/src/base/TreeReader.
                  ../TESCO/src/helper/TMctLib.cc ../TESCO/src/helper/mctlib.cc  \
                  ../TESCO/src/helper/Davismt2.cc ../TESCO/src/helper/Hemisphere.cc  src/MT2Analyzer.cc \
                  src/MassPlotter.cc ../TESCO/src/helper/PUWeight.C \
-		 src/QuickAnalysis.cc src/QuickAnalyzer.cc  src/MT2Shapes.cc
+		 src/QuickAnalysis.cc src/QuickAnalyzer.cc  src/MT2Shapes.cc \
+                 src/AnalysisAndHistos.cc \
+                 src/ZInvEstFromW.cc
+
 
 # We want dictionaries only for classes that have _linkdef.h files                                                               
 DICTOBS =  $(patsubst %_linkdef.hh, %.o, \
@@ -148,6 +151,101 @@ deps: $(SRCS)
 ../TESCO/src/base/UserAnalysisBase.o: /usr/include/bits/stdio_lim.h
 ../TESCO/src/base/UserAnalysisBase.o: /usr/include/bits/sys_errlist.h
 ../TESCO/src/base/UserAnalysisBase.o: ../TESCO/include/helper/PUWeight.h
+../TESCO/src/base/UserAnalysisBase.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
+../TESCO/src/base/UserAnalysisBase.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
+../TESCO/src/base/UserAnalysisBase.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/JetCorrectorParameters.h
+../TESCO/src/base/UserAnalysisBase.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/FWCore/Utilities/interface/Exception.h
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/is_base_and_derived.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/is_class.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/config.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/config.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/config/user.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/config/select_compiler_config.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/config/compiler/gcc.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/config/select_stdlib_config.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/config/select_platform_config.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/config/posix_features.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/unistd.h
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/bits/posix_opt.h
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/bits/confname.h
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/getopt.h
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/config/suffix.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/limits.h
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/bits/posix1_lim.h
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/bits/local_lim.h
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/linux/limits.h
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/bits/posix2_lim.h
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/is_union.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/remove_cv.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/broken_compiler_spec.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/lambda_support.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/config/lambda.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/config/ttp.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/config/msvc.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/config.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/config/gcc.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/config/workaround.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/detail/workaround.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/config/ctps.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/detail/cv_traits_impl.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/detail/yes_no_type.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/detail/type_trait_def.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/detail/template_arity_spec.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/int.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/int_fwd.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/adl_barrier.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/config/adl.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/config/intel.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/nttp_decl.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/config/nttp.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/cat.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/config/config.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/integral_wrapper.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/integral_c_tag.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/config/static_constant.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/static_cast.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/template_arity_fwd.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/preprocessor/params.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/config/preprocessor.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/comma_if.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/punctuation/comma_if.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/control/if.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/control/iif.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/logical/bool.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/facilities/empty.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/punctuation/comma.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/repeat.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/repetition/repeat.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/debug/error.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/detail/auto_rec.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/tuple/eat.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/inc.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/preprocessor/arithmetic/inc.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/aux_/config/overload_resolution.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/detail/type_trait_undef.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/intrinsics.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/detail/bool_trait_def.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/integral_constant.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/bool.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/bool_fwd.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/integral_c.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/mpl/integral_c_fwd.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/detail/bool_trait_undef.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/detail/ice_and.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/detail/ice_not.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/is_same.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/is_convertible.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/is_array.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/add_reference.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/is_reference.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/ice.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/detail/ice_or.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/detail/ice_eq.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/is_arithmetic.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/is_integral.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/is_float.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/type_traits/is_abstract.hpp
+../TESCO/src/base/UserAnalysisBase.o: /usr/include/boost/static_assert.hpp
 src/MT2tree.o: ./include/MT2tree.hh ../TESCO/include/helper/Davismt2.h
 src/MT2tree.o: /usr/include/math.h /usr/include/features.h
 src/MT2tree.o: /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h
@@ -190,6 +288,8 @@ src/MT2Analysis.o: ../TESCO/include/base/TreeReader.hh
 src/MT2Analysis.o: ../TESCO/include/base/TreeClassBase.h
 src/MT2Analysis.o: ../TESCO/include/helper/pdgparticle.hh
 src/MT2Analysis.o: ../TESCO/include/helper/PUWeight.h
+src/MT2Analysis.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
+src/MT2Analysis.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 src/MT2Analysis.o: ../TESCO/include/base/TreeReader.hh
 src/MT2Analysis.o: ../TESCO/include/helper/Davismt2.h /usr/include/math.h
 src/MT2Analysis.o: /usr/include/bits/huge_val.h /usr/include/bits/mathdef.h
@@ -368,6 +468,8 @@ src/MT2Analyzer.o: ./include/MT2Analysis.hh
 src/MT2Analyzer.o: ../TESCO/include/base/UserAnalysisBase.hh
 src/MT2Analyzer.o: ../TESCO/include/helper/pdgparticle.hh
 src/MT2Analyzer.o: ../TESCO/include/helper/PUWeight.h
+src/MT2Analyzer.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
+src/MT2Analyzer.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 src/MT2Analyzer.o: ../TESCO/include/helper/Davismt2.h /usr/include/math.h
 src/MT2Analyzer.o: /usr/include/bits/huge_val.h /usr/include/bits/mathdef.h
 src/MT2Analyzer.o: /usr/include/bits/mathcalls.h
@@ -507,6 +609,8 @@ src/QuickAnalysis.o: ../TESCO/include/base/UserAnalysisBase.hh
 src/QuickAnalysis.o: ../TESCO/include/base/TreeReader.hh
 src/QuickAnalysis.o: ../TESCO/include/helper/pdgparticle.hh
 src/QuickAnalysis.o: ../TESCO/include/helper/PUWeight.h
+src/QuickAnalysis.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
+src/QuickAnalysis.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 src/QuickAnalyzer.o: ./include/QuickAnalyzer.hh
 src/QuickAnalyzer.o: ../TESCO/include/base/TreeAnalyzerBase.hh
 src/QuickAnalyzer.o: ../TESCO/include/base/TreeReader.hh
@@ -531,6 +635,8 @@ src/QuickAnalyzer.o: ./include/QuickAnalysis.hh
 src/QuickAnalyzer.o: ../TESCO/include/base/UserAnalysisBase.hh
 src/QuickAnalyzer.o: ../TESCO/include/helper/pdgparticle.hh
 src/QuickAnalyzer.o: ../TESCO/include/helper/PUWeight.h
+src/QuickAnalyzer.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
+src/QuickAnalyzer.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 src/MT2Shapes.o: ./include/MT2Shapes.hh ./include/MT2tree.hh
 src/MT2Shapes.o: ../TESCO/include/helper/Utilities.hh /usr/include/stdio.h
 src/MT2Shapes.o: /usr/include/features.h /usr/include/sys/cdefs.h

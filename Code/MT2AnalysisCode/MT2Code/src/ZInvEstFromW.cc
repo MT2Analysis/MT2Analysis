@@ -945,14 +945,14 @@ float* ZInvEstFromW::Analysis( bool IS_MC, TString outputfile, int MIN_NJETS, in
     getEfficiency( counterH["bSel"]["Top"], counterH["leptSel"]["Top"], &tt_bveto_eff, &tt_bveto_eff_err);
     float tt_bveto_eff_err_perc = tt_bveto_eff_err/tt_bveto_eff;
     //sanity check for ttbar estimate
-    if ( tt_bkg < 0 ){
+    if ( tt_bkg <= 0 ){
       tt_bkg=INPUT[3]*tt_bveto_eff;
       tt_bkg_err_stat = 0;
       tt_bkg_err_syst = INPUT[4];
     } 
     else{
       tt_bkg *= tt_bveto_eff;
-      tt_bkg_err_syst = sqrt(tt_bkg_err_syst*tt_bkg_err_syst  + tt_bkg*tt_bkg*tt_bveto_eff_err_perc*tt_bveto_eff_err_perc   );// sum in quad of systs
+      tt_bkg_err_syst = sqrt(tt_bveto_eff*tt_bveto_eff*tt_bkg_err_syst*tt_bkg_err_syst  + tt_bkg*tt_bkg*tt_bveto_eff_err_perc*tt_bveto_eff_err_perc   );// sum in quad of systs
       tt_bkg_err_stat = tt_bveto_eff*tt_bkg_err_stat; // scaling of stat unc
     }
     
@@ -970,13 +970,6 @@ float* ZInvEstFromW::Analysis( bool IS_MC, TString outputfile, int MIN_NJETS, in
     w_est_err_syst = sqrt(w_est_err_syst);
     float w_est_err = sqrt(w_est_err_stat*w_est_err_stat + w_est_err_syst*w_est_err_syst );
 
-    //cout << "\n*WJets ESTIMATE (0b, 1lept)* " << endl;
-    //cout << "   * bVeto eff (Top): " << tt_bveto_eff  << " +- " << tt_bveto_eff_err << endl;
-    //cout << "   * bVeto eff (Wjets): " << wj_bveto_eff  << " +- " << wj_bveto_eff_err << endl;
-    //cout << "   * BKG (MC): " << mc_bkg << " +- " << mc_bkg_err << endl;
-    //cout << "   * BKG (Top): " << tt_bkg << " +- " << tt_bkg_err_stat << " +- " << tt_bkg_err_syst << endl;
-    //cout << "   * WJets estimate: " << w_est << " +- " << w_est_err << endl;
-
     printf("|*bVeto eff Top (MC)* | %.2f +- %.2f |\n", tt_bveto_eff, tt_bveto_eff_err);
     printf("|* BKG 0b,1l (MC)* | %.2f +- %.2f |\n", mc_bkg, mc_bkg_err);
     printf("|* BKG 0b,1l (Top)* | %.2f +- %.2f +- %.2f|\n", tt_bkg, tt_bkg_err_stat, tt_bkg_err_syst);
@@ -992,7 +985,6 @@ float* ZInvEstFromW::Analysis( bool IS_MC, TString outputfile, int MIN_NJETS, in
     tp_eff_err_stat =  histos["Lept_eff_TP_"+TP_SAMPLE]->GetMeanError()*histos["Lept_eff_TP_"+TP_SAMPLE]->GetMeanError(); //stat error
     tp_eff_err_syst = sqrt(varFloat["Lept_eff_TP_err_"+TP_SAMPLE] )/histos["Lept_eff_TP_"+TP_SAMPLE]->GetEntries(); //sys error, sqrt(sum(err**2))/N
     tp_eff_err = sqrt( tp_eff_err_stat* tp_eff_err_stat + tp_eff_err_syst*tp_eff_err_syst );
-    //tp_eff_err = sqrt(       histos["Lept_eff_TP_Wtolnu"+leptLabel]->GetMeanError()*histos["Lept_eff_TP_Wtolnu"+leptLabel]->GetMeanError() +		     (varFloat["Lept_eff_TP_err_Wtolnu"+leptLabel] /(float) histos["Lept_eff_TP_Wtolnu"+leptLabel]->GetEntries())*( varFloat["Lept_eff_TP_err_Wtolnu"+leptLabel] /(float) histos["Lept_eff_TP_Wtolnu"+leptLabel]->GetEntries()) );
     
     ///ZInv Est
     float wj_bveto_eff , wj_bveto_eff_err;

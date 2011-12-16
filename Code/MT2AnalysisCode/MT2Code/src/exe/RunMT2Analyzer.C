@@ -19,7 +19,7 @@ void usage( int status = 0 ) {
 	cout << "Usage: RunMT2Analyzer [-d dir] [-o filename] [-v verbose] [-j json]                  " << endl;
 	cout << "                      [-m set_of_cuts] [-n maxEvents] [-t type]                      " << endl;
 	cout << "                      [-p data_PileUp] [-P mc_PileUP]                                " << endl; 
-        cout << "                      [-s S3,noPU] [-C JEC]                                          " << endl;
+        cout << "                      [-s S3,noPU,3D] [-C JEC]                                          " << endl;
 	cout << "                      [-r photon ] [-i ID ]                                          " << endl;
 	cout << "                      [-l] file1 [... filen]"                                          << endl;
 	cout << "  where:"                                                                              << endl;
@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
 	int ID       =-1;
 	bool isS3    = false;
 	bool noPU    = false;
-	bool removePhoton = false;
+    	bool removePhoton = false;
 	string photon = "";
 
 // Parse options
@@ -115,12 +115,16 @@ int main(int argc, char* argv[]) {
 		cout << "ERROR: you are running on data, no reweighting needed... " << endl; exit(-1);
 	}
 
-	setofcuts   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/MT2_cuts/"+setofcuts+".dat";
-	if(data_PileUp.length()!=0){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
-	if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
+	//setofcuts   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/MT2_cuts/"+setofcuts+".dat";
+	//if(data_PileUp.length()!=0){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
+	//if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
+	setofcuts   ="/shome/leo/Analysis/MT2_cuts/"+setofcuts+".dat";
+	if(data_PileUp.length()!=0){data_PileUp ="/shome/leo/Analysis/Certification/pileUp_data/"+data_PileUp;}
+        if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/leo/Analysis/Certification/pileUp_mc/"  + mc_PileUp;}
 
 	if(jsonFileName.length() !=0){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"           +jsonFileName;}
 
+	if(puScenario=="3D"){ isS3=true; noPU=true; } // THIS IS A DIRTY TRICK TO TEST 3D REWEIGHT WITHOUT ADD A NEW VAR
 	if(puScenario=="S3") isS3=true;
 	else if(puScenario=="noPU") noPU=true;
 

@@ -15,7 +15,7 @@ MT2Analysis::MT2Analysis(TreeReader *tr) : UserAnalysisBase(tr){
 	fCut_caloMHT30ID_min                = 0;
 	fCut_JPt_hardest_min                = 0;
 	fCut_JPt_second_min                 = 0;
-	fCut_PtHat_max                      = 999999.;
+        fCut_PtHat_max                      = 999999.;
 	fCut_Run_min                        = 0;
 	fCut_Run_max                        = 9999999;
 	fDoJESUncertainty                   = false;
@@ -543,7 +543,10 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->pileUp.PtHat             = fTR->PtHat;
 		fMT2tree->pileUp.isS3              = (int) isS3;
 		//////////// S3 vs S4
-		if(noPU)
+		if(noPU && isS3){
+		  fMT2tree->pileUp.Weight=GetPUWeight3D(fTR->PUOOTnumInteractionsEarly ,fTR->PUnumInteractions , fTR->PUOOTnumInteractionsLate);
+		}
+		else if(noPU)
 		  fMT2tree->pileUp.Weight            = 1;
 	        else if(isS3)
 		  fMT2tree->pileUp.Weight            = (fTR->fChain->GetBranch("PUOOTnumInteractionsLate")==NULL) ? 1: GetPUWeight(fTR->PUnumInteractions, fTR->PUOOTnumInteractionsLate); // branch added in V02-03-01 
@@ -552,6 +555,8 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		
 		fMT2tree->pileUp.Rho               = fTR->Rho; // ATTENTION: this rho is from KT6 PF jets without pf-CHS
 		
+		//cout << GetPUWeight3D(fTR->PUOOTnumInteractionsEarly ,fTR->PUnumInteractions , fTR->PUOOTnumInteractionsLate) << endl;
+
 		if(fVerbose > 3) {
 			cout << "fTR->PUnumInteractions " <<  fTR->PUnumInteractions << " weight "  
 		     	     << " GetPUWeight() " << GetPUWeight(fTR->PUnumInteractions) << endl; 
@@ -1046,9 +1051,9 @@ bool MT2Analysis::IsSelectedEvent(){
 	// HT from jets + taus
 	float HT=0;
 	for(int j=0; j<fJets.size(); ++j){
-		if(Jet(fJets[j]).Pt() > 50 && fabs(Jet(fJets[j]).Eta())<3.0){
-			HT += Jet(fJets[j]).Pt();
-		}
+	  if(Jet(fJets[j]).Pt() > 50 && fabs(Jet(fJets[j]).Eta())<3.0){
+	    HT += Jet(fJets[j]).Pt();
+	  }
 	}
 	fHT = HT;
 	if(HT<fCut_HT_min){return false;}
@@ -1085,7 +1090,7 @@ bool MT2Analysis::IsSelectedEvent(){
 	
 	// flag crazy events (dedicated to filter HCAL "laser" events)
 	if(fTR->HCALSumEt > 10000 && fTR->PF2PAT3NJets > 25 ){
-		fCrazyHCAL =1;
+	  fCrazyHCAL =1;
 		cout << "WARNING: crazy HCAL event: Run " << fTR->Run << " LS " << fTR->LumiSection  << " Event " << fTR->Event 
 		     << " has HCALSumET " << fTR->HCALSumEt << " njets " << fTR->PF2PAT3NJets << endl;
 	}
@@ -1172,7 +1177,7 @@ void MT2Analysis::ReadCuts(const char* SetofCuts="MT2_cuts/default.dat"){
 			fCut_JPt_second_min      = float(ParValue); ok = true;			
 		} else if( !strcmp(ParName, "PtHat_max")){
 			fCut_PtHat_max            = float(ParValue); ok = true;
-		}  		
+		} 
 
 		if(!ok) cout << "%% MT2Analysis::ReadCuts ==> ERROR: Unknown variable " << ParName << endl;
 	}	

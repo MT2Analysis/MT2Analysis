@@ -54,7 +54,8 @@ void MT2Analyzer::Loop(){
 void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, string data_PileUp, string mc_PileUp, string JEC){
 	fMT2Analysis             ->ReadCuts(setofcuts);
 	fMT2Analysis             ->SetType(isData);
-	fMT2Analysis             ->SetPileUpSrc(data_PileUp, mc_PileUp);
+	if(isS3 && noPU) fMT2Analysis             ->SetPileUp3DSrc(data_PileUp, mc_PileUp);
+	else         fMT2Analysis             ->SetPileUpSrc(data_PileUp, mc_PileUp);
 	fMT2Analysis             ->SetOutputDir(fOutputDir);
 	fMT2Analysis             ->fVerbose        = fVerbose;
 	fMT2Analysis             ->SetJEC(JEC);

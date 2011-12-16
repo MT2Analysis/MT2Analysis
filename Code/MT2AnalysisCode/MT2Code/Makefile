@@ -24,8 +24,9 @@ SRCS           = ../TESCO/src/base/TreeClassBase.C ../TESCO/src/base/TreeReader.
                  ../TESCO/src/helper/Davismt2.cc ../TESCO/src/helper/Hemisphere.cc  src/MT2Analyzer.cc \
                  src/MassPlotter.cc ../TESCO/src/helper/PUWeight.C \
 		 src/QuickAnalysis.cc src/QuickAnalyzer.cc  src/MT2Shapes.cc \
-                 src/AnalysisAndHistos.cc \
-                 src/ZInvEstFromW.cc
+                 ../TESCO/src/helper/Lumi3DReWeighting_standalone.cc
+                 #src/AnalysisAndHistos.cc \
+                 #src/ZInvEstFromW.cc \
 
 
 # We want dictionaries only for classes that have _linkdef.h files                                                               
@@ -151,6 +152,7 @@ deps: $(SRCS)
 ../TESCO/src/base/UserAnalysisBase.o: /usr/include/bits/stdio_lim.h
 ../TESCO/src/base/UserAnalysisBase.o: /usr/include/bits/sys_errlist.h
 ../TESCO/src/base/UserAnalysisBase.o: ../TESCO/include/helper/PUWeight.h
+../TESCO/src/base/UserAnalysisBase.o: ../TESCO/include/helper/Lumi3DReWeighting_standalone.hh
 ../TESCO/src/base/UserAnalysisBase.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
 ../TESCO/src/base/UserAnalysisBase.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 ../TESCO/src/base/UserAnalysisBase.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/JetCorrectorParameters.h
@@ -288,6 +290,7 @@ src/MT2Analysis.o: ../TESCO/include/base/TreeReader.hh
 src/MT2Analysis.o: ../TESCO/include/base/TreeClassBase.h
 src/MT2Analysis.o: ../TESCO/include/helper/pdgparticle.hh
 src/MT2Analysis.o: ../TESCO/include/helper/PUWeight.h
+src/MT2Analysis.o: ../TESCO/include/helper/Lumi3DReWeighting_standalone.hh
 src/MT2Analysis.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
 src/MT2Analysis.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 src/MT2Analysis.o: ../TESCO/include/base/TreeReader.hh
@@ -468,6 +471,7 @@ src/MT2Analyzer.o: ./include/MT2Analysis.hh
 src/MT2Analyzer.o: ../TESCO/include/base/UserAnalysisBase.hh
 src/MT2Analyzer.o: ../TESCO/include/helper/pdgparticle.hh
 src/MT2Analyzer.o: ../TESCO/include/helper/PUWeight.h
+src/MT2Analyzer.o: ../TESCO/include/helper/Lumi3DReWeighting_standalone.hh
 src/MT2Analyzer.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
 src/MT2Analyzer.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 src/MT2Analyzer.o: ../TESCO/include/helper/Davismt2.h /usr/include/math.h
@@ -609,6 +613,7 @@ src/QuickAnalysis.o: ../TESCO/include/base/UserAnalysisBase.hh
 src/QuickAnalysis.o: ../TESCO/include/base/TreeReader.hh
 src/QuickAnalysis.o: ../TESCO/include/helper/pdgparticle.hh
 src/QuickAnalysis.o: ../TESCO/include/helper/PUWeight.h
+src/QuickAnalysis.o: ../TESCO/include/helper/Lumi3DReWeighting_standalone.hh
 src/QuickAnalysis.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
 src/QuickAnalysis.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 src/QuickAnalyzer.o: ./include/QuickAnalyzer.hh
@@ -635,6 +640,7 @@ src/QuickAnalyzer.o: ./include/QuickAnalysis.hh
 src/QuickAnalyzer.o: ../TESCO/include/base/UserAnalysisBase.hh
 src/QuickAnalyzer.o: ../TESCO/include/helper/pdgparticle.hh
 src/QuickAnalyzer.o: ../TESCO/include/helper/PUWeight.h
+src/QuickAnalyzer.o: ../TESCO/include/helper/Lumi3DReWeighting_standalone.hh
 src/QuickAnalyzer.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
 src/QuickAnalyzer.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 src/MT2Shapes.o: ./include/MT2Shapes.hh ./include/MT2tree.hh
@@ -656,3 +662,51 @@ src/MT2Shapes.o: /usr/include/bits/pthreadtypes.h /usr/include/alloca.h
 src/MT2Shapes.o: ../TESCO/include/helper/Monitor.hh /usr/include/math.h
 src/MT2Shapes.o: /usr/include/bits/huge_val.h /usr/include/bits/mathdef.h
 src/MT2Shapes.o: /usr/include/bits/mathcalls.h
+src/AnalysisAndHistos.o: ./include/AnalysisAndHistos.hh ./include/MT2tree.hh
+src/AnalysisAndHistos.o: ../TESCO/include/helper/Utilities.hh
+src/AnalysisAndHistos.o: /usr/include/stdio.h /usr/include/features.h
+src/AnalysisAndHistos.o: /usr/include/sys/cdefs.h
+src/AnalysisAndHistos.o: /usr/include/bits/wordsize.h
+src/AnalysisAndHistos.o: /usr/include/gnu/stubs.h /usr/include/gnu/stubs-64.h
+src/AnalysisAndHistos.o: /usr/include/bits/types.h
+src/AnalysisAndHistos.o: /usr/include/bits/typesizes.h /usr/include/libio.h
+src/AnalysisAndHistos.o: /usr/include/_G_config.h /usr/include/wchar.h
+src/AnalysisAndHistos.o: /usr/include/bits/wchar.h /usr/include/gconv.h
+src/AnalysisAndHistos.o: /usr/include/bits/stdio_lim.h
+src/AnalysisAndHistos.o: /usr/include/bits/sys_errlist.h
+src/AnalysisAndHistos.o: /usr/include/stdlib.h /usr/include/sys/types.h
+src/AnalysisAndHistos.o: /usr/include/time.h /usr/include/endian.h
+src/AnalysisAndHistos.o: /usr/include/bits/endian.h /usr/include/sys/select.h
+src/AnalysisAndHistos.o: /usr/include/bits/select.h
+src/AnalysisAndHistos.o: /usr/include/bits/sigset.h /usr/include/bits/time.h
+src/AnalysisAndHistos.o: /usr/include/sys/sysmacros.h
+src/AnalysisAndHistos.o: /usr/include/bits/pthreadtypes.h
+src/AnalysisAndHistos.o: /usr/include/alloca.h
+src/AnalysisAndHistos.o: ../TESCO/include/helper/Monitor.hh
+src/AnalysisAndHistos.o: /usr/include/math.h /usr/include/bits/huge_val.h
+src/AnalysisAndHistos.o: /usr/include/bits/mathdef.h
+src/AnalysisAndHistos.o: /usr/include/bits/mathcalls.h
+src/AnalysisAndHistos.o: ../TESCO/include/helper/Hemisphere.hh
+src/AnalysisAndHistos.o: ./include/Utilities.hh
+src/ZInvEstFromW.o: ./include/ZInvEstFromW.hh ./include/MT2tree.hh
+src/ZInvEstFromW.o: ../TESCO/include/helper/Utilities.hh /usr/include/stdio.h
+src/ZInvEstFromW.o: /usr/include/features.h /usr/include/sys/cdefs.h
+src/ZInvEstFromW.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+src/ZInvEstFromW.o: /usr/include/gnu/stubs-64.h /usr/include/bits/types.h
+src/ZInvEstFromW.o: /usr/include/bits/typesizes.h /usr/include/libio.h
+src/ZInvEstFromW.o: /usr/include/_G_config.h /usr/include/wchar.h
+src/ZInvEstFromW.o: /usr/include/bits/wchar.h /usr/include/gconv.h
+src/ZInvEstFromW.o: /usr/include/bits/stdio_lim.h
+src/ZInvEstFromW.o: /usr/include/bits/sys_errlist.h /usr/include/stdlib.h
+src/ZInvEstFromW.o: /usr/include/sys/types.h /usr/include/time.h
+src/ZInvEstFromW.o: /usr/include/endian.h /usr/include/bits/endian.h
+src/ZInvEstFromW.o: /usr/include/sys/select.h /usr/include/bits/select.h
+src/ZInvEstFromW.o: /usr/include/bits/sigset.h /usr/include/bits/time.h
+src/ZInvEstFromW.o: /usr/include/sys/sysmacros.h
+src/ZInvEstFromW.o: /usr/include/bits/pthreadtypes.h /usr/include/alloca.h
+src/ZInvEstFromW.o: ../TESCO/include/helper/Monitor.hh /usr/include/math.h
+src/ZInvEstFromW.o: /usr/include/bits/huge_val.h /usr/include/bits/mathdef.h
+src/ZInvEstFromW.o: /usr/include/bits/mathcalls.h
+src/ZInvEstFromW.o: ../TESCO/include/helper/Hemisphere.hh
+src/ZInvEstFromW.o: ./include/Utilities.hh
+../TESCO/src/helper/Lumi3DReWeighting_standalone.o: ../TESCO/include/helper/Lumi3DReWeighting_standalone.hh

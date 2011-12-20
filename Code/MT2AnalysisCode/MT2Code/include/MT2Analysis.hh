@@ -20,6 +20,7 @@
 #include "JetCorrectorParameters.h" 
 #include "FactorizedJetCorrector.h" 
 
+
 static const int gNHemispheres = 4;
 static const int gNGenJets     = 20;
 
@@ -45,6 +46,10 @@ public:
 
 	// remove Photon
 	bool fRemovePhoton;
+
+  //Control histos
+  TH1F *fH_PUWeights ;
+
 private:
 	// files and trees ----------------------------------------------------------------
 	// file for histograms:
@@ -53,6 +58,9 @@ private:
         // MT2 mini-tree
         MT2tree* fMT2tree;
         TTree* fATree;
+
+        //Control Histograms
+  //  TH1F *fH_PUWeights ;
 
 	// data members-----------------------------------------
 	bool fisData;
@@ -101,6 +109,7 @@ private:
 	int   fCut_Run_max;
 	bool  fDoJESUncertainty;
 	int   fJESUpDown;
+  int   fCut_NJets40_min;
 
 
 	// ---- required and vetoed triggers ----

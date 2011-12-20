@@ -46,6 +46,20 @@ void MT2Analyzer::Loop(){
                 }
 		if ( !(skipRun || skipLumi) ) {
 			fMT2Analysis        ->Analyze();
+
+			double PUWeight = 0;
+			//PU mean weight
+			if(noPU && isS3){
+			 PUWeight = fMT2Analysis->GetPUWeight3D(fTR->PUOOTnumInteractionsEarly ,fTR->PUnumInteractions , fTR->PUOOTnumInteractionsLate);
+			}
+			else if(noPU)
+			  PUWeight            = 1;
+			else if(isS3)
+			  PUWeight            = (fTR->fChain->GetBranch("PUOOTnumInteractionsLate")==NULL) ? 1: fMT2Analysis->GetPUWeight(fTR->PUnumInteractions, fTR->PUOOTnumInteractionsLate); // branch added in V02-03-01 
+			else
+			  PUWeight            = fMT2Analysis->GetPUWeight(fTR->PUnumInteractions);
+			
+			fMT2Analysis->fH_PUWeights->Fill( PUWeight );
 		}
 	}
 }
@@ -64,6 +78,9 @@ void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, str
         fMT2Analysis             ->isS3         = isS3;
 	fMT2Analysis             ->noPU         = noPU;
 	fMT2Analysis             ->Begin(filename);
+
+		fMT2Analysis->fH_PUWeights = new TH1F("h_PUWeights",";PU weights",100,0,5);
+
 }
 
 // Method called after finishing the event loop

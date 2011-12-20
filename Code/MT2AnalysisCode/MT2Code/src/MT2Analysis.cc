@@ -56,6 +56,7 @@ void MT2Analysis::End(){
 	fHistFile->cd();	
 
 	// write tree
+	fH_PUWeights->Write();
 	fATree->Write();
 	fHistFile                ->Close();
 

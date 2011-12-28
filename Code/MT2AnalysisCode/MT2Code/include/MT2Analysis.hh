@@ -48,7 +48,10 @@ public:
 	bool fRemovePhoton;
 
   //Control histos
-  TH1F *fH_PUWeights ;
+  TH1F *fH_PUWeights, *fH_Events ;
+  
+
+
 
 private:
 	// files and trees ----------------------------------------------------------------

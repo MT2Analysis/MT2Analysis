@@ -28,6 +28,7 @@ void MT2Analyzer::Loop(){
 		nentries=min((Long64_t)fMaxEvents, fTR->GetEntries());
 		cout << " only running on first " << nentries << " events" << endl;
 	}
+
 	// loop over all ntuple entries
 	for( Long64_t jentry = 0; jentry < nentries; jentry++ ){
 		PrintProgress(jentry);
@@ -50,7 +51,7 @@ void MT2Analyzer::Loop(){
 			double PUWeight = 0;
 			//PU mean weight
 			if(noPU && isS3){
-			 PUWeight = fMT2Analysis->GetPUWeight3D(fTR->PUOOTnumInteractionsEarly ,fTR->PUnumInteractions , fTR->PUOOTnumInteractionsLate);
+			  PUWeight = fMT2Analysis->GetPUWeight3D(fTR->PUOOTnumInteractionsEarly ,fTR->PUnumInteractions , fTR->PUOOTnumInteractionsLate);
 			}
 			else if(noPU)
 			  PUWeight            = 1;
@@ -60,8 +61,10 @@ void MT2Analyzer::Loop(){
 			  PUWeight            = fMT2Analysis->GetPUWeight(fTR->PUnumInteractions);
 			
 			fMT2Analysis->fH_PUWeights->Fill( PUWeight );
+			fMT2Analysis->fH_Events->Fill( 1. );
+
 		}
-	}
+	}//end loop
 }
 
 // Method called before starting the event loop
@@ -79,7 +82,9 @@ void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, str
 	fMT2Analysis             ->noPU         = noPU;
 	fMT2Analysis             ->Begin(filename);
 
-		fMT2Analysis->fH_PUWeights = new TH1F("h_PUWeights",";PU weights",100,0,5);
+	fMT2Analysis->fH_PUWeights = new TH1F("h_PUWeights",";PU weights",100,0,5);
+	fMT2Analysis->fH_Events = new TH1F("h_Events",";Events",10,0,10);
+
 
 }
 

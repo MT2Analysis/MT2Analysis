@@ -29,7 +29,6 @@ MT2Analysis::MT2Analysis(TreeReader *tr) : UserAnalysisBase(tr){
 	
 	fBEfiles.clear();
 	fTPfiles.clear();
-
 }
 
 MT2Analysis::~MT2Analysis(){
@@ -57,6 +56,7 @@ void MT2Analysis::End(){
 
 	// write tree
 	fH_PUWeights->Write();
+	fH_Events->Write();
 	fATree->Write();
 	fHistFile                ->Close();
 
@@ -322,10 +322,8 @@ void MT2Analysis::Analyze(){
 // ***********************************************************************************************
 // fill MT2 tree
 void MT2Analysis::BookTree(){
-	          
 	fATree = new TTree("MassTree", "MassTree");
 	fATree->Branch("MT2tree" , "MT2tree" , &fMT2tree);
-
 }
 
 void MT2Analysis::ResetTree(){

@@ -593,10 +593,21 @@ void MassPlotter::PrintCutFlow(int njets, int nleps, TString trigger, TString cu
 
   for(size_t i = 0; i < fSamples.size(); ++i){
 
-    Double_t sample_weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents);
+    //Getting NEntries, PUWeight
+    float avg_pu_w = 1;
+    if(fSamples[i].type!="data"){
+      TH1F *h_PUWeights = (TH1F*) fSamples[i].file->Get("h_PUWeights");
+      avg_pu_w = h_PUWeights->GetMean();
+      fSamples[i].nevents = h_PUWeights->GetEntries();
+      delete h_PUWeights;
+    }
+
+    Double_t sample_weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents * avg_pu_w );
     if(fVerbose>2) cout << "PrintCutFlow: looping over " << fSamples[i].name << endl;
     if(fVerbose>2) cout << "              sample has weight " << sample_weight << " and " << fSamples[i].tree->GetEntries() << " entries" << endl; 
-
+    if(fVerbose>2) cout << "              Average PU weight: " << avg_pu_w << endl;
+    if(fVerbose>2) cout << "              Original Entries: " << fSamples[i].nevents << endl;
+    
     fMT2tree = new MT2tree();
     fSamples[i].tree->SetBranchAddress("MT2tree", &fMT2tree);
     Long64_t nentries =  fSamples[i].tree->GetEntries();
@@ -843,10 +854,22 @@ void MassPlotter::PrintCutFlowMT2vsHT(TString trigger, TString cuts){
   // Loop over samples
   for(size_t i = 0; i < fSamples.size(); ++i){
 
-    Double_t sample_weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents);
+    //Getting NEntries, PUWeight
+    float avg_pu_w = 1;
+    if(fSamples[i].type!="data"){
+      TH1F *h_PUWeights = (TH1F*) fSamples[i].file->Get("h_PUWeights");
+      avg_pu_w = h_PUWeights->GetMean();
+      fSamples[i].nevents = h_PUWeights->GetEntries();
+      delete h_PUWeights;
+    }
+    
+    Double_t sample_weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents * avg_pu_w );
     if(fVerbose>2) cout << "PrintCutFlow: looping over " << fSamples[i].name << endl;
     if(fVerbose>2) cout << "              sample has weight " << sample_weight << " and input tree has " << fSamples[i].tree->GetEntries() << " entries" << endl; 
+    if(fVerbose>2) cout << "              Average PU weight: " << avg_pu_w << endl;
+    if(fVerbose>2) cout << "              Original Entries: " << fSamples[i].nevents << endl;
 
+    
     fMT2tree = new MT2tree();
     fSamples[i].tree->SetBranchAddress("MT2tree", &fMT2tree);
     Long64_t nentries =  fSamples[i].tree->GetEntries();
@@ -1246,7 +1269,17 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 			h_composited[5] -> SetLineColor(kBlack);
 			h_composited[5] -> SetLineStyle(kDotted);
 		}
-		Double_t weight = Samples[i].xsection * Samples[i].kfact * Samples[i].lumi / (Samples[i].nevents);
+	
+		//Getting NEntries, PUWeight
+		float avg_pu_w = 1;
+		if(Samples[i].type!="data"){
+		  TH1F *h_PUWeights = (TH1F*) Samples[i].file->Get("h_PUWeights");
+		  avg_pu_w = h_PUWeights->GetMean();
+		  Samples[i].nevents = h_PUWeights->GetEntries();
+		  delete h_PUWeights;
+		}
+		
+		Double_t weight = Samples[i].xsection * Samples[i].kfact * Samples[i].lumi / (Samples[i].nevents*avg_pu_w);
 		if(fVerbose>2) cout << "MakePlot: looping over " << Samples[i].sname << endl;
 		if(fVerbose>2) cout << "           sample has weight " << weight << " and " << Samples[i].tree->GetEntries() << " entries" << endl; 
 	
@@ -1367,8 +1400,8 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 			        << "Data:              " << h_composited[6]->Integral()  << endl;
 
 			   //Same, but with errors
-			   string OverallSamples[7] = {"QCD","W+jets","Z+Jets","Other","TOTAL BG","SUSY","Data"};
-			   for(int os=0; os<7; os++){
+			   string OverallSamples[8] = {"QCD","W+jets","Z+Jets","Top","Other","SUSY","Data","TOTAL BG"};
+			   for(int os=0; os<8; os++){
 			     string tSample = OverallSamples[os];
 			     if(tSample!="TOTAL BG"){
 			       TH1F* clone = (TH1F*) h_composited[os]->Clone();
@@ -2023,7 +2056,8 @@ void MassPlotter::plotRatioStack(THStack* hstack, TH1* h1_orig, TH1* h2_orig, bo
 
 	hstack->SetMinimum(0.02);
 	hstack ->Draw("hist");
-	h2     ->Draw("sameEX0");
+	//h2     ->Draw("sameEX0");
+        h2     ->Draw("sameE");
 
 	// title
 	TLatex lat;
@@ -2066,18 +2100,18 @@ void MassPlotter::plotRatioStack(THStack* hstack, TH1* h1_orig, TH1* h2_orig, bo
 	h_ratio->GetXaxis()->SetTickLength(scale * h1->GetXaxis()->GetTickLength());
 	h_ratio->GetYaxis()->SetTickLength(h1->GetYaxis()->GetTickLength());
 	h_ratio->SetLineWidth(2);
-	h_ratio->SetFillColor(kBlue);
-	h_ratio->SetLineColor(kBlue);
+	//h_ratio->SetFillColor(kBlue);//leo
+	//h_ratio->SetLineColor(kBlue);
 	h_ratio ->SetStats(0);
 	h_ratio ->SetMarkerStyle(20);
-	h_ratio ->SetMarkerSize(0.1);
+	//h_ratio ->SetMarkerSize(0.1);
 
  	h_ratio ->Divide(h2, h1);
  	h_ratio ->SetMinimum(0.4);
  	h_ratio ->SetMaximum(3.0);
 	h_ratio ->GetYaxis()->SetTitleOffset(h1->GetYaxis()->GetTitleOffset());
 
-	h_ratio ->DrawCopy("E2");
+	h_ratio ->DrawCopy("E"/*2"*/);
  
 	TLine *l3 = new TLine(h1->GetXaxis()->GetXmin(), 1.00, h1->GetXaxis()->GetXmax(), 1.00);
 	l3->SetLineWidth(2);
@@ -2160,7 +2194,7 @@ void MassPlotter::plotRatioStack(THStack* hstack, TH1* h1_orig, TH1* h2_orig, TH
 
 	hstack->SetMinimum(0.02);
 	hstack->Draw("hist");
-	h2    ->Draw("sameEX0");
+	h2    ->Draw("sameE");
 	h3->Scale(overlayScale ? overlayScale : h2->Integral() / h3->Integral());
 	h3->SetFillColor(0);
 	h3->SetLineStyle(kDotted);
@@ -2522,7 +2556,7 @@ void MassPlotter::printHisto(THStack* h, TH1* h_data, TH1* h_mc_sum, TH1* h_susy
 	h->Draw(drawopt);
 	//h_mc_sum -> Draw("same, E2");
 	if(h_data->Integral()>0) {
-		h_data       ->Draw("sameEX0");
+		h_data       ->Draw("sameE");
 	}
 	h_susy->Scale(overlayScale ? overlayScale : h_data->Integral() / h_susy->Integral());
 	h_susy->SetLineStyle(kDotted);

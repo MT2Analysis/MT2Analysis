@@ -501,8 +501,13 @@ void MT2Photon::Reset() {
   HcalIso         = -999.99;
   SigmaIEtaIEta   = -999.99;
   HoverE          = -999.99; 
+  GenJetMinDR     = -999.99;
   MCmatchexitcode = -999;
-  isEGMloose      = 0;
+  isEGMlooseID    = 0;
+  isEGMtightID    = 0;
+  isEGMlooseIso   = 0;
+  isEGMlooseRelIso= 0;
+  isEGMtightIso   = 0;
   JetRemoved      = 0;
   hasPixelSeed    = 0;
 }
@@ -1997,6 +2002,100 @@ Float_t MT2tree::GetGenVPt(int pid){
   return V_p.Pt();
 }
 
+TLorentzVector MT2tree::RecoOSDiLeptLv(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max){
+	TLorentzVector Zero(0,0,0,0);
+	TLorentzVector Z(0,0,0,0);
+	if(NEles==2 && NMuons==0 && ele[0].Charge!=ele[1].Charge){
+		if(ele[0].lv.Pt()<l_ptmin || fabs(ele[0].lv.Eta())>l_etamax) return Zero;
+		if(ele[1].lv.Pt()<l_ptmin || fabs(ele[1].lv.Eta())>l_etamax) return Zero;
+		Z=ele[0].lv+ele[1].lv;
+	}else if(NEles==0 && NMuons==2 && muo[0].Charge!=muo[1].Charge){
+		if(muo[0].lv.Pt()<l_ptmin || fabs(muo[0].lv.Eta())>l_etamax) return Zero;
+		if(muo[1].lv.Pt()<l_ptmin || fabs(muo[1].lv.Eta())>l_etamax) return Zero;
+		Z=muo[0].lv+muo[1].lv;
+	}else{  return Zero;}
+	if(Z.M()>mll_max || Z.M()<mll_min) return Zero;
+	return Z;
+}
+
+Float_t MT2tree::RecoOSDiLeptPt(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max){
+	TLorentzVector Z=RecoOSDiLeptLv(l_ptmin, l_etamax, mll_min, mll_max);
+	return Z.Pt();
+}
+
+Float_t MT2tree::RecoOSDiLeptRapidity(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max){
+	TLorentzVector Z=RecoOSDiLeptLv(l_ptmin, l_etamax, mll_min, mll_max);
+	return Z.Rapidity();
+}
+
+
+TLorentzVector MT2tree::GenDiLeptLv(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max, Bool_t charged){
+	TLorentzVector Zero(0,0,0,0);
+	vector<int> indices;
+	for(int i=0; i<NGenLepts; ++i){
+		Int_t ID   = fabs(genlept[i].ID);
+		Int_t MID  = fabs(genlept[i].MID);
+		Int_t GMID = fabs(genlept[i].GMID);
+		if(MID==23 && ( ID==11 || ID==12 || ID==13 || ID==14 || ID==16)){
+//			cout << "ID " << ID << " MID " << MID << " GMID " << GMID << endl;
+			indices.push_back(i);
+		}else if (MID==15 && GMID==23 && (ID==11 || ID==12 || ID==13 || ID==14 || ID==16)){
+//			cout << "ID " << ID << " MID " << MID << " GMID " << GMID << endl;
+			indices.push_back(i);
+		} 
+	}
+	vector<int> new_indices;
+	if(charged){
+		for(int i=0; i<indices.size(); ++i){
+			if(fabs(genlept[indices[i]].ID)==12 || fabs(genlept[indices[i]].ID)==14 || fabs(genlept[indices[i]].ID)==16) continue;
+			new_indices.push_back(indices[i]);
+		}
+		if(new_indices.size()!=2)                                              return Zero;
+		if(genlept[new_indices[0]].ID!=-genlept[new_indices[1]].ID)            return Zero;
+	}else {new_indices=indices;}
+	if(new_indices.size()!=2)                                                      return Zero;
+
+
+	if(genlept[new_indices[0]].lv.Pt()<l_ptmin)                                    return Zero;
+	if(genlept[new_indices[1]].lv.Pt()<l_ptmin)                                    return Zero;
+	if(fabs(genlept[new_indices[0]].lv.Eta())>l_etamax)                            return Zero;
+	if(fabs(genlept[new_indices[1]].lv.Eta())>l_etamax)                            return Zero;
+	TLorentzVector Z=genlept[new_indices[0]].lv+genlept[new_indices[1]].lv;
+	if(Z.M() > mll_max || Z.M() < mll_min)                                         return Zero;
+	return Z;
+}
+
+Float_t MT2tree::GenDiLeptPt(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max, Bool_t charged){
+	TLorentzVector Z=GenDiLeptLv(l_ptmin, l_etamax, mll_min, mll_max,charged);
+	return Z.Pt();
+}
+Float_t MT2tree::GenDiLeptRapidity(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max, Bool_t charged){
+	TLorentzVector Z=GenDiLeptLv(l_ptmin, l_etamax, mll_min, mll_max,charged);
+	return Z.Rapidity();
+}
+
+Float_t MT2tree::GenZPt(){
+	vector<int> indices;
+	for(int i=0; i<NGenLepts; ++i){
+		Int_t ID   = fabs(genlept[i].ID);
+		Int_t MID  = fabs(genlept[i].MID);
+		Int_t GMID = fabs(genlept[i].GMID);
+		if(MID==23 && ( ID==11 || ID==12 || ID==13 || ID==14 || ID==16)){
+//			cout << "ID " << ID << " MID " << MID << " GMID " << GMID << endl;
+			indices.push_back(i);
+		}else if (MID==15 && GMID==23 && (ID==11 || ID==12 || ID==13 || ID==14 || ID==16)){
+//			cout << "ID " << ID << " MID " << MID << " GMID " << GMID << endl;
+			indices.push_back(i);
+		} 
+	}
+	if(indices.size()==0) return -1;
+	TLorentzVector Z(0,0,0,0);
+	for(int i=0; i<indices.size(); ++i){
+		TLorentzVector l=genlept[indices[i]].lv;
+		Z+=l;
+	}
+	return Z.Pt();
+}
 // Photons  ************************************************************************************************************
 Int_t MT2tree::PhotonJetDRJIndex(int ph_index, float minJPt, float maxJEta, int PFJID ){
 	double minDR=100;
@@ -2036,6 +2135,31 @@ Float_t MT2tree::PhotonEleDR(int ph_index, float minEPt, float maxEEta){
 	Int_t index = PhotonEleDREIndex(ph_index, minEPt, maxEEta);
 	if(index >=0) return photon[ph_index].lv.DeltaR(ele[index].lv);
 	else          return -999.99;
+}
+
+Int_t MT2tree::GenPhotonGenJetDRJIndex(float minJPt, float maxJEta, int PFJID ){
+	double minDR=100;
+	int    index=-1;
+	for(int i=0; i<NGenJets; ++i){
+		if(genjet[i].lv.Pt()<minJPt || fabs(genjet[i].lv.Eta())>maxJEta) continue;
+		double dR = GenPhoton[0].DeltaR(genjet[i].lv);
+		if(dR < minDR) {
+			minDR=dR;
+			index = i;
+		}
+	}
+	return index;
+}
+
+Float_t MT2tree::GenPhotonGenJetDR(float minJPt, float maxJEta, int PFJID ){
+	Int_t index = GenPhotonGenJetDRJIndex(minJPt, maxJEta, PFJID);
+	if(index >=0) return GenPhoton[0].DeltaR(genjet[index].lv);
+	else          return -999.99;
+}
+
+Float_t MT2tree::GenPhotonAndLeadingJetPt(){
+	TLorentzVector lv = GenPhoton[0]+genjet[0].lv;
+	return lv.Pt();
 }
 
 // Print-Outs ---------------------------------------------------------------------------------------------------------

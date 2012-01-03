@@ -29,6 +29,7 @@ public:
 	MT2Shapes();
 	MT2Shapes(TString);
 	MT2Shapes(TString, TString);
+	MT2Shapes(TString, TString, std::ostringstream*);
 	virtual ~MT2Shapes();
 
 
@@ -37,6 +38,10 @@ public:
 	int  GetNSamples(){return fSamples.size();};
 	int  GetNShapes(){return nShapes;};
 	void SetPrintSummary(bool printsummary){fPrintSummary=printsummary;};
+	void SetDraw(bool draw){fDraw=draw;};
+	void SetWrite(bool write){fWrite=write;};
+	void SetLogStream(std::ostringstream* stream){fLogStream=stream;};
+	void Print();
 
 	struct sample{
 		TString name;
@@ -72,6 +77,10 @@ private:
 	TString fPath;
 	int nShapes;
 	bool fPrintSummary;
+	bool fDraw;
+	bool fWrite;
+	bool fCout;
+	std::ostringstream* fLogStream;
 
 	MT2tree* fMT2tree;
 	TTree*   fTree;

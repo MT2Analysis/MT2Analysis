@@ -1244,8 +1244,8 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 	  h_composited[i] -> SetStats(false);
 	}
 	if(fisPhoton){
-		h_composited[4] -> SetFillColor(kMagenta+2); 
-		h_composited[4] -> SetLineColor(kMagenta+2);
+		h_composited[4] -> SetFillColor(kViolet-3); 
+		h_composited[4] -> SetLineColor(kViolet-3);
 		cnames[4]="Photons";
 	}
 
@@ -1376,12 +1376,13 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 	      if( i!=5 || !overlaySUSY) h_stack  -> Add(h_composited[i]);
 	      if( i==5)                 h_susy   -> Add(h_composited[i]);
 	      else        	      h_mc_sum -> Add(h_composited[i]);
-	      if( i==5 && overlaySUSY)
-	        Legend1 ->AddEntry(h_composited[i], cnames[i] + (overlayScale ? overlayScale==1? "":
+	      if( i==5 && overlaySUSY){
+	        if(h_composited[i]->GetEntries()>0) Legend1 ->AddEntry(h_composited[i], cnames[i] + (overlayScale ? overlayScale==1? "":
 		  					      TString::Format(" x %.0f",overlayScale) :
 		  					      " scaled to data")   , "f");  
-	      else
-	        Legend1 ->AddEntry(h_composited[i], cnames[i], stacked ? "f" : "l");
+	      }else{
+	        if(h_composited[i]->GetEntries()>0) Legend1 ->AddEntry(h_composited[i], cnames[i], stacked ? "f" : "l");
+	      }
 	    }
 	  }
 	  h_data->Add(h_composited[6]);
@@ -1462,11 +1463,11 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 	      if(Samples[i].type!="susy" || !overlaySUSY) h_stack->Add(h_samples[i]);
 	      if(Samples[i].type!="susy") h_mc_sum->Add(h_samples[i]);
 	      if(Samples[i].type=="susy" && overlaySUSY){
-	         Legend1 ->AddEntry(h_samples[i], Samples[i].sname + (overlayScale ? 
+	         if(h_samples[i]->Integral()>0) Legend1 ->AddEntry(h_samples[i], Samples[i].sname + (overlayScale ? 
 								       TString::Format(" x %.0f",overlayScale) :
 								       " scaled to data")   , "f") ;
 	      }else{
-		 Legend1 ->AddEntry(h_samples[i], Samples[i].sname, stacked ? "f" : "l");
+		 if(h_samples[i]->Integral()>0) Legend1 ->AddEntry(h_samples[i], Samples[i].sname, stacked ? "f" : "l");
 	      }	
 	    }
 	    if(Samples[i].type == "data"){

@@ -463,11 +463,16 @@ public:
   Float_t SigmaIEtaIEta;
   Float_t HoverE;
   Int_t   MCmatchexitcode;
+  Float_t GenJetMinDR;
   Bool_t  JetRemoved;
-  Bool_t  isEGMloose;
+  Bool_t  isEGMlooseIso;
+  Bool_t  isEGMlooseRelIso;
+  Bool_t  isEGMtightIso;
+  Bool_t  isEGMlooseID;
+  Bool_t  isEGMtightID;
   Bool_t  hasPixelSeed;
 
-  ClassDef(MT2Photon, 4)
+  ClassDef(MT2Photon, 7)
 };
 
 
@@ -586,12 +591,22 @@ public:
   Bool_t  SLTopAccept(float pt, float eta);
   Float_t SLTopEta(float pt);
   Float_t LeptJetDR(int pid, int index, bool bjet, int ID);
+  Float_t GenDiLeptPt(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max, Bool_t charged);
+  Float_t GenDiLeptRapidity(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max, Bool_t charged);
+  TLorentzVector GenDiLeptLv(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max, Bool_t charged);
+  Float_t GenZPt();
+  TLorentzVector RecoOSDiLeptLv(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max);
+  Float_t RecoOSDiLeptPt(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max);
+  Float_t RecoOSDiLeptRapidity(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max);
   
   // Photons
+  Int_t   GenPhotonGenJetDRJIndex(float minJPt, float maxJEta, int PFJID );
+  Float_t GenPhotonGenJetDR(float minJPt, float maxJEta, int PFJID );
   Int_t   PhotonJetDRJIndex(int ph_index, float minJPt, float maxJEta, int PFJID );
   Float_t PhotonJetDR(int ph_index, float minJPt, float maxJEta, int PFJID );
   Int_t   PhotonEleDREIndex(int ph_index, float minEPt, float maxEEta);
   Float_t PhotonEleDR(int ph_index, float minEPt, float maxEEta);
+  Float_t GenPhotonAndLeadingJetPt();
 
   // PrintOut 
   Bool_t   PrintOut(Bool_t logfile);

@@ -58,6 +58,10 @@ using namespace std;
 //____________________________________________________________________________
 MT2Shapes::MT2Shapes(){
 	fPrintSummary=false;
+	fDraw        =false;
+	fWrite       =true;
+	fCout        =true;
+	fLogStream   =new std::ostringstream();
 // Default constructor, no samples are set
 }
 
@@ -66,6 +70,10 @@ MT2Shapes::MT2Shapes(TString outputdir){
 // Explicit constructor with output directory
 	setOutputDir(outputdir);
 	fPrintSummary=false;
+	fDraw        =false;
+	fWrite       =true;
+	fCout        =true;
+	fLogStream   =new std::ostringstream();
 }
 
 //____________________________________________________________________________
@@ -74,19 +82,47 @@ MT2Shapes::MT2Shapes(TString outputdir, TString outputfile){
 	setOutputDir(outputdir);
 	setOutputFile(outputfile);
 	fPrintSummary=false;
+	fDraw        =false;
+	fWrite       =true;
+	fCout        =true;
+	fLogStream   =new std::ostringstream();
 }
+//____________________________________________________________________________
+MT2Shapes::MT2Shapes(TString outputdir, TString outputfile, std::ostringstream* stream){
+// Explicit constructor with output directory and output file
+	setOutputDir(outputdir);
+	setOutputFile(outputfile);
+	if(stream!=0) {
+		SetLogStream(stream);
+		fCout        =false;
+	} else{
+		fCout        =true;
+	}
+	fPrintSummary=false;
+	fDraw        =false;
+	fWrite       =true;
+}
+
 
 //____________________________________________________________________________
 MT2Shapes::~MT2Shapes(){
 	fOutputFile->Close();
 	delete fOutputFile;
+	if(fCout) delete fLogStream;
+}
+//----------------------------------------------------------------------------
+void MT2Shapes::Print(){
+	// drop logstream
+	cout << fLogStream->str() << endl;
+	fLogStream->str("");
 }
 
 //____________________________________________________________________________
 void MT2Shapes::init(TString filename){
-	if(fVerbose > 0) cout << "------------------------------------" << endl;
-	if(fVerbose > 0) cout << "Initializing MT2Shapes ... " << endl;
+	if(fVerbose > 0) *fLogStream << "------------------------------------" << endl;
+	if(fVerbose > 0) *fLogStream << "Initializing MT2Shapes ... " << endl;
 	loadSamples(filename);
+	if(fCout) Print();
 }
 
 //____________________________________________________________________________
@@ -104,8 +140,8 @@ void MT2Shapes::GetShapes( TString var, TString cuts, int njets, int nleps, TStr
 void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TString selection_name, TString HLT,
 			  TString xtitle, const int nbins, const double *bins){
 	if(fVerbose > 1) {
-		cout << "....................................................................................................." << endl;
-		cout << "........ GetShapes for " << selection_name << "..............................................................." << endl;
+		*fLogStream << "....................................................................................................." << endl;
+		*fLogStream << "........ GetShapes for " << selection_name << "..............................................................." << endl;
 	}
 
 	// parsiong cuts
@@ -122,8 +158,8 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 
 	TString basecuts = nJets + nLeps + "&&" + cuts;
 	if(fVerbose > 1){
-		cout << "\n---> applied cuts:     " << basecuts           << endl;
-		cout << "\n---> trigger for data: " << HLT        << "\n" << endl;
+		*fLogStream << "\n---> applied cuts:     " << basecuts           << endl;
+		*fLogStream << "\n---> trigger for data: " << HLT        << "\n" << endl;
 	}
 
 
@@ -153,18 +189,18 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 		
 		// calculate weight and print some info
 		Double_t weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents);
-		if(fVerbose>2) cout << "---> looping over " << fSamples[i].sname << "--------------------------------------------"<< endl;
-		if(fVerbose>2) cout << "          sample belongs to shape " << fSamples[i].shapename << endl;
-		if(fVerbose>2) cout << "          sample has weight " << weight << " and " << fSamples[i].tree->GetEntries() << " entries" << endl; 
+		if(fVerbose>2) *fLogStream << "---> looping over " << fSamples[i].sname << "--------------------------------------------"<< endl;
+		if(fVerbose>2) *fLogStream << "          sample belongs to shape " << fSamples[i].shapename << endl;
+		if(fVerbose>2) *fLogStream << "          sample has weight " << weight << " and " << fSamples[i].tree->GetEntries() << " entries" << endl; 
 	
 		TString variable  = TString::Format("%s>>%s",var.Data(),hcurr->GetName());
 		TString theCuts = basecuts;
 		if(fSamples[i].type=="data" && HLT!="") theCuts += " &&("+HLT+")"; // triggers for data
 
 		TString selection;
-//		if(fSamples[i].type!="data") selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,theCuts.Data());
-//		else                         selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
-		selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data());
+		if(fSamples[i].type!="data") selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,theCuts.Data());
+		else                         selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
+//		selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data());
 		  
 		int nev = fSamples[i].tree->Draw(variable.Data(),selection.Data(),"goff");
 
@@ -174,8 +210,8 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 		/// n MC events passing the cuts and weigthed event count with errors
 		TH1F * clone = (TH1F*)hcurr->Clone();
 		clone->Rebin(clone->GetNbinsX());
-		if(fVerbose>2) cout << "          MC events found : "  <<  nev << endl;
-		if(fVerbose>2) cout << "          Events: " << clone->GetBinContent(1) << " +- " << clone->GetBinError(1) << endl;
+		if(fVerbose>2) *fLogStream << "          MC events found : "  <<  nev << endl;
+		if(fVerbose>2) *fLogStream << "          Events: " << clone->GetBinContent(1) << " +- " << clone->GetBinError(1) << endl;
 		delete clone;
 
 		// draw clone of hist
@@ -193,18 +229,18 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 	for (int iShape=0; iShape<h_shapes.size(); ++iShape){
 		h_shapes[iShape]->SetXTitle(xtitle);
 		if(ShapeNames[iShape]=="Data") {h_shapes[iShape]->SetMarkerStyle(20);h_shapes[iShape]->SetMarkerColor(kBlack);}
-		DrawHisto(h_shapes[iShape], h_shapes[iShape]->GetName(),ShapeNames[iShape]=="Data"?"EX0":"hist");
-		h_shapes[iShape]->Write();
+		if(fDraw) DrawHisto(h_shapes[iShape], h_shapes[iShape]->GetName(),ShapeNames[iShape]=="Data"?"EX0":"hist");
+		if(fWrite) h_shapes[iShape]->Write();
 	
 		fh_shapes[iShape]=(TH1D*) h_shapes[iShape]->Clone(h_shapes[iShape]->GetName());
 	}
 	if(fPrintSummary){
-		cout << "--------------------------------------" << endl;
+		*fLogStream << "--------------------------------------" << endl;
 		TH1D* hdummy;
 		for(int iShape=0; iShape<h_shapes.size(); ++iShape){
 			hdummy=(TH1D*) h_shapes[iShape]->Clone();
 			hdummy->Rebin(hdummy->GetNbinsX());
-			cout << h_shapes[iShape]->GetName() << " gives: " << hdummy->GetBinContent(1) << " pm " << hdummy->GetBinError(1) << endl;
+			*fLogStream << h_shapes[iShape]->GetName() << " gives: " << hdummy->GetBinContent(1) << " pm " << hdummy->GetBinError(1) << endl;
 		}
 		delete hdummy;
 	}
@@ -214,6 +250,7 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 		delete h_shapes[iShape];
 	}
 
+	if(fCout) Print();
 }
 
 //____________________________________________________________________________
@@ -225,8 +262,8 @@ void MT2Shapes::loadSamples(const char* filename){
 	char ParName[100], StringValue[1000];
 	float ParValue;
 
-	if(fVerbose > 3) cout << "------------------------------------" << endl;
-	if(fVerbose > 3) cout << "Sample File  " << filename << endl;
+	if(fVerbose > 3) *fLogStream << "------------------------------------" << endl;
+	if(fVerbose > 3) *fLogStream << "Sample File  " << filename << endl;
 	int counter(0);
 	
 	while( IN.getline(buffer, 200, '\n') ){
@@ -238,11 +275,11 @@ void MT2Shapes::loadSamples(const char* filename){
 			IN.getline(buffer, 200, '\n');
 			sscanf(buffer, "Path\t%s", StringValue);
 			fPath = StringValue;	
-			cout << fPath << endl;
+			*fLogStream << fPath << endl;
 			
 			if(fVerbose >3){
-				cout << " ----  " << endl;
-				cout << "  Path " << fPath << endl;
+				*fLogStream << " ----  " << endl;
+				*fLogStream << "  Path " << fPath << endl;
 			}
 
 		}
@@ -293,25 +330,26 @@ void MT2Shapes::loadSamples(const char* filename){
 			s.color = ParValue;
 
 			if(fVerbose > 3){
-				cout << " ---- " << endl;
-				cout << "  New sample added: " << s.name << endl;
-				cout << "   Sample no.      " << counter << endl;
-				cout << "   Short name:     " << s.sname << endl;
-				cout << "   ShapeName:      " << s.shapename << endl;
-				cout << "   File:           " << (s.file)->GetName() << endl;
-				cout << "   Events:         " << s.nevents  << endl;
-				cout << "   Events in tree: " << s.tree->GetEntries() << endl; 
-				cout << "   Xsection:       " << s.xsection << endl;
-				cout << "   Lumi:           " << s.lumi << endl;
-				cout << "   kfactor:        " << s.kfact << endl;
-				cout << "   type:           " << s.type << endl;
-				cout << "   Color:          " << s.color << endl;
+				*fLogStream << " ---- " << endl;
+				*fLogStream << "  New sample added: " << s.name << endl;
+				*fLogStream << "   Sample no.      " << counter << endl;
+				*fLogStream << "   Short name:     " << s.sname << endl;
+				*fLogStream << "   ShapeName:      " << s.shapename << endl;
+				*fLogStream << "   File:           " << (s.file)->GetName() << endl;
+				*fLogStream << "   Events:         " << s.nevents  << endl;
+				*fLogStream << "   Events in tree: " << s.tree->GetEntries() << endl; 
+				*fLogStream << "   Xsection:       " << s.xsection << endl;
+				*fLogStream << "   Lumi:           " << s.lumi << endl;
+				*fLogStream << "   kfactor:        " << s.kfact << endl;
+				*fLogStream << "   type:           " << s.type << endl;
+				*fLogStream << "   Color:          " << s.color << endl;
 			}
 			fSamples.push_back(s);
 			counter++;
 		}
 	}
-	if(fVerbose > 3) cout << "------------------------------------" << endl;
+	if(fVerbose > 3) *fLogStream << "------------------------------------" << endl;
+	if(fCout) Print();
 }
 
 //______________________________________________________________________________

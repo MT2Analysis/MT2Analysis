@@ -157,7 +157,11 @@ private:
 	void InitializeEvent();
 	void DeadCellParser(DeadCellFilter &DeadCellFilter_, string file_);
 	// photons
-	bool IsGoodPhotonEGMLoose(int index);
+	bool IsGoodPhotonEGMLooseISO(int index);
+	bool IsGoodPhotonEGMLooseRelISO(int index);
+	bool IsGoodPhotonEGMLooseID(int index);
+	bool IsGoodPhotonEGMTightISO(int index);
+	bool IsGoodPhotonEGMTightID(int index);
 	bool IsGoodPhoton(int index);
 	//pfJetID
 	bool IsGoodBasicPFJetPAT3(int index, float ptcut, float absetacut);

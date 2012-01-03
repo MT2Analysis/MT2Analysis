@@ -115,12 +115,12 @@ int main(int argc, char* argv[]) {
 		cout << "ERROR: you are running on data, no reweighting needed... " << endl; exit(-1);
 	}
 
-	//setofcuts   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/MT2_cuts/"+setofcuts+".dat";
-	//if(data_PileUp.length()!=0){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
-	//if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
-	setofcuts   ="/shome/leo/Analysis/MT2_cuts/"+setofcuts+".dat";
-	if(data_PileUp.length()!=0){data_PileUp ="/shome/leo/Analysis/Certification/pileUp_data/"+data_PileUp;}
-        if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/leo/Analysis/Certification/pileUp_mc/"  + mc_PileUp;}
+	setofcuts   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/MT2_cuts/"+setofcuts+".dat";
+	if(data_PileUp.length()!=0){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
+	if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
+	//setofcuts   ="/shome/leo/Analysis/MT2_cuts/"+setofcuts+".dat";
+	//if(data_PileUp.length()!=0){data_PileUp ="/shome/leo/Analysis/Certification/pileUp_data/"+data_PileUp;}
+        //if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/leo/Analysis/Certification/pileUp_mc/"  + mc_PileUp;}
 
 	if(jsonFileName.length() !=0){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"           +jsonFileName;}
 
@@ -152,7 +152,7 @@ int main(int argc, char* argv[]) {
   	cout << "JSON file is:                   " << (jsonFileName.length()>0?jsonFileName:"empty") << endl;
   	cout << "MC_PileUp file:                 " << (mc_PileUp.length()>0?mc_PileUp:"empty") << endl;
   	cout << "Data_PileUp file:               " << (data_PileUp.length()>0?data_PileUp:"empty") << endl;
-	if(noPU) cout << "WARNING: NoPU option set, all the PU weights will be set to 1" << endl;
+	if(noPU && !isS3) cout << "WARNING: NoPU option set, all the PU weights will be set to 1" << endl;
 	cout << "Set of Cuts is:                 " << setofcuts << endl;
 	cout << "Number of events:               " << theChain->GetEntries() << endl;
 	if(JEC.length()!=0){

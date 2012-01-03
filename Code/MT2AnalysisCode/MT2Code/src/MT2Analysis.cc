@@ -404,9 +404,18 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->photon[i].HcalIso             =fTR->PhoIso04Hcal[fPhotons[i]];
 		fMT2tree->photon[i].SigmaIEtaIEta       =fTR->PhoSigmaIetaIeta[fPhotons[i]];
 		fMT2tree->photon[i].HoverE              =fTR->PhoHoverE[fPhotons[i]];
-		fMT2tree->photon[i].isEGMloose          =IsGoodPhotonEGMLoose(fPhotons[i]);
+		fMT2tree->photon[i].isEGMlooseID        =IsGoodPhotonEGMLooseID(fPhotons[i]);
+		fMT2tree->photon[i].isEGMlooseIso       =IsGoodPhotonEGMLooseISO(fPhotons[i]);
+		fMT2tree->photon[i].isEGMlooseRelIso    =IsGoodPhotonEGMLooseRelISO(fPhotons[i]);
+		fMT2tree->photon[i].isEGMtightID        =IsGoodPhotonEGMTightID(fPhotons[i]);
+		fMT2tree->photon[i].isEGMtightIso       =IsGoodPhotonEGMTightISO(fPhotons[i]);
 		fMT2tree->photon[i].JetRemoved          =fPhotonJetOverlapRemoved[i];
 		fMT2tree->photon[i].MCmatchexitcode     =fTR->PhoMCmatchexitcode[fPhotons[i]]; 
+		if(fTR->PhoMCmatchindex[fPhotons[i]]>=0){
+		int index=fTR->PhoMCmatchindex[fPhotons[i]];
+		fTR->fChain->GetBranch("GenPhotonPartonMindR")==NULL ? fMT2tree->photon[i].GenJetMinDR= -777.77 :
+			                                               fMT2tree->photon[i].GenJetMinDR= fTR->GenPhotonPartonMindR[index];
+		}
 		// exit code meaning:  
 		//                     0 = matched to particle that is not a photon -> fake
 		//                     1 = photon  with status 3 quark or gluon as mother (hard scatter) (gluon happens, though gamma does not have color..)
@@ -916,8 +925,9 @@ void MT2Analysis::GetLeptonJetIndices(){
 	if(fTR->fChain->GetBranch("NPhotons")     ==NULL){return;} 	     // protection for TESCO ntuples without photon info
 	vector<float> photon_pts;
 	for(int i=0; i<fTR->NPhotons; ++i){
-		if(std::isnan(fTR->PhoPt[i]))  {fIsNANObj = true; continue;} //protection against objects with NAN-Pt	
+		if(std::isnan(fTR->PhoPt[i]))  {fIsNANObj = true; continue;} // protection against objects with NAN-Pt	
 		if(! IsGoodPhoton(i))                             continue; 
+		if(! IsGoodPhotonEGMLooseRelISO(i))               continue;   // preselection: use only photons passing the loose RelIso
 		fPhotons.push_back(i);
 		photon_pts.push_back(fTR->PhoPt[i]);
 		fPhotonJetOverlapRemoved.push_back(false);
@@ -1249,12 +1259,50 @@ void MT2Analysis::DeadCellParser(DeadCellFilter &DeadCellFilter_, string file_){
 //****************************************************************************************************
 // Photon Selectors
 
-bool MT2Analysis::IsGoodPhotonEGMLoose(int i){
+bool MT2Analysis::IsGoodPhotonEGMLooseID(int i){
 	// EGM-10-006 Loose Photon selection
 	bool isGood(true);
 	if(!IsGoodPhoton(i)                                                    ) isGood=false;
 	if( fabs(fTR->PhoEta[i]) < 1.4442 && fTR->PhoSigmaIetaIeta[i] > 0.01   ) isGood=false;
 	if( fabs(fTR->PhoEta[i]) > 1.566  && fTR->PhoSigmaIetaIeta[i] > 0.03   ) isGood=false;
+	if( fTR->PhoHoverE[i]   > 0.05                                         ) isGood=false; // H/E cut
+	return isGood;
+}
+bool MT2Analysis::IsGoodPhotonEGMLooseISO(int i){
+	// EGM-10-006 Loose Photon selection
+	bool isGood(true);
+	if(!IsGoodPhoton(i)                                                    ) isGood=false;
+	if( fTR->PhoIso04TrkHollow[i] > 2.0                                    ) isGood=false; // trk Iso
+	if( fTR->PhoIso04Ecal[i] > 4.2                                         ) isGood=false; // Ecal ISo
+	if( fTR->PhoIso04Hcal[i] > 2.2                                         ) isGood=false; // Hcal Iso
+	return isGood;
+}
+bool MT2Analysis::IsGoodPhotonEGMLooseRelISO(int i){
+	// e.g. CMS AN AN-2011/033
+	bool isGood(true);
+	float pt = fTR->PhoPt[i];
+	if(!IsGoodPhoton(i)                                                     ) isGood=false;
+	if( fTR->PhoIso04TrkHollow[i] > (2.0 + 0.001*pt)                        ) isGood=false; // trk Iso
+	if( fTR->PhoIso04Ecal[i]      > (4.2 + 0.003*pt)                        ) isGood=false; // Ecal ISo
+	if( fTR->PhoIso04Hcal[i]      > (2.2 + 0.001*pt)                        ) isGood=false; // Hcal Iso
+	return isGood;
+}
+bool MT2Analysis::IsGoodPhotonEGMTightID(int i){
+	// EGM-10-006 Loose Photon selection
+	bool isGood(true);
+	if(!IsGoodPhoton(i)                                                    ) isGood=false;
+	if( fabs(fTR->PhoEta[i]) < 1.4442 && fTR->PhoSigmaIetaIeta[i] > 0.01   ) isGood=false;
+	if( fabs(fTR->PhoEta[i]) > 1.566  && fTR->PhoSigmaIetaIeta[i] > 0.028  ) isGood=false;
+	if( fTR->PhoHoverE[i]   > 0.03                                         ) isGood=false; // H/E cut
+	return isGood;
+}
+bool MT2Analysis::IsGoodPhotonEGMTightISO(int i){
+	// EGM-10-006 Loose Photon selection
+	bool isGood(true);
+	if(!IsGoodPhoton(i)                                                    ) isGood=false;
+	if( fTR->PhoIso04TrkHollow[i] > 0.9                                    ) isGood=false; // trk Iso
+	if( fTR->PhoIso04Ecal[i] > 2.4                                         ) isGood=false; // Ecal ISo
+	if( fTR->PhoIso04Hcal[i] > 1.0                                         ) isGood=false; // Hcal Iso
 	return isGood;
 }
 
@@ -1273,9 +1321,6 @@ bool MT2Analysis::IsGoodPhoton(int i){
 	if( fabs(fTR->PhoEta[i])> 2.4                                          ) return false;
 	if( fabs(fTR->PhoEta[i])> 1.4442 && fabs(fTR->PhoEta[i])<1.566         ) return false; // veto EB-EE gap
 	if( fTR->PhoHoverE[i]   > 0.05                                         ) return false; // H/E cut
-	if( fTR->PhoIso04TrkHollow[i] > 2.0                                    ) return false; // trk Iso
-	if( fTR->PhoIso04Ecal[i] > 4.2                                         ) return false; // Ecal ISo
-	if( fTR->PhoIso04Hcal[i] > 2.2                                         ) return false; // Hcal Iso
 	if( fTR->PhoHasPixSeed[i]==1                                           ) return false; // veto pixel seed for electron rejection 
 	return true;
 }

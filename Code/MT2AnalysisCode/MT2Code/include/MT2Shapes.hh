@@ -53,6 +53,7 @@ public:
 		float xsection;
 		float nevents;
 		float kfact;
+		float PU_avg_weight;
 		float lumi;
 		int color;
 	};

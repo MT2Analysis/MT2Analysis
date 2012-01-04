@@ -593,19 +593,10 @@ void MassPlotter::PrintCutFlow(int njets, int nleps, TString trigger, TString cu
 
   for(size_t i = 0; i < fSamples.size(); ++i){
 
-    //Getting NEntries, PUWeight
-    float avg_pu_w = 1;
-    if(fSamples[i].type!="data"){
-      TH1F *h_PUWeights = (TH1F*) fSamples[i].file->Get("h_PUWeights");
-      avg_pu_w = h_PUWeights->GetMean();
-      fSamples[i].nevents = h_PUWeights->GetEntries();
-      delete h_PUWeights;
-    }
-
-    Double_t sample_weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents * avg_pu_w );
+    Double_t sample_weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents * fSamples[i].PU_avg_weight );
     if(fVerbose>2) cout << "PrintCutFlow: looping over " << fSamples[i].name << endl;
     if(fVerbose>2) cout << "              sample has weight " << sample_weight << " and " << fSamples[i].tree->GetEntries() << " entries" << endl; 
-    if(fVerbose>2) cout << "              Average PU weight: " << avg_pu_w << endl;
+    if(fVerbose>2) cout << "              Average PU weight: " << fSamples[i].PU_avg_weight << endl;
     if(fVerbose>2) cout << "              Original Entries: " << fSamples[i].nevents << endl;
     
     fMT2tree = new MT2tree();
@@ -854,19 +845,10 @@ void MassPlotter::PrintCutFlowMT2vsHT(TString trigger, TString cuts){
   // Loop over samples
   for(size_t i = 0; i < fSamples.size(); ++i){
 
-    //Getting NEntries, PUWeight
-    float avg_pu_w = 1;
-    if(fSamples[i].type!="data"){
-      TH1F *h_PUWeights = (TH1F*) fSamples[i].file->Get("h_PUWeights");
-      avg_pu_w = h_PUWeights->GetMean();
-      fSamples[i].nevents = h_PUWeights->GetEntries();
-      delete h_PUWeights;
-    }
-    
-    Double_t sample_weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents * avg_pu_w );
+    Double_t sample_weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents * fSamples[i].PU_avg_weight );
     if(fVerbose>2) cout << "PrintCutFlow: looping over " << fSamples[i].name << endl;
     if(fVerbose>2) cout << "              sample has weight " << sample_weight << " and input tree has " << fSamples[i].tree->GetEntries() << " entries" << endl; 
-    if(fVerbose>2) cout << "              Average PU weight: " << avg_pu_w << endl;
+    if(fVerbose>2) cout << "              Average PU weight: " << fSamples[i].PU_avg_weight << endl;
     if(fVerbose>2) cout << "              Original Entries: " << fSamples[i].nevents << endl;
 
     
@@ -1270,18 +1252,11 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 			h_composited[5] -> SetLineStyle(kDotted);
 		}
 	
-		//Getting NEntries, PUWeight
-		float avg_pu_w = 1;
-		if(Samples[i].type!="data"){
-		  TH1F *h_PUWeights = (TH1F*) Samples[i].file->Get("h_PUWeights");
-		  avg_pu_w = h_PUWeights->GetMean();
-		  Samples[i].nevents = h_PUWeights->GetEntries();
-		  delete h_PUWeights;
-		}
-		
-		Double_t weight = Samples[i].xsection * Samples[i].kfact * Samples[i].lumi / (Samples[i].nevents*avg_pu_w);
-		if(fVerbose>2) cout << "MakePlot: looping over " << Samples[i].sname << endl;
-		if(fVerbose>2) cout << "           sample has weight " << weight << " and " << Samples[i].tree->GetEntries() << " entries" << endl; 
+		Double_t weight = Samples[i].xsection * Samples[i].kfact * Samples[i].lumi / (Samples[i].nevents*Samples[i].PU_avg_weight);
+		if(fVerbose>2) cout << "MakePlot: looping over " << Samples[i].sname << "-----------------------------------" <<  endl;
+		if(fVerbose>2) cout << "  +++++++ xsection:    "    << Samples[i].xsection << " k-fact " << Samples[i].kfact << endl;
+		if(fVerbose>2) cout << "  +++++++ tot events:  "  << Samples[i].nevents  << " avg pu weight " << Samples[i].PU_avg_weight << endl;
+		if(fVerbose>2) cout << "  +++++++ weight:      " << weight << " and " << Samples[i].tree->GetEntries() << " entries" << endl; 
 	
 		TString variable  = TString::Format("%s>>%s",var.Data(),h_samples[i]->GetName());
 		TString theCuts = nJets + nLeps + "&&" + cuts;
@@ -1290,11 +1265,9 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 		TString selection;
 		if(Samples[i].type!="data") selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,theCuts.Data());
 		else                        selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
-//		if(Samples[i].type!="data") selection      = TString::Format("(%.15f) * (%s)",              weight,theCuts.Data());
-//		else                        selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
 		  
-		if(fVerbose>2) cout << "+++++ Drawing " << variable  << endl
-				    << "\twith cuts: "  << selection << endl;
+		if(fVerbose>2) cout << "  +++++++ Drawing      " << variable  << endl
+				    << "  +++++++ with cuts:   " << setw(40)  << selection << endl;
 
 		int nev = Samples[i].tree->Draw(variable.Data(),selection.Data(),"goff");
 
@@ -1316,13 +1289,12 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 					       h_samples[i]->GetBinError(h_samples[i]->GetNbinsX()+1)*
 					       h_samples[i]->GetBinError(h_samples[i]->GetNbinsX()+1)  ));
 		
-		if(fVerbose>2) cout << "\tevents found : "  <<  nev << endl
-				    << "\t->Integral() : "  <<  h_samples[i]->Integral() << endl;
+		if(fVerbose>2) cout << "  +++++++ MC   events : "  <<  nev << endl;
 
 		/// event count with errors
 		TH1F * clone = (TH1F*)h_samples[i]->Clone();
 		clone->Rebin(clone->GetNbinsX());
-		if(fVerbose>2) cout << "\tEvents: " << clone->GetBinContent(1) << " +- " << clone->GetBinError(1) << endl;
+		if(fVerbose>2) cout << "  +++++++ Events:       " << clone->GetBinContent(1) << " +- " << clone->GetBinError(1) << endl;
 		
 		if (Samples[i].sname.Contains("QCD")) {
 		  h_composited[0]->Add(h_samples[i]);
@@ -2716,10 +2688,6 @@ void MassPlotter::loadSamples(const char* filename){
 			s.xsection = ParValue;
 			
 			IN.getline(buffer, 200, '\n');
-			sscanf(buffer, "Nevents\t%f", &ParValue);
-			s.nevents = ParValue;
-			
-			IN.getline(buffer, 200, '\n');
 			sscanf(buffer, "Kfact\t%f", &ParValue);
 			s.kfact = ParValue;
 			
@@ -2735,6 +2703,16 @@ void MassPlotter::loadSamples(const char* filename){
 			sscanf(buffer, "Color\t%f", &ParValue);
 			s.color = ParValue;
 
+			TH1F *h_PUWeights = (TH1F*) s.file->Get("h_PUWeights");
+			TH1F *h_Events    = (TH1F*) s.file->Get("h_Events");
+			if(h_PUWeights==0 || h_Events==0){
+				cout << "ERROR: sample " << (s.file)->GetName() << " does not have PU and NEvents histos! " << endl;
+				exit(1);
+			}
+			s.type!="data" ? s.PU_avg_weight = h_PUWeights->GetMean()    : s.PU_avg_weight =1;
+			s.type!="data" ? s.nevents       = h_Events   ->GetEntries() : s.nevents       =1;
+			delete h_PUWeights;
+			delete h_Events;
 			if(fVerbose > 0){
 				cout << " ---- " << endl;
 				cout << "  New sample added: " << s.name << endl;
@@ -2746,6 +2724,7 @@ void MassPlotter::loadSamples(const char* filename){
 				cout << "   Xsection:       " << s.xsection << endl;
 				cout << "   Lumi:           " << s.lumi << endl;
 				cout << "   kfactor:        " << s.kfact << endl;
+				cout << "   avg PU weight:  " << s.PU_avg_weight << endl;
 				cout << "   type:           " << s.type << endl;
 				cout << "   Color:          " << s.color << endl;
 			}

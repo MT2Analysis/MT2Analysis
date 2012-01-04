@@ -188,7 +188,7 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 		hcurr      ->Sumw2();
 		
 		// calculate weight and print some info
-		Double_t weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents);
+		Double_t weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents *fSamples[i].PU_avg_weight );
 		if(fVerbose>2) *fLogStream << "---> looping over " << fSamples[i].sname << "--------------------------------------------"<< endl;
 		if(fVerbose>2) *fLogStream << "          sample belongs to shape " << fSamples[i].shapename << endl;
 		if(fVerbose>2) *fLogStream << "          sample has weight " << weight << " and " << fSamples[i].tree->GetEntries() << " entries" << endl; 
@@ -200,7 +200,6 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 		TString selection;
 		if(fSamples[i].type!="data") selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,theCuts.Data());
 		else                         selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
-//		selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data());
 		  
 		int nev = fSamples[i].tree->Draw(variable.Data(),selection.Data(),"goff");
 
@@ -310,10 +309,6 @@ void MT2Shapes::loadSamples(const char* filename){
 			s.xsection = ParValue;
 			
 			IN.getline(buffer, 200, '\n');
-			sscanf(buffer, "Nevents\t%f", &ParValue);
-			s.nevents = ParValue;
-			
-			IN.getline(buffer, 200, '\n');
 			sscanf(buffer, "Kfact\t%f", &ParValue);
 			s.kfact = ParValue;
 			
@@ -329,6 +324,16 @@ void MT2Shapes::loadSamples(const char* filename){
 			sscanf(buffer, "Color\t%f", &ParValue);
 			s.color = ParValue;
 
+			TH1F *h_PUWeights = (TH1F*) s.file->Get("h_PUWeights");
+			TH1F *h_Events    = (TH1F*) s.file->Get("h_Events");
+			if(h_PUWeights==0 || h_Events==0){
+				cout << "ERROR: sample " << (s.file)->GetName() << " does not have PU and NEvents histos! " << endl;
+				exit(1);
+			}
+			s.type!="data" ? s.PU_avg_weight = h_PUWeights->GetMean()    : s.PU_avg_weight =1;
+			s.type!="data" ? s.nevents       = h_Events   ->GetEntries() : s.nevents       =1;
+			delete h_PUWeights;
+			delete h_Events;
 			if(fVerbose > 3){
 				*fLogStream << " ---- " << endl;
 				*fLogStream << "  New sample added: " << s.name << endl;
@@ -341,6 +346,7 @@ void MT2Shapes::loadSamples(const char* filename){
 				*fLogStream << "   Xsection:       " << s.xsection << endl;
 				*fLogStream << "   Lumi:           " << s.lumi << endl;
 				*fLogStream << "   kfactor:        " << s.kfact << endl;
+				*fLogStream << "   avg PU weight:  " << s.PU_avg_weight << endl;
 				*fLogStream << "   type:           " << s.type << endl;
 				*fLogStream << "   Color:          " << s.color << endl;
 			}

@@ -69,18 +69,18 @@ void MT2Analyzer::Loop(){
 
 // Method called before starting the event loop
 void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, string data_PileUp, string mc_PileUp, string JEC){
-	fMT2Analysis             ->ReadCuts(setofcuts);
-	fMT2Analysis             ->SetType(isData);
-	if(isS3 && noPU) fMT2Analysis             ->SetPileUp3DSrc(data_PileUp, mc_PileUp);
-	else         fMT2Analysis             ->SetPileUpSrc(data_PileUp, mc_PileUp);
-	fMT2Analysis             ->SetOutputDir(fOutputDir);
-	fMT2Analysis             ->fVerbose        = fVerbose;
-	fMT2Analysis             ->SetJEC(JEC);
-        fMT2Analysis             ->fRemovePhoton = removePhoton;
-	fMT2Analysis             ->SetProcessID(fID);
-        fMT2Analysis             ->isS3         = isS3;
-	fMT2Analysis             ->noPU         = noPU;
-	fMT2Analysis             ->Begin(filename);
+	fMT2Analysis                    ->ReadCuts(setofcuts);
+	fMT2Analysis                    ->SetType(isData);
+	if(isS3 && noPU) fMT2Analysis   ->SetPileUp3DSrc(data_PileUp, mc_PileUp);
+	else             fMT2Analysis   ->SetPileUpSrc(data_PileUp, mc_PileUp);
+	fMT2Analysis                    ->SetOutputDir(fOutputDir);
+	fMT2Analysis                    ->fVerbose        = fVerbose;
+	fMT2Analysis                    ->SetJEC(JEC);
+        fMT2Analysis                    ->fRemovePhoton = removePhoton;
+	fMT2Analysis                    ->SetProcessID(fID);
+        fMT2Analysis                    ->isS3         = isS3;
+	fMT2Analysis                    ->noPU         = noPU;
+	fMT2Analysis                    ->Begin(filename);
 
 	fMT2Analysis->fH_PUWeights = new TH1F("h_PUWeights",";PU weights",100,0,5);
 	fMT2Analysis->fH_Events = new TH1F("h_Events",";Events",10,0,10);

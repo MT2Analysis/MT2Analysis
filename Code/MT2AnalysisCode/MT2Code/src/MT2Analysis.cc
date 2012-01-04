@@ -581,11 +581,54 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	// _________
 
 	// _________
-	// HLT triggers
+	// HLT triggers --------------------------------------------------------------------------------
 	for (StringBoolMap::iterator iter = fTriggerMap.begin(); iter != fTriggerMap.end(); ++iter){
 		if(GetHLTResult(iter->first)) *iter->second =1;
 	}
-	// _________
+	// single photon triggers ---------------------------------------------------------------------
+	string singlePhotonTriggers[100];
+	int photontriggernumber=0;
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_IsoL_v1";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_IsoL_v2";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_IsoL_v3";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_IsoL_v4";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_IsoL_v5";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_IsoL_v6";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_IsoL_v7";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_IsoL_v8";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_IsoL_v9";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_IsoL_v10";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_v1";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_v2";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_v3";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_v4";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_v5";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_v6";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_v7";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon90_CaloIdVL_IsoL_v1";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon90_CaloIdVL_IsoL_v2";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon90_CaloIdVL_IsoL_v3";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon90_CaloIdVL_IsoL_v4";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon90_CaloIdVL_IsoL_v5";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon90_CaloIdVL_IsoL_v6";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon90_CaloIdVL_IsoL_v7";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon90_CaloIdVL_v1";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon90_CaloIdVL_v2";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon90_CaloIdVL_v3";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon90_CaloIdVL_v4";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon125_v1";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon125_v1";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon135_v1";
+	singlePhotonTriggers[photontriggernumber++] = "HLT_Photon135_v2";
+
+	bool SiglePhotFired(false);
+	for(int i=0; i<photontriggernumber; ++i){
+		if( GetHLTResult(singlePhotonTriggers[i])) SiglePhotFired=true;
+	}
+	if(SiglePhotFired) fMT2tree->trigger.HLT_SinglePhotons = true;
+
+
+	// ___________________________________________________________________________
 	
 	//__________
 	// ECAL Dead Cell

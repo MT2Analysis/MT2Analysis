@@ -269,6 +269,12 @@ void MT2Trigger::Reset(){
         HLT_DiJet60_MET45_v6            = false;
         HLT_DiJet60_MET45_v7            = false;
         HLT_DiJet60_MET45_v10           = false;
+
+	// Photons
+	HLT_SinglePhotons               = false;
+	// Dileptons
+	HLT_DiElectrons                 = false;
+	HLT_DiMuons                     = false;
 }
 
 

@@ -260,8 +260,12 @@ public:
         Bool_t HLT_DiJet60_MET45_v6;
         Bool_t HLT_DiJet60_MET45_v7;
         Bool_t HLT_DiJet60_MET45_v10;
+	// Photon
+	Bool_t HLT_SinglePhotons;
+	Bool_t HLT_DiElectrons;
+	Bool_t HLT_DiMuons;
 
-	ClassDef(MT2Trigger, 11);
+	ClassDef(MT2Trigger, 13);
 };
 
 // MT2Znunu --------------------------------

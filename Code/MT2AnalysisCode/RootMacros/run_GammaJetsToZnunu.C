@@ -25,30 +25,36 @@ using namespace RooFit ;
 //TString fSamplesHadronic           ="./samples/samples_PhotonsHadronic.dat";
 TString fSamplesRemovedPhotons     ="./samples/samples_RemovedPhotonsMGQCD.dat";
 TString fSamplesHadronic           ="./samples/samples_PhotonsHadronicMGQCD.dat";
-// -----
+// stearing ------------
 Bool_t  fDoPhotonSigmaIEtaIEta     = true; 
 Bool_t  fDoPhotonSignalRegion      = false; 
 Bool_t  fDoHadronicSignalRegion    = false;
 Bool_t  fDoPrediction              = false;
+// options ---------------
 Int_t   fVerbose                   = 6;
 Bool_t  fSaveResults               = true;
-Bool_t  fMT2b                      = true;
 Bool_t  fSeparateEBEE              = true;
 Bool_t  fSaveZnunuToGammaRatio     = true;
-Bool_t  fDraw                      = true;
-Bool_t  fAddFitIntrinsicUncert     = true;
-Float_t fFitIntrinsicUncert        = 0.1;
-TString fOutDir                    = "GammaJetsPrediction/20111130_MG_Photons_MG_QCD_test";
-Bool_t  fWriteToFile               = false;
-// MT2b--------
-Bool_t  fMT2b                      = true;
-Bool_t  fDoBRatioCorrection        = true;
+Bool_t  fDraw                      = false;
+TString fOutDir                    = "../Results/GammaJetsPrediction/test";
+Bool_t  fWriteToFile               = false; // writes couts to file
+// uncertainty
+Bool_t  fAddFitIntrinsicUncert     = false;
+Float_t fFitIntrinsicUncert        = 0.0;
+Bool_t  fAddRMCUncertainty         = false;
+Float_t fRMCUncertainty            = 0.2;
+// MT2b specific --------
+Bool_t  fMT2b                      = false;
+Bool_t  fDoBRatioCorrection        = false;
 Float_t fRB_MCtoData               = 1.23;
 Float_t fRB_MCtoDataErr            = 0.27;
+Bool_t  fBTagforMLFit              = true;
+Bool_t  fUseFlatMCBRatio           = true;
+//Float_t fFlatMCBRatio              = 
 // -------
 Float_t fHTmin                     = 700;
 Float_t fHTmax                     = 1E+8;
-Float_t fMT2min                    = 200;
+Float_t fMT2min                    = 0;
 Float_t fMT2max                    = 1E+8;
 // ------
 
@@ -77,33 +83,36 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 
 	// CutStream for SigmaIEtaIEta ------------------------------------------
 	fCutStreamPhotons << " " 
-	  << "misc.MET>=30"                                                << "&&"
+//	  << "misc.MET>=30"                                                << "&&"
 	  << "misc.HT >= " << HTmin << " && misc.HT<= " << HTmax           << "&&"
-	  << "(NEles==0  || ele[0].lv.Pt()<10)"                            << "&&"
-	  << "(NMuons==0 || muo[0].lv.Pt()<10)"                            << "&&"
-	  << "misc.Jet0Pass ==1"                                           << "&&"
-	  << "misc.Jet1Pass ==1"                                           << "&&"
-	  << "misc.SecondJPt >100"                                         << "&&"
-	  << "misc.PassJetID ==1"                                          << "&&"
-	  << "misc.Vectorsumpt < 70"                                       << "&&"
+//	  << "(NEles==0  || ele[0].lv.Pt()<10)"                            << "&&"
+//	  << "(NMuons==0 || muo[0].lv.Pt()<10)"                            << "&&"
+//	  << "misc.Jet0Pass ==1"                                           << "&&"
+//	  << "misc.Jet1Pass ==1"                                           << "&&"
+//	  << "misc.SecondJPt >100"                                         << "&&"
+//	  << "misc.PassJetID ==1"                                          << "&&"
+//	  << "misc.Vectorsumpt < 70"                                       << "&&"
 	  << "NPhotons ==1 "                                               << "&&"
 	  << "(misc.ProcessID!=6||photon[0].MCmatchexitcode!=1)"           << "&&"
-	  << "rawpfmet[0].Pt()<50"                                         << "&&"
+//	  << "rawpfmet[0].Pt()<100"                                         << "&&"
 	  // Noise
 	  << "misc.HBHENoiseFlag ==0"                                      << "&&"
 	  << "misc.CSCTightHaloID==0"                                      << "&&"
-	  << "misc.CrazyHCAL==0";
+	  << "misc.CrazyHCAL==0"; 
 
-	if(fMT2b){
-		fCutStreamPhotons << " &&"
-		  << "NJetsIDLoose40 >=4"                                          << "&&"
-		  << "(misc.MinMetJetDPhi >0.3||misc.MinMetJetDPhiIndex>3)"        << "&&"
-		  << "misc.LeadingJPt >150";
-	}else{
-		fCutStreamPhotons << " &&"
-		  << "NJetsIDLoose40 >=3"                                          << "&&"
-		  << "misc.MinMetJetDPhi >0.3";
-	}
+//	if(fMT2b){
+//		if(fBTagforMLFit){
+//		fCutStreamPhotons << "&& NBJets >0";
+//		}
+//		fCutStreamPhotons 
+//		  << "&& NJetsIDLoose40 >=4"          
+//		  << "&& (misc.MinMetJetDPhi >0.3||misc.MinMetJetDPhiIndex>3)"
+//		  << "&& misc.LeadingJPt >150";
+//	}else{
+//		fCutStreamPhotons 
+//		  << "&& NJetsIDLoose40 >=3"
+//		  << "&& misc.MinMetJetDPhi >0.3";
+//	}
 
 	// CutStream for Photon Signal Region ------------------------------------------ 
 	fCutStreamPhotonsMT2 << " " 
@@ -120,7 +129,7 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 	  << "NPhotons ==1 "                                                << "&&"
 	  << "photon[0].isEGMloose==1"                                      << "&&"
 	  << "(misc.ProcessID!=6||photon[0].MCmatchexitcode!=1)"            << "&&"
-	  << "rawpfmet[0].Pt()<50"                                          << "&&"
+	  << "rawpfmet[0].Pt()<100"                                          << "&&"
 	  // Noise
 	  << "misc.HBHENoiseFlag ==0"                                      << "&&"
 	  << "misc.CSCTightHaloID==0"                                      << "&&"
@@ -129,6 +138,7 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 	if(fMT2b){
 		fCutStreamPhotonsMT2 << " &&"
 		  << "NJetsIDLoose40 >=4"                                          << "&&"
+		  << "NBJets>0"                                                    << "&&"
 		  << "(misc.MinMetJetDPhi >0.3||misc.MinMetJetDPhiIndex>3)"        << "&&"
 		  << "misc.LeadingJPt >150";
 	}else{
@@ -271,9 +281,9 @@ void run_GammaJetsToZnunu(){
 		prediction->HadronicSignalRegion->fOutputDir=prediction->fOutputDir;
 		prediction->HadronicSignalRegion->GetShapes("HadronicRegion", "MT2 (GeV)", 30, 0, 800);
 
-		if(fDoPrediction)  {
 		// compute MC Znunu/Photon ratio --------------------------------------------------
 		prediction->GetMCZnunuToPhotonRatio();
+		if(fDoPrediction)  {
 		// make Prediction ----------------------------------------------------------------
 		prediction->MakePrediction();
 		}
@@ -601,6 +611,13 @@ void Prediction::GetMCZnunuToPhotonRatio(){
 	ratio->Divide(currPhotons);
 	fMCZnunuPhotonRatio    = ratio->GetBinContent(1);
 	fMCZnunuPhotonRatioErr = ratio->GetBinError(1);
+
+	if(fAddRMCUncertainty){
+	*fLogStream << "------------------------------------------------------------------------------" << endl;
+	*fLogStream << "+++ adding in quadrature " << fRMCUncertainty << " percent uncertainty on R   " << endl;
+	*fLogStream << "------------------------------------------------------------------------------" << endl;
+	fMCZnunuPhotonRatioErr = sqrt(pow(fMCZnunuPhotonRatioErr,2)+pow(fMCZnunuPhotonRatio*fRMCUncertainty,2));
+	}
 
 	*fLogStream << "Ratio: " << fMCZnunuPhotonRatio << " pm " << fMCZnunuPhotonRatioErr << endl;
 	*fLogStream << "------------------------------------------------------------------------" << endl;

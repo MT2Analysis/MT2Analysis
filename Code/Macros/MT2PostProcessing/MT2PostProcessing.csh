@@ -52,20 +52,10 @@ cd -
 #### copy scaples from SE to scratch ###########################################
 set lfiles=()
 foreach i ( $argv[6-$NARGS] )
-	echo "copying file " $i
+	echo "found file " $i
 	set file = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/"$i
-	dccp "$file" "$WORKDIR"
    	set lfiles = ($lfiles $file)
 end
-
-# Now merge
-rm -vf $MERGED
-hadd -f $MERGED $lfiles
-if ( $? != 0 ) then
-  echo Merging failed
-  rm -vf $MERGED $lfiles
-  exit -1
-endif
 
 #### start skimming ##########################################################
 if ( $SHLIB != "none" ) then
@@ -74,25 +64,49 @@ if ( $SHLIB != "none" ) then
 	cd $WORKDIR
 	cp  $SKIMSCRIPT .
 	mkdir -pv $PREFIX
-	set file=$SAMPLE.root
-	echo root -l -b -q  'MT2treeSkimming.C("'$file'", "'$SHLIB'", "'$PREFIX'")'	
-	root -l -b -q  'MT2treeSkimming.C("'$file'", "'$SHLIB'", "'$PREFIX'")'	
-	if (-e $PREFIX/$file) then
-		echo "skimming terminated successfully..."
-	else
-		echo "skimming failed!!! "
-		rm -r $WORKDIR 
-		exit(1)
+	set lnewfiles=()
+	foreach i ($lfiles)
+		echo "processing $i ++++++++++++++++++++++++++++++++++++++++++++++++++++"
+		echo "copying file $i to $WORKDIR"
+		dccp "$i" "$WORKDIR"
+		set file = `echo $i | awk -F '/' '{print $(NF)}'`
+		root -l -b -q  'MT2treeSkimming.C("'$file'", "'$SHLIB'", "'$PREFIX'")'	
+		set lnewfiles = ($lnewfiles $PREFIX/$file)
+		if (-e $PREFIX/$file) then
+			echo "skimming terminated successfully..."
+			rm -fv $file
+		else
+			echo "skimming failed!!! "
+			rm -r $WORKDIR 
+			exit(1)
+		endif
+	end
+	echo "merging skimmed MT2trees ++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	rm -vf $SAMPLE.root
+	echo "files: $lnewfiles"
+	hadd -f $SAMPLE.root $lnewfiles
+	if ( $? != 0 ) then
+	  echo Merging failed
+	  rm -vf $SAMPLE.root $lnewfiles
+	  exit -1
 	endif
-	echo "copying skimmed MT2tree"
+	echo "copying merged skimmed MT2tree"
 	mkdir -pv $OUTDIR/$PREFIX/skimlogs
-	cp -v $PREFIX/$SAMPLE.root $OUTDIR/$PREFIX
+	cp -v $SAMPLE.root $OUTDIR/$PREFIX
 	if (-e $SAMPLE.root.skim.log) then
 		cp -v $SAMPLE.root.skim.log $OUTDIR/$PREFIX/skimlogs
 	else
 		echo "$SAMPLE.root.skim.log not found..."
 	endif 
 else
+	# Now merge from SE
+	rm -vf $MERGED
+	hadd -f $MERGED $lfiles
+	if ( $? != 0 ) then
+	  echo Merging failed
+	  rm -vf $MERGED $lfiles
+	  exit -1
+	endif
 	echo "--------------> no skimming performed <-------------"
 	mkdir -pv $OUTDIR	
 	cp -v $MERGED $OUTDIR

@@ -23,14 +23,14 @@ void MT2treeSkimming(string sample, string shlib, string prefix) {
   	std::ostringstream cutStream;
 	cutStream       << " " 	  
 //	  << "misc.MT2 >=50"                                     << "&&" 
-	  << "misc.MET>=30"                                      << "&&"
-	  << "misc.HT > 750 "                                    << "&&"
-	  << "misc.Jet0Pass ==1"                                 << "&&"
-	  << "misc.Jet1Pass ==1"                                 << "&&"
-	  << "misc.SecondJPt  >100"                              << "&&"
-	  << "misc.PassJetID ==1"                                << "&&"
-	  << "misc.Vectorsumpt < 70"                             << "&&"
-	  << "((misc.MinMetJetDPhi >0.3&&NBJets==0)||NBJets>=1)" << "&&"
+//	  << "misc.MET>=30"                                      << "&&"
+//	  << "misc.HT > 750 "                                    << "&&"
+//	  << "misc.Jet0Pass ==1"                                 << "&&"
+//	  << "misc.Jet1Pass ==1"                                 << "&&"
+//	  << "misc.SecondJPt  >100"                              << "&&"
+//	  << "misc.PassJetID ==1"                                << "&&"
+//	  << "misc.Vectorsumpt < 70"                             << "&&"
+//	  << "((misc.MinMetJetDPhi >0.3&&NBJets==0)||NBJets>=1)" << "&&"
 // Lepton Veto
 //	  << "(NEles==0 || ele[0].lv.Pt()<10)"                   << "&&"
 //	  << "(NMuons==0 || muo[0].lv.Pt()<10)"                  << "&&"
@@ -41,14 +41,14 @@ void MT2treeSkimming(string sample, string shlib, string prefix) {
 //	  << "NBJets >0"                                         << "&&"
 //	  << "NJetsIDLoose >=4"                                  << "&&"
 // -----------------------------------
-	  << "NJetsIDLoose40 >=3"                                << "&&"
+//	  << "NJetsIDLoose40 >=3"                                << "&&"
 // Photons
-//          << "(GenZ[0].Pt()>100)"                                << "&&"
-//          << "(GenDiLeptPt(0,10,0,1000,true)>=100||GenPhoton[0].Pt()>=100)"  << "&&"
-//          << "NPhotons >0"                                      << "&&"
+//	  << "(GenDiLeptPt(0,10,0,1000,true)>=100||GenPhoton[0].Pt()>=100)"  << "&&"
+	  << "(RecoOSDiLeptPt(10,10,0,10000)>=100||photon[0].lv.Pt()>=100)"  << "&&"
+//	  << "NPhotons >0"  
 // Noise
-	  << "misc.HBHENoiseFlag == 0"                           << "&&"
-	  << "misc.CSCTightHaloID==0"                            << "&&"
+//	  << "misc.HBHENoiseFlag == 0"                           << "&&"
+//	  << "misc.CSCTightHaloID==0"                            << "&&"
 	  << "misc.CrazyHCAL==0";
 
 	

@@ -13,11 +13,14 @@ void MT2treeSkimming(string sample, string shlib, string prefix) {
 	string outfile = prefix+"/"+sample;
 
 	// log file 
-	TString log=sample+".skim.log";
+	TString log =sample+".skim.log";
+	TString cuts="cuts.skim.log";
+	string line="";
 	ofstream f_log;
-	f_log.open(log.Data());
-	f_log << "Skimming file: " << sample << " with cuts: " << endl;
-
+	ofstream f_cuts;
+	f_log .open(log.Data(),ios::app);
+	f_cuts.open(cuts.Data());
+	if(!f_log.is_open()||!f_cuts.is_open()) {cout << "ERROR: cannot open file. " << endl; exit(-1);}
 
 	// cuts --------------------------------------------
   	std::ostringstream cutStream;
@@ -56,11 +59,12 @@ void MT2treeSkimming(string sample, string shlib, string prefix) {
 	string  SEL= "("+basecut+")";
 	cout << "Skimming with sel: " << SEL << endl;
 	TString cuts_log = basecut.ReplaceAll("&&", "\n");
-	f_log << cuts_log << endl;
+	f_cuts << "Cuts applied: " <<  cuts_log << endl;
 	//  --------------------------------------------
 
 
 	// files ---------------------------------------
+	f_log << "Skimming file: " << file;
 	TFile *_file0 = TFile::Open( (file).c_str()); 
 	TTree * t = (TTree*) _file0->Get("MassTree");
 	TH1F*   h_PUWeights = (TH1F*) _file0->Get("h_PUWeights");
@@ -69,8 +73,9 @@ void MT2treeSkimming(string sample, string shlib, string prefix) {
 	TFile*out = TFile::Open( (outfile).c_str(),"RECREATE");
 	TTree *tc = t->CopyTree(SEL.c_str());   
 	int nentries = tc->GetEntries();
-	f_log << "skimmed tree has " << nentries << " entries." <<endl;
+	f_log << " -> skimmed tree has " << nentries << " entries." <<endl;
 	f_log.close();
+	f_cuts.close();
 	out->Write();
 	if(h_PUWeights!=0){
 		cout << "writing TH1F h_PUWeights" << endl;

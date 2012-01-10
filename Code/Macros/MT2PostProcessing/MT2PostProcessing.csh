@@ -75,6 +75,7 @@ if ( $SHLIB != "none" ) then
 		if (-e $PREFIX/$file) then
 			echo "skimming terminated successfully..."
 			rm -fv $file
+			cat ${file}.skim.log >> skim.log		
 		else
 			echo "skimming failed!!! "
 			rm -r $WORKDIR 
@@ -93,10 +94,11 @@ if ( $SHLIB != "none" ) then
 	echo "copying merged skimmed MT2tree"
 	mkdir -pv $OUTDIR/$PREFIX/skimlogs
 	cp -v $SAMPLE.root $OUTDIR/$PREFIX
-	if (-e $SAMPLE.root.skim.log) then
-		cp -v $SAMPLE.root.skim.log $OUTDIR/$PREFIX/skimlogs
+	if (-e skim.log) then
+		cat skim.log >> cuts.skim.log # append to already existing file cuts.skim.log
+		cp -v cuts.skim.log $OUTDIR/$PREFIX/skimlogs/skim.log
 	else
-		echo "$SAMPLE.root.skim.log not found..."
+		echo "skim.log not found..."
 	endif 
 else
 	# Now merge from SE

@@ -31,9 +31,10 @@ def MT2PostProcessing():
 		          to the cuts specified in 'MT2treeSkimming.C'
 	 --prefix=PREFIX: prefix for skimmed MT2trees, default is "skimmed" 
 	 --verbose:       set this option to get more prints
+	 --script:        script name: default is MT2treeSkimming.C
 	 --dryRun:        if this option is set, no jobs to the T3 batch system
 	                  will be submitted. 
-	 --rootFile:   process only given root files (accepts wildcards)
+	 --rootFile:      process only given root files (accepts wildcards)
 
 	Example:
 	./MT2PostProcessing.py --skim=~/MT2Analysis/Code/MT2AnalysisCode_V01-00-00/MT2Code/shlib/libDiLeptonAnalysis.so --prefix=skimmed_highMT2 [file]  --rootFile=myfile*.root
@@ -45,6 +46,7 @@ def MT2PostProcessing():
 	parser.add_option("--skim"   ,dest="shlib",      help="shlib: path to shlib used to generate the MT2trees")
 	parser.add_option("--MT2tag" ,dest="tag",        help="MT2tag: to set the tag manually")
 	parser.add_option("--prefix" ,dest="prefix",     help="prefix: default is 'skimmed'")
+	parser.add_option("--script" ,dest="script",     help="script: default is 'MT2treeSkimming.C'")
 	parser.add_option("--verbose",dest="verbose",    help="set verbose", action="store_true")
 	parser.add_option("--dryRun", dest="dryRun",     help="dry Run: do not do anything", action="store_true")
 	parser.add_option("--rootFile", dest="rootFile", help="rootFile: choose root files to process (accepts wildcards)")
@@ -74,6 +76,8 @@ def MT2PostProcessing():
 			exit(-1)
 		else:
 			print "setting MT2tag= " +MT2tag
+	if options.script==None and not options.shlib==None:
+		print "using script MT2treeSkimming.C"
 	
 	# get list of files
 	WILDCARD = ""
@@ -118,6 +122,10 @@ def MT2PostProcessing():
 			cmd = cmd+ " " + options.prefix
 		else:
 			cmd = cmd+ " " + "skimmed"
+		if(options.script!=None):
+			cmd = cmd+ " " + options.script
+		else:
+			cmd = cmd+ " " + "MT2treeSkimming.C"
 		cmd = cmd + " "+ filelist
 		print cmd
 		if not options.dryRun:

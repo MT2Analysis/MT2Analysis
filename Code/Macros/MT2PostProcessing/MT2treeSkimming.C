@@ -46,8 +46,8 @@ void MT2treeSkimming(string sample, string shlib, string prefix) {
 // -----------------------------------
 //	  << "NJetsIDLoose40 >=3"                                << "&&"
 // Photons
-//	  << "(GenDiLeptPt(0,10,0,1000,true)>=100||GenPhoton[0].Pt()>=100)"  << "&&"
-	  << "(RecoOSDiLeptPt(10,10,0,10000)>=100||photon[0].lv.Pt()>=100)"  << "&&"
+	  << "(GenDiLeptPt(0,10,0,1000,false)>=100||GenPhoton[0].Pt()>=100)"  << "&&"
+//	  << "(RecoOSDiLeptPt(10,10,0,10000)>=100 ||photon[0].lv.Pt()>=100)"  << "&&"
 //	  << "NPhotons >0"  
 // Noise
 //	  << "misc.HBHENoiseFlag == 0"                           << "&&"

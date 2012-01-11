@@ -21,8 +21,8 @@ set DATE_START=`date +%s`
 echo "Job started at " `date`
 
 #### Check n agruments ###########################################
-if ($#argv < 5) then
-	echo "usage "$0" MT2tag production sample shlib file(s)"
+if ($#argv < 6) then
+	echo "usage "$0" MT2tag production sample shlib prefix script file(s)"
 	exit(-1)
 endif
 
@@ -32,9 +32,10 @@ set PRODUCTION = $2
 set SAMPLE     = $3
 set SHLIB      = $4
 set PREFIX     = $5
+set SCRIPT     = $6
 set HOME=`pwd`
 set OUTDIR=/shome/`whoami`/MT2Analysis/MT2trees/$MT2TAG/$PRODUCTION/
-set SKIMSCRIPT=$HOME"/MT2treeSkimming.C"
+set SKIMSCRIPT=$HOME"/"$SCRIPT
 set TOPWORKDIR=/scratch/`whoami`
 set WORKDIR=/scratch/`whoami`/$PRODUCTION/$SAMPLE
 set MERGED=/scratch/`whoami`/$PRODUCTION/$SAMPLE/$SAMPLE.root
@@ -51,7 +52,7 @@ cd -
 
 #### copy scaples from SE to scratch ###########################################
 set lfiles=()
-foreach i ( $argv[6-$NARGS] )
+foreach i ( $argv[7-$NARGS] )
 	echo "found file " $i
 	set file = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/"$i
    	set lfiles = ($lfiles $file)
@@ -70,7 +71,7 @@ if ( $SHLIB != "none" ) then
 		echo "copying file $i to $WORKDIR"
 		dccp "$i" "$WORKDIR"
 		set file = `echo $i | awk -F '/' '{print $(NF)}'`
-		root -l -b -q  'MT2treeSkimming.C("'$file'", "'$SHLIB'", "'$PREFIX'")'	
+		root -l -b -q  $SCRIPT'("'$file'", "'$SHLIB'", "'$PREFIX'")'	
 		set lnewfiles = ($lnewfiles $PREFIX/$file)
 		if (-e $PREFIX/$file) then
 			echo "skimming terminated successfully..."
@@ -94,12 +95,18 @@ if ( $SHLIB != "none" ) then
 	echo "copying merged skimmed MT2tree"
 	mkdir -pv $OUTDIR/$PREFIX/skimlogs
 	cp -v $SAMPLE.root $OUTDIR/$PREFIX
+	touch $SAMPLE.skim.log
 	if (-e skim.log) then
-		cat skim.log >> cuts.skim.log # append to already existing file cuts.skim.log
-		cp -v cuts.skim.log $OUTDIR/$PREFIX/skimlogs/skim.log
+		cat skim.log      >> $SAMPLE.skim.log
 	else
 		echo "skim.log not found..."
 	endif 
+	if (-e cuts.skim.log) then
+		cat cuts.skim.log >> $SAMPLE.skim.log 
+	else
+		echo "cuts.skim.log not found..."
+	endif 
+	cp -v $SAMPLE.skim.log $OUTDIR/$PREFIX/skimlogs/$SAMPLE.skim.log
 else
 	# Now merge from SE
 	rm -vf $MERGED

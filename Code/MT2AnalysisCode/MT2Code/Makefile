@@ -2,7 +2,7 @@ ROOTCFLAGS     = $(shell root-config --cflags)
 ROOTLIBS       = $(shell root-config --libs)
 ROOTGLIBS      = $(shell root-config --glibs)
 
-INCLUDES       = -I./include -I../TESCO/include -I${CMSSW_RELEASE_BASE}/src/CondFormats/JetMETObjects/interface -I${CMSSW_RELEASE_BASE}/src/
+INCLUDES       = -I./include -I../TESCO/include -I${CMSSW_RELEASE_BASE}/src/CondFormats/JetMETObjects/interface -I${CMSSW_RELEASE_BASE}/src/ -I/shome/leo/Installations/LHAPDF/lhapdf-5.8.4/include
 
 CXX            = g++
 CXXFLAGS       = -g -fPIC -Wno-deprecated -D_GNU_SOURCE -O2 $(INCLUDES) 
@@ -15,7 +15,7 @@ SOFLAGS        = -O --no_exceptions -shared   -flat_namespace
 CXXFLAGS      += $(ROOTCFLAGS)
 LIBS           = $(ROOTLIBS) 
 
-NGLIBS         = $(ROOTGLIBS) -lMinuit -lMinuit2 -lTreePlayer -L${CMSSW_RELEASE_BASE}/lib/slc5_amd64_gcc434 -lFWCoreFWLite -lCondFormatsJetMETObjects
+NGLIBS         = $(ROOTGLIBS) -lMinuit -lMinuit2 -lTreePlayer -L${CMSSW_RELEASE_BASE}/lib/slc5_amd64_gcc434 -lFWCoreFWLite -lCondFormatsJetMETObjects -L/shome/leo/Installations/LHAPDF/lhapdf-5.8.4/lib -lLHAPDF
 GLIBS          = $(filter-out -lNew, $(NGLIBS))
 
 SRCS           = ../TESCO/src/base/TreeClassBase.C ../TESCO/src/base/TreeReader.cc ../TESCO/src/base/TreeAnalyzerBase.cc ../TESCO/src/base/UserAnalysisBase.cc \
@@ -24,10 +24,10 @@ SRCS           = ../TESCO/src/base/TreeClassBase.C ../TESCO/src/base/TreeReader.
                  ../TESCO/src/helper/Davismt2.cc ../TESCO/src/helper/Hemisphere.cc  src/MT2Analyzer.cc \
                  src/MassPlotter.cc ../TESCO/src/helper/PUWeight.C \
 		 src/QuickAnalysis.cc src/QuickAnalyzer.cc  src/MT2Shapes.cc \
-                 ../TESCO/src/helper/Lumi3DReWeighting_standalone.cc
-                 #src/AnalysisAndHistos.cc \
-                 #src/ZInvEstFromW.cc \
-
+                 ../TESCO/src/helper/Lumi3DReWeighting_standalone.cc \
+                 src/AnalysisAndHistos.cc \
+                 src/ZInvEstFromW.cc \
+                 src/ScanAnalysis.cc \
 
 # We want dictionaries only for classes that have _linkdef.h files                                                               
 DICTOBS =  $(patsubst %_linkdef.hh, %.o, \
@@ -391,6 +391,8 @@ src/MT2Analysis.o: /usr/include/boost/type_traits/is_float.hpp
 src/MT2Analysis.o: /usr/include/boost/type_traits/is_abstract.hpp
 src/MT2Analysis.o: /usr/include/boost/static_assert.hpp
 src/MT2Analysis.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
+src/MT2Analysis.o: /shome/leo/Installations/LHAPDF/lhapdf-5.8.4/include/LHAPDF/LHAPDF.h
+src/MT2Analysis.o: /shome/leo/Installations/LHAPDF/lhapdf-5.8.4/include/LHAPDF/LHAPDFConfig.h
 ../TESCO/src/helper/TMctLib.o: ../TESCO/include/helper/TMctLib.h
 ../TESCO/src/helper/TMctLib.o: ../TESCO/include/helper/mctlib.h
 ../TESCO/src/helper/TMctLib.o: /usr/include/math.h /usr/include/features.h
@@ -571,6 +573,8 @@ src/MT2Analyzer.o: /usr/include/boost/type_traits/is_float.hpp
 src/MT2Analyzer.o: /usr/include/boost/type_traits/is_abstract.hpp
 src/MT2Analyzer.o: /usr/include/boost/static_assert.hpp
 src/MT2Analyzer.o: /swshare/cms/slc5_amd64_gcc434/cms/cmssw/CMSSW_4_2_8/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
+src/MT2Analyzer.o: /shome/leo/Installations/LHAPDF/lhapdf-5.8.4/include/LHAPDF/LHAPDF.h
+src/MT2Analyzer.o: /shome/leo/Installations/LHAPDF/lhapdf-5.8.4/include/LHAPDF/LHAPDFConfig.h
 src/MassPlotter.o: ./include/MassPlotter.hh ./include/MT2tree.hh
 src/MassPlotter.o: ../TESCO/include/helper/Utilities.hh /usr/include/stdio.h
 src/MassPlotter.o: /usr/include/features.h /usr/include/sys/cdefs.h
@@ -662,6 +666,7 @@ src/MT2Shapes.o: /usr/include/bits/pthreadtypes.h /usr/include/alloca.h
 src/MT2Shapes.o: ../TESCO/include/helper/Monitor.hh /usr/include/math.h
 src/MT2Shapes.o: /usr/include/bits/huge_val.h /usr/include/bits/mathdef.h
 src/MT2Shapes.o: /usr/include/bits/mathcalls.h
+../TESCO/src/helper/Lumi3DReWeighting_standalone.o: ../TESCO/include/helper/Lumi3DReWeighting_standalone.hh
 src/AnalysisAndHistos.o: ./include/AnalysisAndHistos.hh ./include/MT2tree.hh
 src/AnalysisAndHistos.o: ../TESCO/include/helper/Utilities.hh
 src/AnalysisAndHistos.o: /usr/include/stdio.h /usr/include/features.h
@@ -704,9 +709,27 @@ src/ZInvEstFromW.o: /usr/include/sys/select.h /usr/include/bits/select.h
 src/ZInvEstFromW.o: /usr/include/bits/sigset.h /usr/include/bits/time.h
 src/ZInvEstFromW.o: /usr/include/sys/sysmacros.h
 src/ZInvEstFromW.o: /usr/include/bits/pthreadtypes.h /usr/include/alloca.h
-src/ZInvEstFromW.o: ../TESCO/include/helper/Monitor.hh /usr/include/math.h
-src/ZInvEstFromW.o: /usr/include/bits/huge_val.h /usr/include/bits/mathdef.h
-src/ZInvEstFromW.o: /usr/include/bits/mathcalls.h
+src/ZInvEstFromW.o: /usr/include/math.h /usr/include/bits/huge_val.h
+src/ZInvEstFromW.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
 src/ZInvEstFromW.o: ../TESCO/include/helper/Hemisphere.hh
 src/ZInvEstFromW.o: ./include/Utilities.hh
-../TESCO/src/helper/Lumi3DReWeighting_standalone.o: ../TESCO/include/helper/Lumi3DReWeighting_standalone.hh
+src/ScanAnalysis.o: ./include/ScanAnalysis.hh ./include/MT2tree.hh
+src/ScanAnalysis.o: ../TESCO/include/helper/Utilities.hh /usr/include/stdio.h
+src/ScanAnalysis.o: /usr/include/features.h /usr/include/sys/cdefs.h
+src/ScanAnalysis.o: /usr/include/bits/wordsize.h /usr/include/gnu/stubs.h
+src/ScanAnalysis.o: /usr/include/gnu/stubs-64.h /usr/include/bits/types.h
+src/ScanAnalysis.o: /usr/include/bits/typesizes.h /usr/include/libio.h
+src/ScanAnalysis.o: /usr/include/_G_config.h /usr/include/wchar.h
+src/ScanAnalysis.o: /usr/include/bits/wchar.h /usr/include/gconv.h
+src/ScanAnalysis.o: /usr/include/bits/stdio_lim.h
+src/ScanAnalysis.o: /usr/include/bits/sys_errlist.h /usr/include/stdlib.h
+src/ScanAnalysis.o: /usr/include/sys/types.h /usr/include/time.h
+src/ScanAnalysis.o: /usr/include/endian.h /usr/include/bits/endian.h
+src/ScanAnalysis.o: /usr/include/sys/select.h /usr/include/bits/select.h
+src/ScanAnalysis.o: /usr/include/bits/sigset.h /usr/include/bits/time.h
+src/ScanAnalysis.o: /usr/include/sys/sysmacros.h
+src/ScanAnalysis.o: /usr/include/bits/pthreadtypes.h /usr/include/alloca.h
+src/ScanAnalysis.o: /usr/include/math.h /usr/include/bits/huge_val.h
+src/ScanAnalysis.o: /usr/include/bits/mathdef.h /usr/include/bits/mathcalls.h
+src/ScanAnalysis.o: ../TESCO/include/helper/Hemisphere.hh
+src/ScanAnalysis.o: ./include/Utilities.hh

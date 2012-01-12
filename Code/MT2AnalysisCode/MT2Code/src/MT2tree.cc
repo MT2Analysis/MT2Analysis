@@ -65,6 +65,29 @@ void MT2Misc::Reset() {
 
 }
 
+//---------------------------------------------
+// MT2Susy
+
+MT2Susy::MT2Susy(){
+  Reset();
+}
+
+MT2Susy::~MT2Susy(){
+}
+
+void MT2Susy::Reset(){
+  MassGlu = -999.99;
+  MassChi= -999.99;
+   MassLSP= -999.99;
+   M0= -999.99;
+   M12= -999.99;
+   A0= -999.99;
+   Mu= -999.99;
+   XSec= -999.99;
+   TanBeta= -999.99;
+
+}
+
 // ------------------------------------------------------------
 // MT2PileUp
 MT2PileUp::MT2PileUp(){
@@ -564,6 +587,11 @@ void MT2tree::Reset() {
   NPhotons         = 0;
   NGenLepts        = 0;
   NGenJets         = 0;
+  NPdfs            = 0;
+  
+  for(int i=0; i<100; i++){
+    pdfW[i] = -1;
+  }
 
   misc.Reset();
   Znunu.Reset();
@@ -2353,6 +2381,7 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 }
 
 // ----------------------------------------------------------------------------------------------------------
+ClassImp(MT2Susy)
 ClassImp(MT2Misc)
 ClassImp(MT2Znunu)
 ClassImp(MT2PileUp)

@@ -7,6 +7,8 @@
 
 enum {m_jetSize = 25, m_genjetSize = 20, m_eleSize = 5, m_muoSize = 5, m_phoSize = 5, m_genleptSize=20, m_hemiSize=2};
 
+
+
 // MT2Misc ----------------------------------
 class MT2Misc : public TObject {
 
@@ -57,6 +59,29 @@ public:
 };
 
 
+
+// ----------------------------------------
+class MT2Susy : public TObject {
+  
+public:
+  MT2Susy();
+  virtual ~MT2Susy();
+  void Reset();
+  
+  float MassGlu;
+  float MassChi;
+  float MassLSP;
+  float M0;
+  float M12;
+  float A0;
+  float Mu;
+  float XSec;
+  float TanBeta;
+
+  ClassDef(MT2Susy, 1);
+};
+
+
 // ----------------------------------------
 class MT2PileUp : public TObject {
 
@@ -73,6 +98,7 @@ public:
 	Float_t  Weight;
   	Int_t    NVertices;  // good reco vertices
 	Float_t  Rho;
+
 
 	ClassDef(MT2PileUp, 4);
 };
@@ -629,7 +655,11 @@ public:
   Int_t   NPhotons;
   Int_t   NTaus;
   Int_t   NGenLepts;
+  Int_t     NPdfs;
+  Int_t GenProcessID;
+  Double_t GenWeight;
 
+  MT2Susy        Susy;
   MT2Misc        misc;
   MT2Znunu       Znunu;
   MT2PileUp      pileUp;
@@ -648,9 +678,9 @@ public:
   TLorentzVector GenZ[2];
   TLorentzVector rawpfmet[2]; // this is raw, uncorrected and not scaled pf-met. 
                               // identical to pfmet unless met is JEScales or modified in data-driven estimates
-
+  double pdfW[100];
   
-  ClassDef(MT2tree, 23)
+  ClassDef(MT2tree, 24)
 };
 
 #endif

@@ -20,6 +20,7 @@ void usage( int status = 0 ) {
 	cout << "                      [-m set_of_cuts] [-n maxEvents] [-t type]                      " << endl;
 	cout << "                      [-p data_PileUp] [-P mc_PileUP]                                " << endl; 
         cout << "                      [-s S3,noPU,3D] [-C JEC]                                          " << endl;
+	cout << "                      [-w pdf]                                                       " << endl;
 	cout << "                      [-r photon ] [-i ID ]                                          " << endl;
 	cout << "                      [-l] file1 [... filen]"                                          << endl;
 	cout << "  where:"                                                                              << endl;
@@ -34,7 +35,7 @@ void usage( int status = 0 ) {
 	cout << "                   interactions is read                                              " << endl;
 	cout << "     mc_PileUP     root file from which the generated # pile up                      " << endl;
 	cout << "                   interactions is read                                              " << endl;
-	cout << "     type          data or mc=default                                                " << endl;
+	cout << "     type          data, scan or mc=default                                                " << endl;
 	cout << "     photon        add Photon to MET and remove jets/ele matched to photon           " << endl;
 	cout << "     ID            ProcessID: 0=data, 1=Znunu, 2=Zll, 3=WJets, 4=Top,                " << endl;
 	cout << "                              5=Gamma+jets, 6=QCD ,[empty], 9=Other, 10=Signal       " << endl;
@@ -62,6 +63,7 @@ int main(int argc, char* argv[]) {
 	string  type = "mc";
 	string  JEC  ="";
 	bool isData  = false;
+	bool isScan = false;
 	int verbose  = 0;
 	int maxEvents=-1;
 	int ID       =-1;
@@ -69,10 +71,11 @@ int main(int argc, char* argv[]) {
 	bool noPU    = false;
     	bool removePhoton = false;
 	string photon = "";
+	string pdf = "";
 
 // Parse options
 	char ch;
-	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:r:i:C:lh?")) != -1 ) {
+	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:r:i:C:w:lh?")) != -1 ) {
 	  switch (ch) {
 	  case 'd': outputdir       = TString(optarg);break;
 	  case 'o': filename        = TString(optarg);break;
@@ -84,6 +87,7 @@ int main(int argc, char* argv[]) {
 	  case 'P': mc_PileUp       = string(optarg); break;
 	  case 't': type            = string(optarg); break;
 	  case 'r': photon          = string(optarg); break;
+	  case 'w': pdf             = string(optarg); break;
 	  case 'i': ID              = atoi(optarg);   break;
 	  case 's': puScenario      = string(optarg); break;
           case 'C': JEC             = "/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+string(optarg)+"/"; break;
@@ -106,6 +110,7 @@ int main(int argc, char* argv[]) {
 	}
 	if      (type=="data") isData =true;
 	else if (type=="mc"  ) isData =false;
+	else if (type=="scan"  ) isScan =true;
 	else    usage(-1);
 	if      (photon == "photon") removePhoton=true;
 	if      (!isData && data_PileUp.length()==0  ) {
@@ -116,11 +121,11 @@ int main(int argc, char* argv[]) {
 	}
 
 	setofcuts   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/MT2_cuts/"+setofcuts+".dat";
-	if(data_PileUp.length()!=0){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
-	if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
+	//if(data_PileUp.length()!=0){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
+	//if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
 	//setofcuts   ="/shome/leo/Analysis/MT2_cuts/"+setofcuts+".dat";
-	//if(data_PileUp.length()!=0){data_PileUp ="/shome/leo/Analysis/Certification/pileUp_data/"+data_PileUp;}
-        //if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/leo/Analysis/Certification/pileUp_mc/"  + mc_PileUp;}
+	if(data_PileUp.length()!=0){data_PileUp ="/shome/leo/Analysis/Certification/pileUp_data/"+data_PileUp;}
+        if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/leo/Analysis/Certification/pileUp_mc/"  + mc_PileUp;}
 
 	if(jsonFileName.length() !=0){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"           +jsonFileName;}
 
@@ -128,6 +133,8 @@ int main(int argc, char* argv[]) {
 	if(puScenario=="S3") isS3=true;
 	else if(puScenario=="noPU") noPU=true;
 
+	//if(pdf=="pdf") doPdf=true;
+	
 	TChain *theChain = new TChain("analyze/Analysis");
 	for(int i = 0; i < argc; i++){
 		if( !isList ){
@@ -161,6 +168,7 @@ int main(int argc, char* argv[]) {
 	if(removePhoton){
 	cout << "WARNING: Photon is added to MET and jet/ele match to photon is removed!!" << endl;
 	}
+	if(pdf=="pdf")  cout << "Creating PDF weights" << endl; 
 	cout << "--------------" << endl;
 
 	MT2Analyzer *tA = new MT2Analyzer(theChain);
@@ -170,7 +178,9 @@ int main(int argc, char* argv[]) {
 	tA->SetProcessID(ID);
 	tA->isS3 = isS3;
 	tA->noPU = noPU;
+	tA->isScan = isScan;
 	tA->removePhoton = removePhoton;
+	if(pdf=="pdf") tA->doPDF=true;
   	if (jsonFileName!="") tA->ReadJSON(jsonFileName.c_str());
 	tA->BeginJob(filename, setofcuts, isData, data_PileUp, mc_PileUp, JEC);
 	tA->Loop();

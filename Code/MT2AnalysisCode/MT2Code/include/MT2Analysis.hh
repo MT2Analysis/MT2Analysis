@@ -20,6 +20,8 @@
 #include "JetCorrectorParameters.h" 
 #include "FactorizedJetCorrector.h" 
 
+#include </shome/leo/Installations/LHAPDF/lhapdf-5.8.4/include/LHAPDF/LHAPDF.h>
+
 
 static const int gNHemispheres = 4;
 static const int gNGenJets     = 20;
@@ -44,9 +46,15 @@ public:
   	bool isS3;
   	bool noPU;
 
-	// remove Photon
-	bool fRemovePhoton;
+  //create pdf weights
+  bool doPDF;
 
+  //is a susy scan?
+  bool isScan;
+
+  // remove Photon
+  bool fRemovePhoton;
+  
   //Control histos
   TH1F *fH_PUWeights, *fH_Events ;
   
@@ -85,6 +93,8 @@ private:
 	TMctLib  *fMCT;
 	Hemisphere *fHemisphere;
 
+  //PDFs
+  int nPDFs;
 
 	// cut variables
 	float fHT;

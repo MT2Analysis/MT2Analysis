@@ -3,6 +3,7 @@
 #include "TLorentzVector.h"
 #include <sstream>
 
+
 using namespace std;
 
 MT2Analysis::MT2Analysis(TreeReader *tr) : UserAnalysisBase(tr){
@@ -287,6 +288,15 @@ void MT2Analysis::Begin(const char* filename){
 		exit(-1);
 	}
 
+	//LHAPDF init
+        string PDF_SET="cteq66";
+        string PDF_PATH = "/shome/leo/Installations/LHAPDF/lhapdf-5.8.4/";
+	
+	if(doPDF){
+	  LHAPDF::initPDFSet(PDF_PATH+"/share/lhapdf/"+PDF_SET, LHAPDF::LHGRID);
+	  nPDFs = LHAPDF::numberPDF();
+	  cout << nPDFs << endl;
+	}
 
 }
 
@@ -341,6 +351,38 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	if(fElecs.size()    > 5 ) {cout << "ERROR: fElecs.size()  >  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
 	if(fMuons.size()    > 5 ) {cout << "ERROR: fMuons.size()  >  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
 	if(fPhotons.size()  > 5 ) {cout << "ERROR: fPhotons.size()>  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
+
+	//pdf weights
+	if(doPDF){
+          fMT2tree->NPdfs = nPDFs;
+          fMT2tree->pdfW[0]=1;
+	  LHAPDF::initPDF(0);
+
+          float pdf01 = LHAPDF::xfx(fTR->PDFx1, fTR->PDFScalePDF, fTR->PDFID1)/fTR->PDFx1 ;
+          float pdf02 = LHAPDF::xfx(fTR->PDFx2, fTR->PDFScalePDF, fTR->PDFID2)/fTR->PDFx2 ;
+
+          for(int pdf=1; pdf<= nPDFs; pdf++){
+	    LHAPDF::initPDF(pdf);
+            float pdf1 = LHAPDF::xfx(fTR->PDFx1, fTR->PDFScalePDF, fTR->PDFID1)/fTR->PDFx1 ;
+            float pdf2 = LHAPDF::xfx(fTR->PDFx2, fTR->PDFScalePDF, fTR->PDFID2)/fTR->PDFx2 ;
+            fMT2tree->pdfW[pdf] = pdf1/pdf01*pdf2/pdf02;
+          }
+        }
+
+	//MC info
+	if(!fisData){
+	  fMT2tree->GenProcessID = fTR->process;
+	  fMT2tree->GenWeight = fTR->GenWeight;
+	}
+	if(isScan){
+	  fMT2tree->Susy.MassGlu = fTR->MassGlu;
+	  fMT2tree->Susy.MassChi= fTR->MassChi;
+	  fMT2tree->Susy.MassLSP= fTR->MassLSP;
+	  fMT2tree->Susy.M0= fTR->M0;
+	  fMT2tree->Susy.M12= fTR->M12;
+	  fMT2tree->Susy.A0= fTR->A0;
+	  fMT2tree->Susy.Mu= fTR->signMu;
+	}
 
 	// ---------------------------------------------------------------
 	// Fill jets 4-momenta & ID's 

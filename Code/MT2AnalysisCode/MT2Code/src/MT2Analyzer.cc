@@ -82,6 +82,10 @@ void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, str
 	fMT2Analysis                    ->noPU         = noPU;
 	fMT2Analysis                    ->Begin(filename);
 
+	fMT2Analysis             ->doPDF        = doPDF;
+	fMT2Analysis             ->isScan        = isScan;
+
+
 	fMT2Analysis->fH_PUWeights = new TH1F("h_PUWeights",";PU weights",100,0,5);
 	fMT2Analysis->fH_Events = new TH1F("h_Events",";Events",10,0,10);
 

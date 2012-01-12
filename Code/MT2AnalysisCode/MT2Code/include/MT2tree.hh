@@ -42,7 +42,8 @@ public:
   Float_t  LeadingJPt;
   Float_t  SecondJPt;
   Float_t  Vectorsumpt;
-  Float_t  MinMetJetDPhi;
+  Float_t  MinMetJetDPhi;       // use all jets
+  Float_t  MinMetJetDPhi4;      // use first 4 jets
   Int_t    MinMetJetDPhiIndex;
   Float_t  MinMetBJetDPhi;
   Float_t  HT;
@@ -54,8 +55,10 @@ public:
   Float_t  caloMHT40;  
   Float_t  TrackingFailure;
   Float_t  TrackingFailurePVtx;
+  Int_t    WDecayMode;
+  Int_t    TopDecayMode;
   
-  ClassDef(MT2Misc, 26)
+  ClassDef(MT2Misc, 27)
 };
 
 
@@ -196,6 +199,7 @@ public:
 	Bool_t HLT_HT250_MHT70_v4;
 	Bool_t HLT_HT250_MHT90_v1;
 	Bool_t HLT_HT250_MHT90_v2;
+	Bool_t HLT_HT250_MHT100_v2;
 	Bool_t HLT_HT260_MHT60_v2;
 	Bool_t HLT_HT300_MHT75_v4;
 	Bool_t HLT_HT300_MHT75_v5;
@@ -211,6 +215,8 @@ public:
 	Bool_t HLT_HT350_MHT80_v2;
 	Bool_t HLT_HT350_MHT90_v1;
 	Bool_t HLT_HT350_MHT100_v3;
+	Bool_t HLT_HT350_L1FastJet_MHT100_v1;
+	Bool_t HLT_HT350_MHT110_v3;
 	Bool_t HLT_HT400_MHT80_v1;
 	Bool_t HLT_HT400_MHT90_v3;
 	Bool_t HLT_PFHT350_PFMHT90_v1;
@@ -291,7 +297,7 @@ public:
 	Bool_t HLT_DiElectrons;
 	Bool_t HLT_DiMuons;
 
-	ClassDef(MT2Trigger, 13);
+	ClassDef(MT2Trigger, 14);
 };
 
 // MT2Znunu --------------------------------
@@ -568,8 +574,8 @@ public:
   Float_t MetJetDPhi(int ijet = 0, int PFJID=0, int met=1);
   Bool_t  PassMinMetJetDPhi03();
   Float_t GetMinR12R21      (int PFJID=0, float minJPt=20, float maxJEta=6., int met=1); // electrons and muons not considered for minDPhi
-  Float_t MinMetJetDPhi     (int PFJID=0, float minJPt=20, float maxJEta=6., int met=1); // electrons and muons not considered for minDPhi
-  Int_t   MinMetJetDPhiIndex(int PFJID=0, float minJPt=20, float maxJEta=6., int met=1); // electrons and muons not considered for minDPhi
+  Float_t MinMetJetDPhi     (int PFJID=0, float minJPt=20, float maxJEta=6., int met=1, int njets=0); // electrons and muons not considered for minDPhi, njets=0->all jets
+  Int_t   MinMetJetDPhiIndex(int PFJID=0, float minJPt=20, float maxJEta=6., int met=1, int njets=0); // electrons and muons not considered for minDPhi, njets=0->all jets
   Int_t   BiasedDPhiIndex   (int PFJID, float minJPt, float maxJEta);
   Float_t BiasedDPhi        (int PFJID, float minJPt, float maxJEta);
   Float_t MaxMetJetDPhi     (int PFJID=0, float minJPt=20, float maxJEta=6., int met=1); // electrons and muons not considered for minDPhi

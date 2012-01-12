@@ -58,10 +58,13 @@ void MT2Misc::Reset() {
   caloMHT30       	  = -99999.99;
   caloMHT40       	  = -99999.99;
   MinMetJetDPhi           = -99999.99;
+  MinMetJetDPhi4          = -99999.99;
   MinMetJetDPhiIndex      = -1;
   MinMetBJetDPhi          = -99999.99;
   TrackingFailure         = -99999.99;
   TrackingFailurePVtx     = -99999.99;
+  WDecayMode              = -1;
+  TopDecayMode            = -1;
 
 }
 
@@ -203,6 +206,7 @@ void MT2Trigger::Reset(){
 	HLT_HT250_MHT70_v4      = false;
 	HLT_HT250_MHT90_v1      = false;
 	HLT_HT250_MHT90_v2      = false;
+	HLT_HT250_MHT100_v2     = false;
 	HLT_HT260_MHT60_v2      = false;
 	HLT_HT300_MHT75_v4      = false;
 	HLT_HT300_MHT75_v5      = false;
@@ -218,6 +222,8 @@ void MT2Trigger::Reset(){
 	HLT_HT350_MHT80_v2      = false;
 	HLT_HT350_MHT90_v1      = false;
 	HLT_HT350_MHT100_v3     = false;
+	HLT_HT350_L1FastJet_MHT100_v1= false;
+	HLT_HT350_MHT110_v3     = false;
 	HLT_HT400_MHT80_v1      = false;
 	HLT_HT400_MHT90_v3      = false;
 	HLT_PFHT350_PFMHT90_v1  = false;
@@ -792,7 +798,7 @@ Float_t MT2tree::MetJetDPhi(int ijet, int PFJID, int met) {
   return TMath::Abs(jet[indices[ijet]].lv.DeltaPhi(MET));
 }
 
-Float_t MT2tree::MinMetJetDPhi(int PFJID, float minJPt, float maxJEta, int met) {
+Float_t MT2tree::MinMetJetDPhi(int PFJID, float minJPt, float maxJEta, int met, int njets) {
 // Attention: electrons and muons are not considered for minDPhi
   TLorentzVector MET(0., 0., 0., 0.);
   if(met==1)      MET = pfmet[0];
@@ -805,13 +811,13 @@ Float_t MT2tree::MinMetJetDPhi(int PFJID, float minJPt, float maxJEta, int met) 
   else         return -999;
 
 
-  int index = MinMetJetDPhiIndex(PFJID, minJPt, maxJEta, met);
+  int index = MinMetJetDPhiIndex(PFJID, minJPt, maxJEta, met, njets);
   if(index >=0) {
 	  return TMath::Abs(jet[index].lv.DeltaPhi(MET));
   } else  return -999.99;
 }
 
-Int_t MT2tree::MinMetJetDPhiIndex(int PFJID, float minJPt, float maxJEta, int met) {
+Int_t MT2tree::MinMetJetDPhiIndex(int PFJID, float minJPt, float maxJEta, int met, int njets) {
 // Attention: electrons and muons are not considered for minDPhi
   TLorentzVector MET(0., 0., 0., 0.);
   if(met==1)      MET = pfmet[0];
@@ -824,7 +830,8 @@ Int_t MT2tree::MinMetJetDPhiIndex(int PFJID, float minJPt, float maxJEta, int me
   else            return -999;
 
   std::vector<int> indices;
-  for(int i = 0; i<NJets; ++i){
+  if (njets==0) njets=NJets;
+  for(int i = 0; i<njets; ++i){
 	if(jet[i].IsGoodPFJet(minJPt,maxJEta,PFJID)==false) continue;
 	indices.push_back(i);
   }
@@ -1929,7 +1936,8 @@ Int_t MT2tree::TopDecayMode(){
 
 
 Bool_t MT2tree::TopDecayModeResult(Int_t nlepts){
-	Int_t bit =TopDecayMode();
+  //Int_t bit =TopDecayMode();
+        Int_t bit = misc.TopDecayMode;
 	if(nlepts == 1){ // semileptonic without leptonic tau
 		if     ( (bit & 2 )==2 || (bit & 8)==8) return false; // more than one e/mu
 		if     ( (bit & 64)==64)                return false; // at least one leptonic tau

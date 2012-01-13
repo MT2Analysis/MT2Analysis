@@ -80,10 +80,11 @@ void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, str
 	fMT2Analysis                    ->SetProcessID(fID);
         fMT2Analysis                    ->isS3         = isS3;
 	fMT2Analysis                    ->noPU         = noPU;
-	fMT2Analysis                    ->Begin(filename);
-
 	fMT2Analysis             ->doPDF        = doPDF;
-	fMT2Analysis             ->isScan        = isScan;
+        fMT2Analysis             ->isScan        = isScan;
+
+
+	fMT2Analysis                    ->Begin(filename);
 
 
 	fMT2Analysis->fH_PUWeights = new TH1F("h_PUWeights",";PU weights",100,0,5);

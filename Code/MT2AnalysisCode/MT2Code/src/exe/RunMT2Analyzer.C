@@ -133,8 +133,6 @@ int main(int argc, char* argv[]) {
 	if(puScenario=="S3") isS3=true;
 	else if(puScenario=="noPU") noPU=true;
 
-	//if(pdf=="pdf") doPdf=true;
-	
 	TChain *theChain = new TChain("analyze/Analysis");
 	for(int i = 0; i < argc; i++){
 		if( !isList ){
@@ -168,7 +166,8 @@ int main(int argc, char* argv[]) {
 	if(removePhoton){
 	cout << "WARNING: Photon is added to MET and jet/ele match to photon is removed!!" << endl;
 	}
-	if(pdf=="pdf")  cout << "Creating PDF weights" << endl; 
+	if(pdf=="pdf"){  cout << "Creating PDF weights" << endl; 
+	}
 	cout << "--------------" << endl;
 
 	MT2Analyzer *tA = new MT2Analyzer(theChain);
@@ -181,6 +180,7 @@ int main(int argc, char* argv[]) {
 	tA->isScan = isScan;
 	tA->removePhoton = removePhoton;
 	if(pdf=="pdf") tA->doPDF=true;
+	else tA->doPDF=false;
   	if (jsonFileName!="") tA->ReadJSON(jsonFileName.c_str());
 	tA->BeginJob(filename, setofcuts, isData, data_PileUp, mc_PileUp, JEC);
 	tA->Loop();

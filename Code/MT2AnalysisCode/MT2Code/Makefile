@@ -7,7 +7,7 @@ INCLUDES       = -I./include -I../TESCO/include -I${CMSSW_RELEASE_BASE}/src/Cond
 CXX            = g++
 CXXFLAGS       = -g -fPIC -Wno-deprecated -D_GNU_SOURCE -O2 $(INCLUDES) 
 LD             = g++
-LDFLAGS        = -g 
+LDFLAGS        = -g -Wl,-rpath -Wl,/shome/leo/Installations/LHAPDF/lhapdf-5.8.4/lib
 #SOFLAGS        = -O --no_exceptions  -dynamiclib -flat_namespace -undefined suppress
 SOFLAGS        = -O --no_exceptions -shared   -flat_namespace 
 
@@ -15,7 +15,7 @@ SOFLAGS        = -O --no_exceptions -shared   -flat_namespace
 CXXFLAGS      += $(ROOTCFLAGS)
 LIBS           = $(ROOTLIBS) 
 
-NGLIBS         = $(ROOTGLIBS) -lMinuit -lMinuit2 -lTreePlayer -L${CMSSW_RELEASE_BASE}/lib/slc5_amd64_gcc434 -lFWCoreFWLite -lCondFormatsJetMETObjects -L/shome/leo/Installations/LHAPDF/lhapdf-5.8.4/lib -lLHAPDF
+NGLIBS         = $(ROOTGLIBS) -lMinuit -lMinuit2 -lTreePlayer -L${CMSSW_RELEASE_BASE}/lib/slc5_amd64_gcc434 -lFWCoreFWLite -lCondFormatsJetMETObjects -L/shome/leo/Installations/LHAPDF/lhapdf-5.8.4/lib -lLHAPDF 
 GLIBS          = $(filter-out -lNew, $(NGLIBS))
 
 SRCS           = ../TESCO/src/base/TreeClassBase.C ../TESCO/src/base/TreeReader.cc ../TESCO/src/base/TreeAnalyzerBase.cc ../TESCO/src/base/UserAnalysisBase.cc \
@@ -25,9 +25,9 @@ SRCS           = ../TESCO/src/base/TreeClassBase.C ../TESCO/src/base/TreeReader.
                  src/MassPlotter.cc ../TESCO/src/helper/PUWeight.C \
 		 src/QuickAnalysis.cc src/QuickAnalyzer.cc  src/MT2Shapes.cc \
                  ../TESCO/src/helper/Lumi3DReWeighting_standalone.cc \
-                 src/AnalysisAndHistos.cc \
                  src/ZInvEstFromW.cc \
                  src/ScanAnalysis.cc \
+                 src/AnalysisAndHistos.cc \
 
 # We want dictionaries only for classes that have _linkdef.h files                                                               
 DICTOBS =  $(patsubst %_linkdef.hh, %.o, \

@@ -830,7 +830,7 @@ Int_t MT2tree::MinMetJetDPhiIndex(int PFJID, float minJPt, float maxJEta, int me
   else            return -999;
 
   std::vector<int> indices;
-  if (njets==0) njets=NJets;
+  if ( njets==0 || njets>NJets ) njets=NJets;  // option 0: all jets & protection against less than njets
   for(int i = 0; i<njets; ++i){
 	if(jet[i].IsGoodPFJet(minJPt,maxJEta,PFJID)==false) continue;
 	indices.push_back(i);

@@ -267,7 +267,7 @@ bool ScanAnalysis::isMT2MuEvent(){
 bool ScanAnalysis::isMT2bEvent(){
   bool passed = true;
   
-  if(!(fMT2tree->NJetsIDLoose40>4 )) passed=false;
+  if(!(fMT2tree->NJetsIDLoose40>3 )) passed=false;
   if(!(fMT2tree->misc.MET>30 )) passed=false;
   if(!(fMT2tree->misc.Jet0Pass==1 )) passed=false;
   if(!(fMT2tree->misc.Jet1Pass==1 )) passed=false;
@@ -290,7 +290,7 @@ bool ScanAnalysis::isMT2bEvent(){
 bool ScanAnalysis::isMT2bEleEvent(){
   bool passed = true;
   
-  if(!(fMT2tree->NJetsIDLoose40>4 )) passed=false;
+  if(!(fMT2tree->NJetsIDLoose40>3 )) passed=false;
   if(!(fMT2tree->misc.MET>30 )) passed=false;
   if(!(fMT2tree->misc.Jet0Pass==1 )) passed=false;
   if(!(fMT2tree->misc.Jet1Pass==1 )) passed=false;
@@ -313,7 +313,7 @@ bool ScanAnalysis::isMT2bEleEvent(){
 bool ScanAnalysis::isMT2bMuEvent(){
   bool passed = true;
   
-  if(!(fMT2tree->NJetsIDLoose40>4 )) passed=false;
+  if(!(fMT2tree->NJetsIDLoose40>3 )) passed=false;
   if(!(fMT2tree->misc.MET>30 )) passed=false;
   if(!(fMT2tree->misc.Jet0Pass==1 )) passed=false;
   if(!(fMT2tree->misc.Jet1Pass==1 )) passed=false;

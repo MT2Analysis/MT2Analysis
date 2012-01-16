@@ -8,7 +8,7 @@
 #include "MT2tree.hh"
 //#include "MassPlotter.hh"
 #include "helper/Utilities.hh"
-#include "helper/Monitor.hh"
+//#include "helper/Monitor.hh"
 #include "THStack.h"
 #include "TTree.h"
 #include <map>
@@ -48,7 +48,7 @@ public:
 
   //  void createCounterHistos(map<TString, TH1F*> *hm, map<string, string> cutLabels, TString sName);
   
-  float*  Analysis(bool IS_MC, TString outfile, int njets, int nele=0, int nmu=0,  float MT2CUT_LOW=-1, float MT2CUT_HIGH=999999999, TString trigger="", TString filter="", bool BENRICH=false, bool CORRECT_EFF=false, float* INPUT=NULL);
+  float*  Analysis(TString MT2_REGIME, bool IS_MC, TString outfile, int njets, int nele=0, int nmu=0,  float MT2CUT_LOW=-1, float MT2CUT_HIGH=999999999, TString trigger="", TString filter="", bool BENRICH=false, bool CORRECT_EFF=false, float* INPUT=NULL);
   void createHistos(map<TString, TH1F*> *histos, vector<TString> samplesName );
   void printBLeptEff(TString sample, map<TString, TH1F*> histos, map<TString, float> varFloat);
 

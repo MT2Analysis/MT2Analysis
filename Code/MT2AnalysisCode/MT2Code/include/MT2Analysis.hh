@@ -20,6 +20,8 @@
 #include "JetCorrectorParameters.h" 
 #include "FactorizedJetCorrector.h" 
 
+#include "TH2F.h"
+
 #include </shome/leo/Installations/LHAPDF/lhapdf-5.8.4/include/LHAPDF/LHAPDF.h>
 
 
@@ -47,7 +49,7 @@ public:
   	bool noPU;
 
   //create pdf weights
-  bool doPDF;
+        bool doPDF;
 
   //is a susy scan?
   bool isScan;
@@ -57,7 +59,7 @@ public:
   
   //Control histos
   TH1F *fH_PUWeights, *fH_Events ;
-  
+  TH2F *fH2_SMSEvents, *fH2_mSugraEvents;
 
 
 

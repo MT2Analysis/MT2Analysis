@@ -23,7 +23,7 @@ public:
   	bool noPU;  
 	bool removePhoton;
         bool doPDF;
-  bool isScan;
+        bool isScan;
 private:
 	MT2Analysis             *fMT2Analysis;
   	int fMaxEvents;   

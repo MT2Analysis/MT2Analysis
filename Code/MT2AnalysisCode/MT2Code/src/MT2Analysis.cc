@@ -58,6 +58,8 @@ void MT2Analysis::End(){
 	// write tree
 	fH_PUWeights->Write();
 	fH_Events->Write();
+	fH2_mSugraEvents->Write();
+	fH2_SMSEvents->Write();
 	fATree->Write();
 	fHistFile                ->Close();
 
@@ -294,11 +296,10 @@ void MT2Analysis::Begin(const char* filename){
 	//LHAPDF init
         string PDF_SET="cteq66";
         string PDF_PATH = "/shome/leo/Installations/LHAPDF/lhapdf-5.8.4/";
-	
 	if(doPDF){
 	  LHAPDF::initPDFSet(PDF_PATH+"/share/lhapdf/"+PDF_SET, LHAPDF::LHGRID);
 	  nPDFs = LHAPDF::numberPDF();
-	  cout << nPDFs << endl;
+	  cout << "nPDF: " << nPDFs << endl;
 	}
 
 }
@@ -384,6 +385,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	  fMT2tree->Susy.M12= fTR->M12;
 	  fMT2tree->Susy.A0= fTR->A0;
 	  fMT2tree->Susy.Mu= fTR->signMu;
+	  fMT2tree->Susy.XSec = fTR->IntXSec;
 	}
 
 	// ---------------------------------------------------------------

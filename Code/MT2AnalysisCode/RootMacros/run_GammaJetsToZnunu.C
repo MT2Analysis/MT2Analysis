@@ -27,24 +27,31 @@ Bool_t  fDoPhotonSigmaIEtaIEta     = true;
 Bool_t  fDoPhotonSignalRegion      = true; 
 Bool_t  fDoHadronicSignalRegion    = true;
 Bool_t  fDoPrediction              = true;
-Bool_t  fPrintBrunoTable           = true;
+Bool_t  fPrintBrunoTable           = false;
 Bool_t  fDoVariableMT2bins         = true; // variable MT2bins 
+Bool_t  fDoPileUpWeights           = true;
 // options ---------------
 Int_t   fVerbose                   = 6;
 Bool_t  fSaveResults               = true;
 Bool_t  fSeparateEBEE              = true;
 Bool_t  fSaveZnunuToGammaRatio     = true;
 Bool_t  fDraw                      = false;
-TString fOutDir                    = "../Results/GammaJetsPrediction/20120120_FlatForMT2gt275_test";
+TString fOutDir                    = "../Results/GammaJetsPrediction/20120209_test";
 Bool_t  fWriteToFile               = false; // writes couts to file
 Bool_t  fMrennaHack                = true; // Steve Mrenna Status 2 parton jets - prompt photon dR
 Bool_t  fEnforceAbsIso             = false;
 // Constand Z/gamma ratio
-Bool_t  fUseConstantZToGammaR      = true;
+Bool_t  fUseConstantZToGammaR      = false;
+// pileup weights
 Float_t fConstantZToGammaR_LowHT   = 0.426; // 750 < HT < 950
 Float_t fConstantZToGammaErr_LowHT = 0.053; // abs uncertainty on fConstantZToGammaR
 Float_t fConstantZToGammaR_HighHT  = 0.584; // HT > 950
 Float_t fConstantZToGammaErr_HighHT= 0.110; // abs uncertainty on fConstantZToGammaR
+// NO pileup weights
+//Float_t fConstantZToGammaR_LowHT   = 0.447; // 750 < HT < 950
+//Float_t fConstantZToGammaErr_LowHT = 0.045; // abs uncertainty on fConstantZToGammaR
+//Float_t fConstantZToGammaR_HighHT  = 0.619; // HT > 950
+//Float_t fConstantZToGammaErr_HighHT= 0.106; // abs uncertainty on fConstantZToGammaR
 Float_t fMinMT2forConstR           = 275;
 // uncertainty
 Bool_t  fAddFitIntrinsicUncert     = false;
@@ -62,8 +69,8 @@ Bool_t  fUseFlatMCBRatio           = true;
 // -------
 Float_t fHTmin                     = 750;
 Float_t fHTmax                     = 950;
-Float_t fMT2min                    = 375;
-Float_t fMT2max                    = 500;
+Float_t fMT2min                    = 200;
+Float_t fMT2max                    = 275;
 // ------
 
 // Global Variables ------------------------------------
@@ -282,10 +289,10 @@ void run_GammaJetsToZnunu(){
 	}
 
 	// MT2bins 
-  	const int gNMT2bins                   = 10;
-  	double  gMT2bins[gNMT2bins+1]         = {0, 30, 60, 90, 120, 150, 200, 275, 375, 500, 800}; 	
-//  	const int gNMT2bins                   = 8;
-//  	double  gMT2bins[gNMT2bins+1]         = {0, 30, 60, 90, 120, 150, 200, 275, 800}; 	
+//  	const int gNMT2bins                   = 10;
+  //	double  gMT2bins[gNMT2bins+1]         = {0, 30, 60, 90, 120, 150, 200, 275, 375, 500, 800}; 	
+  	const int gNMT2bins                   = 8;
+  	double  gMT2bins[gNMT2bins+1]         = {0, 30, 60, 90, 120, 150, 200, 275, 800}; 	
 	// Photon Signal Region ******************************************************************************************
 	if(fDoPhotonSignalRegion){	
 		// Get Photon Selection Signal Region: EB
@@ -426,6 +433,7 @@ void Channel::GetShapes(TString SelectionName, TString xtitle, const int nbins, 
 	tA->SetPrintSummary(true);
 	tA->SetDraw(false);
 	tA->SetWrite(false);
+	tA->SetPileUpWeights(fDoPileUpWeights);
   
 //                    variable,      cuts,  njet, nlep,  selection_name,      HLT,   xtitle   nbins  bins   
         tA->GetShapes(fVariable,  fCuts,    -1,  -10  , SelectionName,    fTrigger , xtitle , nbins, bins);

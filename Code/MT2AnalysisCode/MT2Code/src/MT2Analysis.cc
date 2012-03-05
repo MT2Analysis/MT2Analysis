@@ -58,8 +58,14 @@ void MT2Analysis::End(){
 	// write tree
 	fH_PUWeights->Write();
 	fH_Events->Write();
-	fH2_mSugraEvents->Write();
-	fH2_SMSEvents->Write();
+
+	if(isScan){
+	  fH2_mSugraEvents->Write();
+	  fH2_SMSEvents->Write();
+	  for(int s=1;s<11; s++){
+	    fH_mSugraSubProcEvents[s]->Write();
+	  }
+	}
 	fATree->Write();
 	fHistFile                ->Close();
 
@@ -588,6 +594,9 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	fMT2tree->pfmet[0]=MET();
 	// raw, uncorrected and not modified pfmet
 	fMT2tree->rawpfmet[0].SetPtEtaPhiM(fTR->PFMETPAT, 0, fTR->PFMETPATphi, 0);
+	// raw calomet
+	fMT2tree->misc.CaloMETRaw = fTR->RawMET;
+	fMT2tree->misc.CaloMETMuJesCorr = fTR->MuJESCorrMET;
 
 	// Pile UP info and reco vertices
 	if(!fisData){
@@ -607,15 +616,14 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		else
 		  fMT2tree->pileUp.Weight            = GetPUWeight(fTR->PUnumInteractions);
 		
-		fMT2tree->pileUp.Rho               = fTR->Rho; // ATTENTION: this rho is from KT6 PF jets without pf-CHS
-		
-		//cout << GetPUWeight3D(fTR->PUOOTnumInteractionsEarly ,fTR->PUnumInteractions , fTR->PUOOTnumInteractionsLate) << endl;
-
 		if(fVerbose > 3) {
 			cout << "fTR->PUnumInteractions " <<  fTR->PUnumInteractions << " weight "  
 		     	     << " GetPUWeight() " << GetPUWeight(fTR->PUnumInteractions) << endl; 
 		}
 	}
+	fMT2tree->pileUp.Rho               = fTR->Rho; // ATTENTION: this rho is from KT6 PF jets without pf-CHS
+	//cout << fTR->Rho << " " <<  fMT2tree->pileUp.Rho << endl;
+
 	int nvertex=0;
 	for(int i=0; i<fTR->NVrtx; ++i){
 		if(fabs(fTR->VrtxZ[i]) > 24) continue;
@@ -623,6 +631,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		if(fTR->VrtxNdof[i]<=4) continue;
 		nvertex++;
 	}
+
 	fMT2tree->pileUp.NVertices=nvertex;
 	// _________
 

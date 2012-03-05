@@ -65,7 +65,8 @@ void MT2Analyzer::Loop(){
 
 			if(isScan){
 			  fMT2Analysis->fH2_mSugraEvents->Fill(fTR->M0, fTR->M12);
-			  fMT2Analysis->fH2_SMSEvents->Fill(fTR->MassGlu, fTR->MassChi);
+			  fMT2Analysis->fH2_SMSEvents->Fill(fTR->MassGlu, fTR->MassLSP);
+			  fMT2Analysis->fH_mSugraSubProcEvents[fTR->process]->Fill(fTR->M0, fTR->M12);
 			}
 
 		}
@@ -94,8 +95,16 @@ void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, str
 
 	fMT2Analysis->fH_PUWeights = new TH1F("h_PUWeights",";PU weights",100,0,5);
 	fMT2Analysis->fH_Events = new TH1F("h_Events",";Events",10,0,10);
-	fMT2Analysis->fH2_mSugraEvents = new TH2F("h_mSugraEvents",";m_{0};m_{1/2}",150,0,3000, 50,0,1000);
-	fMT2Analysis->fH2_SMSEvents = new TH2F("h_SMSEvents",";m_{0};m_{1/2}",100,0,2500, 100,0,2500);
+	fMT2Analysis->fH2_mSugraEvents = new TH2F("h_mSugraEvents",";m_{0};m_{1/2}",600,0,3000, 200,0,1000);
+	fMT2Analysis->fH2_SMSEvents = new TH2F("h_SMSEvents",";m_{0};m_{1/2}",500,0,2500, 500,0,2500);
+
+	if(isScan){
+	  for(int s=1;s<11; s++){
+	    ostringstream ss;
+	    ss << s; 
+	    fMT2Analysis->fH_mSugraSubProcEvents[s] = new TH2F( ("h_mSugraSubProcEvents_"+ss.str()).c_str(),";m_{0};m_{1/2}",150,0,3000, 50,0,1000 );
+	  }
+	}
 
 
 }

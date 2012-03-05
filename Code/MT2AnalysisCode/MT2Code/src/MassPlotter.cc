@@ -1989,17 +1989,16 @@ void MassPlotter::plotRatioStack(THStack* hstack, TH1* h1_orig, TH1* h2_orig, bo
 	h1->SetStats(0);	
 	h2->SetStats(0);	
 	
-	TCanvas* c1 = new TCanvas(name,"", 20,100,1000,700);
-	cout << name << endl;
+	TCanvas* c1 = new TCanvas("c1","", 20,100,1000,700);
 	c1 -> cd();
 	
 	float border = 0.3;
  	float scale = (1-border)/border;
  
- 	TPad *p_plot  = new TPad(name+"_plotpad",  "Pad containing the overlay plot", 0.00, border, 1.00, 1.00, 0, 0);
+ 	TPad *p_plot  = new TPad("plotpad",  "Pad containing the overlay plot", 0.00, border, 1.00, 1.00, 0, 0);
  	p_plot->SetBottomMargin(0);
  	p_plot->Draw();
- 	TPad *p_ratio = new TPad(name+"_ratiopad", "Pad containing the ratio",        0.00, 0.00, 1.00, border, 0, 0);
+ 	TPad *p_ratio = new TPad("ratiopad", "Pad containing the ratio",        0.00, 0.00, 1.00, border, 0, 0);
  	p_ratio->SetTopMargin(0);
  	p_ratio->SetBottomMargin(0.35);
  	p_ratio->Draw();
@@ -2031,7 +2030,7 @@ void MassPlotter::plotRatioStack(THStack* hstack, TH1* h1_orig, TH1* h2_orig, bo
 	hstack->SetMinimum(0.02);
 	hstack ->Draw("hist");
 	//h2     ->Draw("sameEX0");
-        h2     ->Draw("sameE1"); //LEO MOD
+        h2     ->Draw("sameE");
 
 	// title
 	TLatex lat;
@@ -2121,46 +2120,26 @@ void MassPlotter::plotRatioStack(THStack* hstack, TH1* h1_orig, TH1* h2_orig, bo
 }
 //_________________________________________________________________________________
 void MassPlotter::plotRatioStack(THStack* hstack, TH1* h1_orig, TH1* h2_orig, TH1* h3, bool logflag, bool normalize, TString name, TLegend* leg, TString xtitle, TString ytitle,int njets, int nleps, float overlayScale){
-  //LEO TRUE USE THIS
-
 	// define canvas and pads 
 	TH1D *h1 = (TH1D*)h1_orig->Clone("h1_copy");
 	TH1D *h2 = (TH1D*)h2_orig->Clone("h2_copy");
 
 	h1->SetStats(0);	
 	h2->SetStats(0);	
-	h1->SetMarkerStyle(20);
-	h2->SetMarkerStyle(20);
-
 	
-	//TCanvas* c1 = new TCanvas(name,"", 20,100,1000,700);
-	TCanvas* c1 = new TCanvas(name,"",1838,242,612,672 /*37, 60,636,670*/);
-	c1->SetFrameLineWidth(1);
+	TCanvas* c1 = new TCanvas("c1","", 20,100,1000,700);
 	c1 -> cd();
 	
-	float border = 0.2;
+	float border = 0.3;
  	float scale = (1-border)/border;
  
- 	TPad *p_plot  = new TPad(name+"_plotpad",  "Pad containing the overlay plot", 0,0.211838,1,1 /*0.00, border, 1.00, 1.00, 0, 0*/);
- 	//p_plot->SetBottomMargin(0.05);
-	//p_plot->SetTopMargin(0.09);
-	//p_plot->SetLeftMargin(0.1669107);
-      	//p_plot->SetRightMargin(0.02);
-	p_plot->SetLeftMargin(0.1329114);
-	p_plot->SetRightMargin(0.02056962);
-	p_plot->SetTopMargin(0.07009346);
-	p_plot->SetBottomMargin(0.07126168);
+ 	TPad *p_plot  = new TPad("plotpad",  "Pad containing the overlay plot", 0.00, border, 1.00, 1.00, 0, 0);
+ 	p_plot->SetBottomMargin(0);
  	p_plot->Draw();
- 	TPad *p_ratio = new TPad(name+"_ratiopad", "Pad containing the ratio",   0,0.01713396,1,0.2180685/*     0.00, 0.05, 1.00, border, 0, 0*/);
- 	//p_ratio->SetTopMargin(0.03);
- 	//p_ratio->SetBottomMargin(0.05/*5*/);
-	//p_ratio->SetRightMargin(0.02);
-p_ratio->SetLeftMargin(0.1348684);	
-p_ratio->SetRightMargin(0.02631579);
-p_ratio->SetTopMargin(0.06976745);
-p_ratio->SetBottomMargin(0.2790698);
-
-	p_ratio->Draw();
+ 	TPad *p_ratio = new TPad("ratiopad", "Pad containing the ratio",        0.00, 0.00, 1.00, border, 0, 0);
+ 	p_ratio->SetTopMargin(0);
+ 	p_ratio->SetBottomMargin(0.35);
+ 	p_ratio->Draw();
  
 	// draw overlay plot
  	p_plot ->cd();
@@ -2178,21 +2157,14 @@ p_ratio->SetBottomMargin(0.2790698);
 	double max1 = h1->GetMaximum();
 	double max2 = h2->GetMaximum();
 	double max  = (max1>max2)?max1:max2;
-	if(logflag) max = 2.5*max;
-	else max = 1.5*max;
+	if(logflag) max = 2*max;
+	else max = 1.05*max;
 	h1->SetMaximum(max);
 	h2->SetMaximum(max);
 	hstack->SetMaximum(max);
 //	h1->SetMinimum(0.000000001);
 //	h2->SetMinimum(0.000000001);
-	hstack->GetXaxis()->SetLabelSize(0.05);
-	hstack->GetYaxis()->SetLabelSize(0.05);
-	hstack->GetYaxis()->SetTitleSize(0.05);
-	hstack->GetYaxis()->SetTitle(ytitle);
 
-	
-	//MT2_bSel[0]->SetTitleSize(0.03);
-	///MT2_bSel[0]->SetTitleOffset(1.);
 	hstack->SetMinimum(0.02);
 	hstack->Draw("hist");
 	h2    ->Draw("sameE");
@@ -2208,18 +2180,16 @@ p_ratio->SetBottomMargin(0.2790698);
 	lat.SetTextSize(0.1);
 
 	// y axis title 
-	//lat.SetTextAlign(33); 
-	//lat.SetTextColor(1);
-	//lat.SetTextAngle(90);
-	//lat.DrawLatex(0.035, 0.9, ytitle);
+	lat.SetTextAlign(33); 
+	lat.SetTextColor(1);
+	lat.SetTextAngle(90);
+	lat.DrawLatex(0.035, 0.9, ytitle);
 		
 	TLatex TitleBox;
 	TitleBox.SetNDC();
-	TitleBox.SetTextSize(0.04);
-	//TString text = njets < 0 ? TString::Format("#geq %d Jets",abs(njets)) : TString::Format("%d Jets",abs(njets));
-	//TString text = njets < 0 ? TString::Format("#geq %d Jets",abs(njets)) : TString::Format("%d Jets",abs(njets));
-	TString text = "CMS Preliminary #sqrt{s} = 7 teV";
-	//text += nleps == 1 ? ", 1 Lepton" : "";
+	TitleBox.SetTextSize(0.05);
+	TString text = njets < 0 ? TString::Format("#geq %d Jets",abs(njets)) : TString::Format("%d Jets",abs(njets));
+	text += nleps == 1 ? ", 1 Lepton" : "";
 	TitleBox.DrawLatex(0.18,0.943,text.Data());
 
  	p_plot ->Draw();
@@ -2236,61 +2206,44 @@ p_ratio->SetBottomMargin(0.2790698);
 	//gPad->SetLogy();
  
 	TH1D *h_ratio = (TH1D*)h2_orig->Clone("h2_copy");	
-	/*
+
 	h_ratio->GetXaxis()->SetTitleSize(scale * h1->GetXaxis()->GetTitleSize());
 	h_ratio->GetYaxis()->SetTitleSize(scale * h1->GetYaxis()->GetTitleSize());
-	h_ratio->GetXaxis()->SetLabelSize( 0.);
+	h_ratio->GetXaxis()->SetLabelSize(scale * h1->GetXaxis()->GetLabelSize());
 	h_ratio->GetYaxis()->SetLabelSize(scale * h1->GetYaxis()->GetLabelSize());
 	h_ratio->GetXaxis()->SetTickLength(scale * h1->GetXaxis()->GetTickLength());
 	h_ratio->GetYaxis()->SetTickLength(h1->GetYaxis()->GetTickLength());
 	h_ratio->SetLineWidth(2);
-*/
-	//h_ratio->SetFillColor(kBlue);
-	//h_ratio->SetLineColor(kBlue);
+	h_ratio->SetFillColor(kBlue);
+	h_ratio->SetLineColor(kBlue);
 	h_ratio ->SetStats(0);
 	h_ratio ->SetMarkerStyle(20);
-	//h_ratio ->SetMarkerSize(0.1);
+	h_ratio ->SetMarkerSize(0.1);
 
  	h_ratio ->Divide(h2, h1);
  	h_ratio ->SetMinimum(0.4);
  	h_ratio ->SetMaximum(3.0);
 	h_ratio ->GetYaxis()->SetTitleOffset(h1->GetYaxis()->GetTitleOffset());
 
-	//MC with errors
-	TH1D*h_ratio_mc = (TH1D*)h1_orig->Clone("h1_copy");
-	h_ratio_mc->Divide(h1);
-	h_ratio_mc->GetYaxis()->SetRangeUser(0,2);
-	h_ratio_mc->GetXaxis()->SetLabelSize( 0.);
-	h_ratio_mc->GetYaxis()->SetTitle("data / MC");
-	h_ratio_mc->GetXaxis()->SetTitle(xtitle);
-	h_ratio_mc->GetXaxis()->SetTitleSize(0.2);
-	h_ratio_mc->GetXaxis()->SetTitleOffset(0.5);
-	h_ratio_mc->GetYaxis()->SetLabelSize(0.1);
-	h_ratio_mc	->GetYaxis()->SetTitleSize(0.16);
-	h_ratio_mc->GetYaxis()->SetTitleOffset(0.42);
-
-	
-	h_ratio_mc->SetFillStyle(3001);
-	h_ratio_mc->Draw("E2");
-	h_ratio ->DrawCopy("Esame");//LEO MOD
+	h_ratio ->DrawCopy("E2");
  
 	TLine *l3 = new TLine(h1->GetXaxis()->GetXmin(), 1.00, h1->GetXaxis()->GetXmax(), 1.00);
 	l3->SetLineWidth(2);
 	l3->SetLineStyle(7);
 	l3->Draw();
 	// ratio title
-	//lat.SetTextAlign(33);
-	//lat.SetTextColor(1);
-	//lat.SetTextSize(0.15);
-	//lat.SetNDC(1);
-	//lat.SetTextAngle(90);
-	//lat.DrawLatex(0.035, 1.0, "data / MC");
+	lat.SetTextAlign(33);
+	lat.SetTextColor(1);
+	lat.SetTextSize(0.15);
+	lat.SetNDC(1);
+	lat.SetTextAngle(90);
+	lat.DrawLatex(0.035, 1.0, "data / MC");
 	
 	// x axis title
 	lat.SetTextSize(0.2);
 	lat.SetTextAngle(0);
 	float ypos = xtitle.Contains("slash") || xtitle.Contains("_") || xtitle.Contains("^") ? 0.23 : 0.16;
-	//lat.DrawLatex(0.9, ypos, xtitle);
+	lat.DrawLatex(0.9, ypos, xtitle);
 	gPad->RedrawAxis();
  	p_ratio ->Draw();
  	c1->Update();

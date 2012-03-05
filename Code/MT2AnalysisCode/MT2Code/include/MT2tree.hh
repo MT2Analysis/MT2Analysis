@@ -39,6 +39,9 @@ public:
   Float_t  MCT;
   Float_t  MET;
   Float_t  METPhi;
+  Float_t  CaloMETRaw;
+  Float_t  CaloMETMuJesCorr;
+
   Float_t  LeadingJPt;
   Float_t  SecondJPt;
   Float_t  Vectorsumpt;

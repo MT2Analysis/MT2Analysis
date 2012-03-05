@@ -60,7 +60,8 @@ public:
   //Control histos
   TH1F *fH_PUWeights, *fH_Events ;
   TH2F *fH2_SMSEvents, *fH2_mSugraEvents;
-
+  //SUSY subprocess histos
+  TH2F *fH_mSugraSubProcEvents[11];
 
 
 private:

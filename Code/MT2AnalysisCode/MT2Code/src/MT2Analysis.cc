@@ -640,8 +640,8 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	for (StringBoolMap::iterator iter = fTriggerMap.begin(); iter != fTriggerMap.end(); ++iter){
 		if(GetHLTResult(iter->first)) *iter->second =1;
 	}
-	// single photon triggers ---------------------------------------------------------------------
 	if(fisData){
+		// single photon triggers ---------------------------------------------------------------------
 		string singlePhotonTriggers[100];
 		int photontriggernumber=0;
 		singlePhotonTriggers[photontriggernumber++] = "HLT_Photon75_CaloIdVL_IsoL_v1";
@@ -682,7 +682,91 @@ bool MT2Analysis::FillMT2TreeBasics(){
 			if( GetHLTResult(singlePhotonTriggers[i])) SiglePhotFired=true;
 		}
 		if(SiglePhotFired) fMT2tree->trigger.HLT_SinglePhotons = true;
+
+		// di-electron triggers ------------------------------------------------------------------------------------------------------
+		string diElectronTriggers[100];
+		int diElectronTriggernumber=0;
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL_v1";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL_v2";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL_v3";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL_v4";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL_v5";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL_v6";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL_v7";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdL_CaloIsoVL_Ele8_CaloIdL_CaloIsoVL_v8";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v1";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v2";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v3";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v4";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_Ele8_CaloIdT_TrkIdVL_CaloIsoVL_TrkIsoVL_v5";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v1";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v2";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v3";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v4";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v5";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v6";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v7";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v8";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v9";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v10";
+		bool DiElectronFired(false);
+		for(int i=0; i<diElectronTriggernumber; ++i){
+			if(GetHLTResult(diElectronTriggers[i])) DiElectronFired=true;
+		}
+		if(DiElectronFired) fMT2tree->trigger.HLT_DiElectrons =true;
+
+		// DiMuon triggers
+		string diMuonTriggers[100];
+		int diMuonTriggernumber=0;
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu6_v1";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu6_v2";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu6_v3";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu6_v4";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu6_v5";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu6_v6";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu6_v7";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu6_v8";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu7_v1";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu7_v2";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu7_v3";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu7_v4";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu7_v5";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu7_v6";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu7_v7";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu7_v8";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu7_v9";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu7_v10";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu7_v11";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_DoubleMu7_v12";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v1";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v2";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v3";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v4";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v5";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v6";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v7";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v8";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v9";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v10";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v11";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v1";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v2";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v3";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v4";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v5";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v6";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v7";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v8";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v9";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v10";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v11";
+		bool DiMuonFired(false);
+		for(int i=0; i<diMuonTriggernumber; ++i){
+			if(GetHLTResult(diMuonTriggers[i])) DiMuonFired=true;
+		}
+		if(DiMuonFired) fMT2tree->trigger.HLT_DiMuons =true;
 	}
+
 
 
 	// ___________________________________________________________________________
@@ -1653,13 +1737,13 @@ TLorentzVector MT2Analysis::MET(){
 		return MET;
 	} else{
 		if      (fJESUpDown==1){
-			MET.SetPtEtaPhiM(fTR->PFMETPAT*1.05, 0., fTR->PFMETPATphi, 0);
+    			MET.SetPtEtaPhiM(fTR->PFMETPAT*1.05, 0., fTR->PFMETPATphi, 0);
 		}else if(fJESUpDown==-1){
 			MET.SetPtEtaPhiM(fTR->PFMETPAT*0.95, 0., fTR->PFMETPATphi, 0);
 		}else{
 			cout << " something wrong in met scaling" << endl; exit(1);
 		}		
-		return MET;
+      	return MET;
 	}
 }
 

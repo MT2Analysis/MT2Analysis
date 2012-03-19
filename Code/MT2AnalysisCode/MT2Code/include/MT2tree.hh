@@ -636,8 +636,11 @@ public:
   Float_t GenZPt();
   TLorentzVector RecoOSDiLeptLv(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max);
   Float_t RecoOSDiLeptPt(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max);
+  Float_t RecoOSDiLeptM(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max);
   Float_t RecoOSDiLeptRapidity(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max);
-  
+  Bool_t  ZllRecalculate();
+  Bool_t  ZAcceptance(float minleptpt, float maxleptpt, float minlepteta, float maxlepteta);
+
   // Photons
   Int_t   GenPhotonGenJetDRJIndex(float minJPt, float maxJEta, int PFJID );
   Float_t GenPhotonGenJetDR(float minJPt, float maxJEta, int PFJID );
@@ -646,6 +649,8 @@ public:
   Int_t   PhotonEleDREIndex(int ph_index, float minEPt, float maxEEta);
   Float_t PhotonEleDR(int ph_index, float minEPt, float maxEEta);
   Float_t GenPhotonAndLeadingJetPt();
+  Float_t PhotonToJetPtRatio();
+  Float_t MinGenBosonJetsDR();
 
   // PrintOut 
   Bool_t   PrintOut(Bool_t logfile);

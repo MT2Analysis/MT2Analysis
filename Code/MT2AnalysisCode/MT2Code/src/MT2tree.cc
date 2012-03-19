@@ -807,9 +807,15 @@ Float_t MT2tree::MinMetJetDPhi(int PFJID, float minJPt, float maxJEta, int met, 
 	  float mass = GetDiLeptonInvMass(0,1,0,5.0,1);
 	  if(mass > 71 && mass <111) MET = GetMETPlusLeptsLV(1) + pfmet[0] ;
 	  else return -888.;
-  }
-  else         return -999;
-
+  }else if(met==1113){
+	MET = pfmet[0]; 
+	for(int i=0; i<NEles; ++i){
+		MET = MET + ele[i].lv;
+	}
+	for(int i=0; i<NMuons; ++i){
+		MET = MET + muo[i].lv;
+	}
+  } else         return -999;
 
   int index = MinMetJetDPhiIndex(PFJID, minJPt, maxJEta, met, njets);
   if(index >=0) {
@@ -826,8 +832,15 @@ Int_t MT2tree::MinMetJetDPhiIndex(int PFJID, float minJPt, float maxJEta, int me
 	  float mass = GetDiLeptonInvMass(0,1,0,5.0,1);
 	  if(mass > 71 && mass <111) MET = GetMETPlusLeptsLV(1) + pfmet[0] ;
 	  else return -888.;
-  }
-  else            return -999;
+  } else if(met==1113){
+	MET = pfmet[0]; 
+	for(int i=0; i<NEles; ++i){
+		MET = MET + ele[i].lv;
+	}
+	for(int i=0; i<NMuons; ++i){
+		MET = MET + muo[i].lv;
+	}
+  } else    return -999;
 
   std::vector<int> indices;
   if ( njets==0 || njets>NJets ) njets=NJets;  // option 0: all jets & protection against less than njets
@@ -2070,6 +2083,11 @@ Float_t MT2tree::RecoOSDiLeptRapidity(Float_t l_ptmin, Float_t l_etamax, Float_t
 	return Z.Rapidity();
 }
 
+Float_t MT2tree::RecoOSDiLeptM(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max){
+	TLorentzVector Z=RecoOSDiLeptLv(l_ptmin, l_etamax, mll_min, mll_max);
+	return Z.M();
+}
+
 
 TLorentzVector MT2tree::GenDiLeptLv(Float_t l_ptmin, Float_t l_etamax, Float_t mll_min, Float_t mll_max, Bool_t charged){
 	TLorentzVector Zero(0,0,0,0);
@@ -2387,6 +2405,76 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 
 	return true;
 }
+
+Bool_t MT2tree::ZllRecalculate(){
+	// testmass 0, massless pseudojets, PF-JID, JPt > 20, |jet-eta|<2.4, hemi seed =2 (max inv mass), hemi assoc =3, pf-met with Z, hemi-index 1
+	FillMT2Hemi(0,0,1,20,2.4,2,3,1113,1);
+	misc.MT2 = hemi[1].MT2;
+
+	misc.MinMetJetDPhiIndex  = MinMetJetDPhiIndex(0,20,5.0,1113);
+	
+	// MET
+	for(int i=0; i<NEles; ++i){
+		pfmet[0] = pfmet[0] + ele[i].lv;
+	}
+	for(int i=0; i<NMuons; ++i){
+		pfmet[0] = pfmet[0] + muo[i].lv;
+	}
+	misc.MET    =pfmet[0].Pt();
+	misc.METPhi =pfmet[0].Phi();
+}
+
+Bool_t MT2tree::ZAcceptance(float minleptpt, float maxleptpt, float minlepteta, float maxlepteta){
+	vector<int> indices;
+	for(int i=0; i<NGenLepts; ++i){
+		Int_t ID   = fabs(genlept[i].ID);
+		Int_t MID  = fabs(genlept[i].MID);
+		Int_t GMID = fabs(genlept[i].GMID);
+		if(MID==23 && ( ID==11 || ID==12 || ID==13 || ID==14 || ID==16)){
+			if(genlept[i].lv.Pt()       <minleptpt ) continue;
+			if(genlept[i].lv.Pt()       >maxleptpt ) continue;
+			if(fabs(genlept[i].lv.Eta())<minlepteta) continue;
+			if(fabs(genlept[i].lv.Eta())>maxlepteta) continue;
+			indices.push_back(i);
+		}else if (MID==15 && GMID==23 && (ID==11 || ID==12 || ID==13 || ID==14 || ID==16)){
+			if(genlept[i].lv.Pt()       <minleptpt ) continue;
+			if(genlept[i].lv.Pt()       >maxleptpt ) continue;
+			if(fabs(genlept[i].lv.Eta())<minlepteta) continue;
+			if(fabs(genlept[i].lv.Eta())>maxlepteta) continue;
+			indices.push_back(i);
+		} 
+	}
+	if(indices.size()==2) return true;
+	else                  return false;
+}
+
+Float_t MT2tree::PhotonToJetPtRatio(){
+	if(NPhotons!=1) return -1;
+	if(NJetsIDLoose40!=1) return -1;
+	if(jet[0].IsGoodPFJet(40, 2.4, 1)==false) return -1;
+	return jet[0].lv.Pt()/photon[0].lv.Pt();
+}
+
+Float_t MT2tree::MinGenBosonJetsDR(){
+	if(GenPhoton[0].Pt() >0 && misc.ProcessID ==5){
+		float minDR=10;
+		for(int i=0; i<NJets; ++i){
+			float dR=GenPhoton[0].DeltaR(jet[i].lv);
+			if(dR < minDR) minDR=dR;
+		}
+		return minDR;
+	}else if(GenZ[0].Pt()>0 && misc.ProcessID ==1){
+		float minDR=10;
+		for(int i=0; i<NJets; ++i){
+			float dR=GenZ[0].DeltaR(jet[i].lv);
+			if(dR < minDR) minDR=dR;
+		}
+		return minDR;
+	}else{
+		return -999;
+	}
+}
+
 
 // ----------------------------------------------------------------------------------------------------------
 ClassImp(MT2Susy)

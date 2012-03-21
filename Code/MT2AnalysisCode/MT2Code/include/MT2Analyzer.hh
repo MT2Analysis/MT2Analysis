@@ -19,6 +19,7 @@ public:
 	void Loop();
 	void SetMaxEvents(int a){fMaxEvents=a;};
 	void SetProcessID(int ID){fID=ID;};
+	void SetBTagEfficiency(string btagFileName){ fbtagFileName = btagFileName;};
   	bool isS3;
   	bool noPU;  
 	bool removePhoton;
@@ -28,5 +29,6 @@ private:
 	MT2Analysis             *fMT2Analysis;
   	int fMaxEvents;   
 	int fID;
+	string fbtagFileName;
 };
 #endif

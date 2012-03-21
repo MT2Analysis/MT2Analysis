@@ -20,7 +20,7 @@ void usage( int status = 0 ) {
 	cout << "                      [-m set_of_cuts] [-n maxEvents] [-t type]                      " << endl;
 	cout << "                      [-p data_PileUp] [-P mc_PileUP]                                " << endl; 
         cout << "                      [-s S3,noPU,3D] [-C JEC]                                          " << endl;
-	cout << "                      [-w pdf]                                                       " << endl;
+	cout << "                      [-w pdf] [-b btag]                                             " << endl;
 	cout << "                      [-r photon ] [-i ID ]                                          " << endl;
 	cout << "                      [-l] file1 [... filen]"                                          << endl;
 	cout << "  where:"                                                                              << endl;
@@ -35,6 +35,7 @@ void usage( int status = 0 ) {
 	cout << "                   interactions is read                                              " << endl;
 	cout << "     mc_PileUP     root file from which the generated # pile up                      " << endl;
 	cout << "                   interactions is read                                              " << endl;
+	cout << "     btag          file with btag efficiency histograms                              " << endl;
 	cout << "     type          data, scan or mc=default                                                " << endl;
 	cout << "     photon        add Photon to MET and remove jets/ele matched to photon           " << endl;
 	cout << "     ID            ProcessID: 0=data, 1=Znunu, 2=Zll, 3=WJets, 4=Top,                " << endl;
@@ -62,6 +63,7 @@ int main(int argc, char* argv[]) {
 	string  mc_PileUp = "";
 	string  type = "mc";
 	string  JEC  ="";
+	string  btagFileName = "";
 	bool isData  = false;
 	bool isScan = false;
 	int verbose  = 0;
@@ -75,7 +77,7 @@ int main(int argc, char* argv[]) {
 
 // Parse options
 	char ch;
-	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:r:i:C:w:lh?")) != -1 ) {
+	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:r:b:i:C:w:lh?")) != -1 ) {
 	  switch (ch) {
 	  case 'd': outputdir       = TString(optarg);break;
 	  case 'o': filename        = TString(optarg);break;
@@ -87,6 +89,7 @@ int main(int argc, char* argv[]) {
 	  case 'P': mc_PileUp       = string(optarg); break;
 	  case 't': type            = string(optarg); break;
 	  case 'r': photon          = string(optarg); break;
+	  case 'b': btagFileName    = string(optarg); break;
 	  case 'w': pdf             = string(optarg); break;
 	  case 'i': ID              = atoi(optarg);   break;
 	  case 's': puScenario      = string(optarg); break;
@@ -121,13 +124,17 @@ int main(int argc, char* argv[]) {
 	}
 
 	setofcuts   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/MT2_cuts/"+setofcuts+".dat";
-	//if(data_PileUp.length()!=0){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
-	//if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
+	if(data_PileUp.length()!=0){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
+	//if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/haweber/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
+	if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
 	//setofcuts   ="/shome/leo/Analysis/MT2_cuts/"+setofcuts+".dat";
-	if(data_PileUp.length()!=0){data_PileUp ="/shome/leo/Analysis/Certification/pileUp_data/"+data_PileUp;}
-        if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/leo/Analysis/Certification/pileUp_mc/"  + mc_PileUp;}
+	//if(data_PileUp.length()!=0){data_PileUp ="/shome/leo/Analysis/Certification/pileUp_data/"+data_PileUp;}
+//        if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/leo/Analysis/Certification/pileUp_mc/"  + mc_PileUp;}
 
-	if(jsonFileName.length() !=0){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"           +jsonFileName;}
+//	if(jsonFileName.length() !=0){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"           +jsonFileName;}
+	if(jsonFileName.length() !=0){jsonFileName="/shome/haweber/MT2Analysis/Code/Certification/"                             +jsonFileName;}
+	if(btagFileName.length() !=0){btagFileName="/shome/haweber/MT2Analysis/Code/Efficiencies/" + btagFileName;}
+	else {btagFileName="/shome/haweber/MT2Analysis/Code/Efficiencies/BEffHistos_PTbinned_allHT_SSVHPT.root";}//define a default histogram
 
 	if(puScenario=="3D"){ isS3=true; noPU=true; } // THIS IS A DIRTY TRICK TO TEST 3D REWEIGHT WITHOUT ADD A NEW VAR
 	if(puScenario=="S3") isS3=true;
@@ -157,6 +164,7 @@ int main(int argc, char* argv[]) {
   	cout << "JSON file is:                   " << (jsonFileName.length()>0?jsonFileName:"empty") << endl;
   	cout << "MC_PileUp file:                 " << (mc_PileUp.length()>0?mc_PileUp:"empty") << endl;
   	cout << "Data_PileUp file:               " << (data_PileUp.length()>0?data_PileUp:"empty") << endl;
+  	cout << "btag file is:                   " << (btagFileName.length()>0?btagFileName:"empty") << endl;
 	if(noPU && !isS3) cout << "WARNING: NoPU option set, all the PU weights will be set to 1" << endl;
 	cout << "Set of Cuts is:                 " << setofcuts << endl;
 	cout << "Number of events:               " << theChain->GetEntries() << endl;
@@ -175,6 +183,7 @@ int main(int argc, char* argv[]) {
 	tA->SetVerbose(verbose);
 	tA->SetMaxEvents(maxEvents);
 	tA->SetProcessID(ID);
+	tA->SetBTagEfficiency(btagFileName);
 	tA->isS3 = isS3;
 	tA->noPU = noPU;
 	tA->isScan = isScan;

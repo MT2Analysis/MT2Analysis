@@ -1991,8 +1991,8 @@ Int_t MT2tree::TopDecayMode(){
 
 
 Bool_t MT2tree::TopDecayModeResult(Int_t nlepts){
-  Int_t bit =TopDecayMode();
-        //Int_t bit = misc.TopDecayMode;
+  //Int_t bit =TopDecayMode();
+        Int_t bit = misc.TopDecayMode;
 	if(nlepts == 1){ // semileptonic without leptonic tau
 		if     ( (bit & 2 )==2 || (bit & 8)==8) return false; // more than one e/mu
 		if     ( (bit & 64)==64)                return false; // at least one leptonic tau

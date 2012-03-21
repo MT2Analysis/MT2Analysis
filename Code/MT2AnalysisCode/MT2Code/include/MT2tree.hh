@@ -60,8 +60,9 @@ public:
   Float_t  TrackingFailurePVtx;
   Int_t    WDecayMode;
   Int_t    TopDecayMode;
+  Float_t  BTagWeight;
   
-  ClassDef(MT2Misc, 27)
+  ClassDef(MT2Misc, 28)
 };
 
 
@@ -299,8 +300,12 @@ public:
 	Bool_t HLT_SinglePhotons;
 	Bool_t HLT_DiElectrons;
 	Bool_t HLT_DiMuons;
+	// MuHad
+	Bool_t HLT_MuHad;
+	//EMu
+	Bool_t HLT_EMu;
 
-	ClassDef(MT2Trigger, 14);
+	ClassDef(MT2Trigger, 15);
 };
 
 // MT2Znunu --------------------------------
@@ -621,6 +626,9 @@ public:
   Float_t GetGenLeptPt(int which, int pid, int mother, float pt, float eta);
   Float_t GetGenLeptEta(int which, int pid, int mother, float pt, float eta);
   Int_t   GetGenLeptIndex(int which, int pid, int mother, float pt, float eta);
+  Float_t GetGenLeptPt2(int which, int pid, int mother, int gmother, float pt, float eta);
+  Float_t GetGenLeptEta2(int which, int pid, int mother, int gmother, float pt, float eta);
+  Int_t   GetGenLeptIndex2(int which, int pid, int mother, int gmother, float pt, float eta);
   Bool_t  GenLeptFromW(int pid, float pt, float eta, bool includeTaus);
   Float_t GetLeptPt(int index);
   Float_t ElClosestJet();

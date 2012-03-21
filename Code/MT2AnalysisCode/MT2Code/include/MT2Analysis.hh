@@ -14,6 +14,7 @@
 #include "helper/Davismt2.h"
 #include "helper/TMctLib.h"
 #include "helper/Hemisphere.hh"
+#include "BTagWeight.hh"
 #include "MT2tree.hh"
 #include <TLorentzVector.h>
 #include "JetCorrectionUncertainty.h" 
@@ -38,6 +39,8 @@ public:
 	void End();
 	void SetType(bool isData=false){fisData=isData;};
 	void SetProcessID(int ID){fID=ID;};
+	void SetBTagEfficiency(string btagFileName){ fbtagFileName = btagFileName;};
+
 
 	// redo JEC
 	void SetJEC(string JEC){fJEC=JEC;};
@@ -76,12 +79,20 @@ private:
         //Control Histograms
   //  TH1F *fH_PUWeights ;
 
+	//btagging histograms and files
+	TFile *btagfile;
+	TH1D *hbeff;
+	TH1D *hceff;
+	TH1D *hleff;
+
 	// data members-----------------------------------------
 	bool fisData;
 	int  fID;
 	int  fCounter;
 	bool fBasicMT2treeFilled;
 	string fJEC;
+	string fbtagFileName;
+
 
 	// vectors for jets and lepton indices
 	vector<int> fElecs;

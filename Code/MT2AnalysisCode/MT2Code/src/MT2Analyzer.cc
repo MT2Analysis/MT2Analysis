@@ -84,6 +84,7 @@ void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, str
 	fMT2Analysis                    ->SetJEC(JEC);
         fMT2Analysis                    ->fRemovePhoton = removePhoton;
 	fMT2Analysis                    ->SetProcessID(fID);
+	fMT2Analysis                    ->SetBTagEfficiency(fbtagFileName);
         fMT2Analysis                    ->isS3         = isS3;
 	fMT2Analysis                    ->noPU         = noPU;
 	fMT2Analysis             ->doPDF        = doPDF;

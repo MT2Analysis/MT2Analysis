@@ -65,6 +65,7 @@ void MT2Misc::Reset() {
   TrackingFailurePVtx     = -99999.99;
   WDecayMode              = -1;
   TopDecayMode            = -1;
+  BTagWeight              = -99999.99;
 
 }
 
@@ -304,6 +305,10 @@ void MT2Trigger::Reset(){
 	// Dileptons
 	HLT_DiElectrons                 = false;
 	HLT_DiMuons                     = false;
+	HLT_EMu                         = false;
+	//MuHad
+	HLT_MuHad                       = false;
+
 }
 
 
@@ -424,8 +429,11 @@ Bool_t MT2Jet::IsGoodPFJet(float minJPt, float maxJEta, int PFJID) {
 Bool_t MT2Jet::IsBJet(Int_t algo) {
   if     (algo==3 && bTagProbSSVHP >2.0 ) return true;
   else if(algo==2 && bTagProbSSVHE >1.74) return true;
+  else if(algo==1 && bTagProbTCHE  >3.3 ) return true;
+  else if(algo==0 && bTagProbTCHP  >1.93) return true;
   else                                    return false;
 }
+
 
 // MT2GenJet --------------------------------------
 MT2GenJet::MT2GenJet(){
@@ -956,6 +964,8 @@ Bool_t MT2tree::PassMinMetJetDPhi03(){
 	if( NJetsIDLoose >=3  && misc.MinMetJetDPhi > 0.3) return true;
 	return false;
 }
+
+	
 
 // Maximum hemi mass ---------------------------------------------------------------
 Float_t MT2tree::GetMaxHemiMass(int hemi_index){
@@ -1861,6 +1871,38 @@ Float_t MT2tree::GetGenLeptPt(int which, int pid, int mother, float pt, float et
 	else           return genlept[index].lv.Pt();	
 }
 
+Int_t   MT2tree::GetGenLeptIndex2(int which, int pid, int mother, int gmother, float pt, float eta){
+	vector<int>    indices;
+	vector<float> pts, etas;
+	for(int i=0; i<NGenLepts; ++i){
+		if(pid==1113)        {if(abs(genlept[i].ID) !=11 && abs(genlept[i].ID)!=13  ) continue;}
+		else if(pid==121416) {if(abs(genlept[i].ID) !=12 && abs(genlept[i].ID)!=14 && abs(genlept[i].ID)!=16) continue;}
+		else if(abs(genlept[i].ID) !=pid   ) continue;
+		if(abs(genlept[i].MID)               !=mother) continue;
+		if(abs(genlept[i].GMID)              !=gmother)continue;
+		if(    genlept[i].lv.Pt()            < pt    ) continue;
+		if(fabs(genlept[i].lv.Eta())         > eta   ) continue;
+		indices.push_back(i);
+		pts.push_back(genlept[i].lv.Pt());
+	}
+	if(indices.size() < 1 || which >= indices.size()) return -1;
+	else indices = Util::VSort(indices, pts);
+
+	return (Int_t) indices[which]; 	
+}
+
+Float_t MT2tree::GetGenLeptEta2(int which, int pid, int mother, int gmother, float pt, float eta){
+	Int_t index = GetGenLeptIndex2(which, pid, mother, gmother, pt, eta);	
+	if(index ==-1) return -999.99;
+	else           return genlept[index].lv.Eta();	
+}
+
+Float_t MT2tree::GetGenLeptPt2(int which, int pid, int mother, int gmother, float pt, float eta){
+	Int_t index = GetGenLeptIndex2(which, pid, mother, gmother, pt, eta);	
+	if(index ==-1) return -999.99;
+	else           return genlept[index].lv.Pt();
+}
+
 Bool_t MT2tree::GenLeptFromW(int pid, float pt, float eta, bool includeTau){
 	bool good(false);
 	for(int i=0; i<NGenLepts; ++i){
@@ -1949,8 +1991,8 @@ Int_t MT2tree::TopDecayMode(){
 
 
 Bool_t MT2tree::TopDecayModeResult(Int_t nlepts){
-  //Int_t bit =TopDecayMode();
-        Int_t bit = misc.TopDecayMode;
+  Int_t bit =TopDecayMode();
+        //Int_t bit = misc.TopDecayMode;
 	if(nlepts == 1){ // semileptonic without leptonic tau
 		if     ( (bit & 2 )==2 || (bit & 8)==8) return false; // more than one e/mu
 		if     ( (bit & 64)==64)                return false; // at least one leptonic tau
@@ -2224,6 +2266,8 @@ Float_t MT2tree::GenPhotonAndLeadingJetPt(){
 
 // Print-Outs ---------------------------------------------------------------------------------------------------------
 Bool_t MT2tree::PrintOut(Bool_t logfile){
+
+	double e = 0; double px(0), py(0), pz(0);
 	
 	std::ostringstream logStream;
 	// detailed Event Printout
@@ -2233,15 +2277,18 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	logStream << "  NEles " << NEles  << ", NMuons "<< NMuons                                                     << endl;
 	logStream << "  NVertices " << pileUp.NVertices                                                               << endl;
         logStream << "  pf-HT " << misc.HT << ", caloHT50_ID " << misc.caloHT50_ID                                    << endl;
-	logStream << "  pf-MET Pt:" << misc.MET << " Phi " << pfmet[0].Phi()                                          << endl;	
+	logStream << "  pf-MET Pt:" << misc.MET << " Phi " << pfmet[0].Phi() << " Px " << pfmet[0].Px() << " Py " << pfmet[0].Py() << endl;
+	logStream << "     MHT Pt:" << MHT[0].Pt() << " Phi " << MHT[0].Phi() << " Px " << MHT[0].Px() << " Py " << MHT[0].Py() << endl;
+
 	if(!misc.isData){
 	logStream << "  gen-met : " << genmet[0].Pt() << " phi " << genmet[0].Phi()                                   << endl;
 	}
 	logStream << " Data quality ------------------------------------------------------------------------------- "  << endl;
-	logStream << "  HBHENoiseFlag " << misc.HBHENoiseFlag << " (1=good),  CrazyHCAL " << misc.CrazyHCAL 
+	logStream << "  HBHENoiseFlag " << misc.HBHENoiseFlag << " (0=good, 1=bad),  CrazyHCAL " << misc.CrazyHCAL 
 	     << ", BadEcalTP " << misc.BadEcalTP         << ", BadEcalBE " << misc.BadEcalBE 
-	     << ", CSCTightHaloID " << misc.CSCTightHaloID                                                        << endl;
-        logStream << "  Jet0Pass " << misc.Jet0Pass <<" Jet1Pass " << misc.Jet1Pass << " PassJetID " << misc.PassJetID   << endl;	
+	     << ", CSCTightHaloID " << misc.CSCTightHaloID                                                             << endl;
+        logStream << "  RecovRecHitFilterFlag " << misc.RecovRecHitFilterFlag << ", TrackingFailurePV " << Bool_t(misc.TrackingFailurePVtx<0.1) << " (value TrackingFailurePVtx " << misc.TrackingFailurePVtx << ")"                                                       << endl;
+        logStream << "  Jet0Pass " << misc.Jet0Pass <<" Jet1Pass " << misc.Jet1Pass << " PassJetID " << misc.PassJetID << endl;	
 	logStream << "  MinMetJetDPhi " << misc.MinMetJetDPhi                                                          << endl;
 	logStream << "  Vectorsumpt " << misc.Vectorsumpt                                                              << endl;
 	logStream << " Jet-Info -------------------------------------------------------------------------------------" << endl;
@@ -2260,6 +2307,8 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	     << "   L1FastL2L3 JE corr factor " << jet[i].Scale << ", L1Fast factor " << jet[i].L1FastJetScale << ", jet Area " <<  jet[i].Area << "\n"
 	     << "   jet-MET-dPhi " << MetJetDPhi(i, 0, 1)  
 	     << endl; 
+	     e += jet[i].lv.E(); px += jet[i].lv.Px(); py += jet[i].lv.Py(); pz += jet[i].lv.Pz(); 
+
 	}	
 	if(NPhotons >0){
 	logStream << " Photons Info ------------------------------------------------------------------------------------" << endl;
@@ -2268,6 +2317,7 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	logStream << "    Pt      " << photon[i].lv.Et() << " Eta " << photon[i].lv.Eta() << " Phi " << photon[i].lv.Phi() << endl;
 	logStream << "    TrkIso  " << photon[i].TrkIso  << " EcalIso " << photon[i].EcalIso << " HcalIso " << photon[i].HcalIso << endl;
 	logStream << "    HoverE  " << photon[i].HoverE  << " SigmaIEtaIEta " << photon[i].SigmaIEtaIEta  << endl;
+	     e += photon[i].lv.E(); px += photon[i].lv.Px(); py += photon[i].lv.Py(); pz += photon[i].lv.Pz(); 
 	if(NEles >0){
 	logStream << "    Closest Ele " << PhotonEleDREIndex(i,10,5)   << " with dR " << PhotonEleDR(i,10,5) << endl;
 	}
@@ -2279,10 +2329,12 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	for (int i=0; i<NEles; ++i){
 	logStream << "   Ele " << i << ":\n";
 	logStream << "    Pt " << ele[i].lv.Pt() << " Eta " << ele[i].lv.Eta() << " Phi " << ele[i].lv.Phi() << " E " << ele[i].lv.E() << endl;
+	logStream << "    Px " << ele[i].lv.Px() << "  Py " << ele[i].lv.Py()  << "  Pz " << ele[i].lv.Pz()             << endl;
 	logStream << "    Isolation " << ele[i].Iso                                                                     << endl;
 	logStream << "    Charge    " << ele[i].Charge                                                                  << endl;
 	logStream << "    VBTF ID 95 " << ele[i].ID95  << ", ID90 " << ele[i].ID90                                      << endl;
 	logStream << "    transverse Mass with MET " << ele[i].MT                                                       << endl; 
+	     e += ele[i].lv.E(); px += ele[i].lv.Px(); py += ele[i].lv.Py(); pz += ele[i].lv.Pz(); 
 	}
 	logStream << "   Ele-Jet combinations -------------------------------------------------------------------------"   << endl;
 	for (int i=0; i<NEles; ++i){
@@ -2308,9 +2360,11 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	for (int i=0; i<NMuons; ++i){
 	logStream << "   Muon " << i << ":\n";
 	logStream << "    Pt " << muo[i].lv.Pt() << " Eta " << muo[i].lv.Eta() << " Phi " << muo[i].lv.Phi() << " E " << muo[i].lv.E() << endl;
+	logStream << "    Px " << muo[i].lv.Px() << "  Py " << muo[i].lv.Py()  << "  Pz " << muo[i].lv.Pz()             << endl;
 	logStream << "    Isolation " << muo[i].Iso                                                                      << endl;
 	logStream << "    Charge    " << muo[i].Charge                                                                   << endl;
 	logStream << "    transverse Mass with MET " << muo[i].MT                                                        << endl; 
+	     e += muo[i].lv.E(); px += muo[i].lv.Px(); py += muo[i].lv.Py(); pz += muo[i].lv.Pz(); 
 	}
 	logStream << "   Muon-Jet combinations ------------------------------------------------------------------------"   << endl;
 	for (int i=0; i<NMuons; ++i){
@@ -2355,10 +2409,32 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	}
 	}
 	}
+	if((NMuons + NEles)>0){
+	logStream << " jet-lepton-MET combination ---------------------------------------------------------------------" << endl;
+	if(NEles>0){
+	for(int i=0; i<NEles; ++i){
+	for(int j=0; j<NJets; ++j){
+	TLorentzVector pj = ele[i].lv + jet[j].lv + pfmet[0];
+	logStream << "     Ele " << i << " and jet " << j << " and pfmet: Pt " << pj.Pt() << " Px " << pj.Px() << " Py " << pj.Py() << " Pz " << pj.Pz()
+		  << " Eta " << pj.Eta() << " Phi " << pj.Phi() << " E " << pj.E() << " M " << pj.M() << endl;	
+	}
+	}
+	}
+	if(NMuons>0){
+	for(int i=0; i<NMuons; ++i){
+	for(int j=0; j<NJets; ++j){
+	TLorentzVector pj = muo[i].lv + jet[j].lv + pfmet[0];
+	logStream << "    Muon " << i << " and jet " << j << " and pfmet: Pt " << pj.Pt() << " Px " << pj.Px() << " Py " << pj.Py() << " Pz " << pj.Pz()
+		  << " Eta " << pj.Eta() << " Phi " << pj.Phi() << " E " << pj.E() << " M " << pj.M() << endl;	
+	}
+	}
+	}
+	}
 
 	logStream << " MT2 Info ---------------------------------------------------------------------------------------" << endl;
 	logStream << "  MT2 " << misc.MT2  << " simple MT2 (sqrt{pt1*pt2*(1+cos phi)}) " << SimpleMT2(true, 1) << " UTM " << hemi[0].UTM.Pt()         << endl;
 	logStream << "  MET " << misc.MET  << " HT " << misc.HT << " SqrtSmin " << GetSqrtS(0,true,1,20,2.4,1)          << endl; 
+	logStream << " Meff|all particles = sqrt({sum(E)}^2 - {sum(p_vector)}^2) = " << sqrt(e*e - px*px-py*py-pz*pz)   << endl;
 	logStream << "  Hemi-DPhi " << hemi[0].dPhi                                                                     << endl;
 	logStream << "  PseudoJet1 "                                                                                    << endl;
 	logStream << "   Pt " << hemi[0].lv1.Pt() << " Eta " << hemi[0].lv1.Eta() << " Phi " << hemi[0].lv1.Phi() << " E " << hemi[0].lv1.E() << " M " << hemi[0].lv1.M() << endl; 
@@ -2392,7 +2468,7 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	}
 	logStream << " GenJets       ---------------------------------------------------------------------------------"<< endl;
 	for(int i=0; i<NGenJets; ++i){
-	logStream << " GenJet Pt " << genjet[i].lv.Pt() << " Eta " << genjet[i].lv.Eta() << " Phi " << genjet[i].lv.Phi() <<  " E " << genjet[i].lv.E() <<" M " << genjet[i].lv.E() << endl;
+	logStream << " GenJet Pt " << genjet[i].lv.Pt() << " Eta " << genjet[i].lv.Eta() << " Phi " << genjet[i].lv.Phi() <<  " E " << genjet[i].lv.E() <<" M " << genjet[i].lv.M() << endl;
 	}
 	}
 

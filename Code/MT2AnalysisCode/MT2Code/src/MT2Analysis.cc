@@ -53,6 +53,7 @@ void MT2Analysis::End(){
 	cout << " MT2Analysis::End()                                             " << endl;
 	cout << " *************************************************************** " << endl;
 	
+	//btagfile                 ->Close();
 	fHistFile->cd();	
 
 	// write tree
@@ -68,6 +69,7 @@ void MT2Analysis::End(){
 	}
 	fATree->Write();
 	fHistFile                ->Close();
+
 
 	cout << " MT2Analysis::RealEnd()                                             " << endl;
 	cout << " *************************************************************** " << endl;
@@ -307,6 +309,13 @@ void MT2Analysis::Begin(const char* filename){
 	  nPDFs = LHAPDF::numberPDF();
 	  cout << "nPDF: " << nPDFs << endl;
 	}
+
+	//define btagging files
+	//btagfile = TFile::Open(fbtagFileName.c_str() );
+	//hbeff = (TH1D*)btagfile->Get("h_beff");
+	//hceff = (TH1D*)btagfile->Get("h_ceff");
+	//hleff = (TH1D*)btagfile->Get("h_leff");
+	//btagfile                 ->Close();//do it in End()
 
 }
 
@@ -682,6 +691,27 @@ bool MT2Analysis::FillMT2TreeBasics(){
 			if( GetHLTResult(singlePhotonTriggers[i])) SiglePhotFired=true;
 		}
 		if(SiglePhotFired) fMT2tree->trigger.HLT_SinglePhotons = true;
+		//NOTE NEW START
+		string MuHadTriggers[100];
+		int muhadtriggernumber=0;
+		MuHadTriggers[muhadtriggernumber++] = "HLT_Mu8_HT200_v2";
+		MuHadTriggers[muhadtriggernumber++] = "HLT_Mu8_HT200_v3";
+		MuHadTriggers[muhadtriggernumber++] = "HLT_Mu8_HT200_v4";
+		MuHadTriggers[muhadtriggernumber++] = "HLT_Mu15_HT200_v2";
+		MuHadTriggers[muhadtriggernumber++] = "HLT_Mu15_HT200_v3";
+		MuHadTriggers[muhadtriggernumber++] = "HLT_Mu15_HT200_v4";
+		MuHadTriggers[muhadtriggernumber++] = "HLT_Mu30_HT200_v1";
+		MuHadTriggers[muhadtriggernumber++] = "HLT_Mu30_HT200_v3";
+		MuHadTriggers[muhadtriggernumber++] = "HLT_Mu40_HT200_v4";
+		MuHadTriggers[muhadtriggernumber++] = "HLT_Mu40_HT300_v4";
+		MuHadTriggers[muhadtriggernumber++] = "HLT_Mu40_HT300_v5";
+
+		bool MuHadFired(false);
+		for(int i=0; i<muhadtriggernumber; ++i){
+			if( GetHLTResult(MuHadTriggers[i])) MuHadFired=true;
+		}
+		if(MuHadFired) fMT2tree->trigger.HLT_MuHad = true;
+		//NOTE NEW END
 
 		// di-electron triggers ------------------------------------------------------------------------------------------------------
 		string diElectronTriggers[100];
@@ -765,6 +795,49 @@ bool MT2Analysis::FillMT2TreeBasics(){
 			if(GetHLTResult(diMuonTriggers[i])) DiMuonFired=true;
 		}
 		if(DiMuonFired) fMT2tree->trigger.HLT_DiMuons =true;
+
+		//EMu
+		string EMuTriggers[100];
+		int EMuTriggernumber=0;
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdL_v1";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdL_v2";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdL_v3";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdL_v4";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdL_v5";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdL_v6";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdL_v7";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdL_v8";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdL_v9";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdL_v1";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdL_v2";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdL_v3";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdL_v4";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdL_v5";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdL_v6";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdL_v7";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdL_v8";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdL_v9";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v1";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v2";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v3";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v4";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v5";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v6";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v7";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_v8";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v1";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v2";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v3";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v4";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v5";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v6";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v7";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_v8";
+		bool EMuFired(false);
+		for(int i=0; i<EMuTriggernumber; ++i){
+			if(GetHLTResult(EMuTriggers[i])) EMuFired=true;
+		}
+		if(EMuFired) fMT2tree->trigger.HLT_EMu =true;
 	}
 
 
@@ -1055,6 +1128,95 @@ void MT2Analysis::FillMT2treeCalculations(){
 
 	fMT2tree->Znunu.METplusLeptsPt             = fMT2tree->GetMETPlusGenLepts(0, 1, 1,  1113, 23, 0, 100, 0, 10000);
 	fMT2tree->Znunu.METplusLeptsPtReco         = fMT2tree->GetMETPlusLepts(1);
+
+	//btag SF
+	if(!fMT2tree->misc.isData){
+		bool existing = true;
+		std::ifstream ifile(fbtagFileName.c_str() );
+		if(!(ifile)) existing = false;
+		if(existing){
+			btagfile = TFile::Open(fbtagFileName.c_str() );
+			hbeff = (TH1D*)btagfile->Get("h_beff");
+			hceff = (TH1D*)btagfile->Get("h_ceff");
+			hleff = (TH1D*)btagfile->Get("h_leff");
+		}
+		else{
+			//std::cout << "No btagfile existing: use b-eff = 0.5, c-eff = 0.08, l-eff = 0.001" << std::endl;
+		}
+		//implementation for >=1 btag only, SSVHPT
+		float SFweightErr = 0;
+		float SFweight = 1;//outside, since need it there later
+		string tagger = "SSVHPT";
+		vector<float> jetEff;
+		vector<float> jetEffErr;
+		vector<float> jetSF;
+		vector<float> jetSFErr;
+		int njetsusuable = 0;
+		for(int n = 0; n<fMT2tree->NJets; ++n){
+			if(fMT2tree->jet[n].isPFIDLoose==false) continue;
+			if(fMT2tree->jet[n].Flavour<=-7777) continue;//if samples has no flavour information like qcd
+			float effPt  = fMT2tree->jet[n].lv.Pt();
+			float effEta = fMT2tree->jet[n].lv.Eta();
+			++njetsusuable;
+			if(abs(fMT2tree->jet[n].Flavour)==5){
+				if(existing){
+					jetEff.push_back( float(hbeff->GetBinContent(hbeff->FindBin(effPt))) );
+					jetEffErr.push_back( float(hbeff->GetBinError(hbeff->FindBin(effPt))) );//here only dummy
+				}
+				else{
+					jetEff.push_back( 0.5 );
+					jetEffErr.push_back( 0.05 );//here only dummy
+				}
+				float SFErr;
+				float SF = getBTagSF(SFErr, tagger, effPt, effEta);
+				jetSF.push_back(   SF    );
+				jetSFErr.push_back(SFErr );//here only dummy
+			}
+			else if(abs(fMT2tree->jet[n].Flavour)==4){
+				if(existing){
+					jetEff.push_back( float(hceff->GetBinContent(hceff->FindBin(effPt))) );
+					jetEffErr.push_back( float(hceff->GetBinError(hceff->FindBin(effPt))) );//here only dummy
+				}
+				else{
+					jetEff.push_back( 0.08 );
+					jetEffErr.push_back( 0.01 );//here only dummy
+				}
+				float SFErr;
+				float SF = getBTagSF(SFErr, tagger, effPt, effEta );
+				jetSF.push_back(   SF    );
+				jetSFErr.push_back(SFErr*2.);//here only dummy
+			}
+			else {
+				if(existing){
+					jetEff.push_back( float(hleff->GetBinContent(hleff->FindBin(effPt))) );
+					jetEffErr.push_back( float(hleff->GetBinError(hleff->FindBin(effPt))) );//here only dummy
+				}
+				else{
+					jetEff.push_back( 0.001 );
+					jetEffErr.push_back( 0.0003 );//here only dummy
+				}
+				float SFErr;
+				float SF = getMistagSF(SFErr, tagger, effPt, effEta);
+				jetSF.push_back(   SF    );
+				jetSFErr.push_back(SFErr );//here only dummy
+			}
+		}
+		SFweight = getBTagEventWeightError(SFweightErr, jetEff, jetEffErr, jetSF, jetSFErr, -1);
+		if(SFweight==0){
+			if(njetsusuable!=0){
+				std::cout << "Event has zero weight, set BTagWeight to 0" << std::endl;
+				fMT2tree->misc.BTagWeight = SFweight;
+			}
+			else { //event has no flavour information, use an average event weight
+				SFweight = 0.945572;
+				SFweightErr = sqrt(0.0257166*0.0257166 + 0.0370919+0.0370919);//here only dummy
+			}
+		}
+		if(existing) btagfile->Close();
+		fHistFile->cd();
+		fMT2tree->misc.BTagWeight = SFweight;
+	}
+	else fMT2tree->misc.BTagWeight = 1.;
 }
 
 // *****************************************************************************
@@ -1543,6 +1705,8 @@ bool MT2Analysis::IsGoodPFJetTightPAT3(int index, float ptcut, float absetacut) 
 	if ( !(fTR->PF2PAT3JNeuEmfrac[index]  < 0.90)         ) return false;
 	return true;
 }
+
+
 
 // Jets and JES uncertainty
 void MT2Analysis::Initialize_JetCorrectionUncertainty(){

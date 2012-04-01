@@ -24,6 +24,7 @@ MT2Analysis::MT2Analysis(TreeReader *tr) : UserAnalysisBase(tr){
 
 	fRemovePhoton                       = 0;
 	fID                                 = -1;
+	fbtagFileName                       = "";
 
 	fRequiredHLT.clear();
 	fVetoedHLT.clear();
@@ -53,7 +54,6 @@ void MT2Analysis::End(){
 	cout << " MT2Analysis::End()                                             " << endl;
 	cout << " *************************************************************** " << endl;
 	
-	//btagfile                 ->Close();
 	fHistFile->cd();	
 
 	// write tree
@@ -78,6 +78,23 @@ void MT2Analysis::End(){
 void MT2Analysis::Begin(const char* filename){
 	// Define the output file of histograms
 	fHistFile = new TFile(fOutputDir + TString(filename), "RECREATE");
+	TDirectory *dir = gDirectory;
+
+	//define btagging files
+	bool existing=true;
+	std::ifstream ifile(fbtagFileName.c_str() );
+	if(!(ifile)) existing = false;
+	if(existing){
+		btagfile = TFile::Open(fbtagFileName.c_str() );
+		hbeff = (TH1D*)btagfile->Get("h_beff"); hbeff->SetDirectory(dir);
+		hceff = (TH1D*)btagfile->Get("h_ceff"); hceff->SetDirectory(dir);
+		hleff = (TH1D*)btagfile->Get("h_leff"); hleff->SetDirectory(dir);
+		btagfile->Close();
+		dir->cd();
+	}else{
+		cout << "No btagfile existing: use b-eff = 0.5, c-eff = 0.08, l-eff = 0.001" << endl;
+	}
+
 
 	// book tree
 	fMT2tree = new MT2tree();
@@ -310,12 +327,8 @@ void MT2Analysis::Begin(const char* filename){
 	  cout << "nPDF: " << nPDFs << endl;
 	}
 
-	//define btagging files
-	//btagfile = TFile::Open(fbtagFileName.c_str() );
-	//hbeff = (TH1D*)btagfile->Get("h_beff");
-	//hceff = (TH1D*)btagfile->Get("h_ceff");
-	//hleff = (TH1D*)btagfile->Get("h_leff");
-	//btagfile                 ->Close();//do it in End()
+
+
 
 }
 
@@ -1130,19 +1143,9 @@ void MT2Analysis::FillMT2treeCalculations(){
 	fMT2tree->Znunu.METplusLeptsPtReco         = fMT2tree->GetMETPlusLepts(1);
 
 	//btag SF
-	if(!fMT2tree->misc.isData){
+	if(!fMT2tree->misc.isData && fbtagFileName.length() !=0){
 		bool existing = true;
-		std::ifstream ifile(fbtagFileName.c_str() );
-		if(!(ifile)) existing = false;
-		if(existing){
-			btagfile = TFile::Open(fbtagFileName.c_str() );
-			hbeff = (TH1D*)btagfile->Get("h_beff");
-			hceff = (TH1D*)btagfile->Get("h_ceff");
-			hleff = (TH1D*)btagfile->Get("h_leff");
-		}
-		else{
-			//std::cout << "No btagfile existing: use b-eff = 0.5, c-eff = 0.08, l-eff = 0.001" << std::endl;
-		}
+		if(hceff==0 || hbeff==0 || hleff ==0) existing=false;
 		//implementation for >=1 btag only, SSVHPT
 		float SFweightErr = 0;
 		float SFweight = 1;//outside, since need it there later
@@ -1212,11 +1215,9 @@ void MT2Analysis::FillMT2treeCalculations(){
 				SFweightErr = sqrt(0.0257166*0.0257166 + 0.0370919+0.0370919);//here only dummy
 			}
 		}
-		if(existing) btagfile->Close();
 		fHistFile->cd();
 		fMT2tree->misc.BTagWeight = SFweight;
-	}
-	else fMT2tree->misc.BTagWeight = 1.;
+	} else fMT2tree->misc.BTagWeight = -999.99;
 }
 
 // *****************************************************************************

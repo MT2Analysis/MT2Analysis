@@ -69,6 +69,9 @@ public:
 	void makeSmallCopy(int nevents, int sample);
 	void SetSave(bool save=true){fSave=save;};
 	void SetIsPhoton(bool isphoton=true){fisPhoton=isphoton;};
+	void SetMT2Analysis(bool isMT2Analysis){fMT2Analysis=isMT2Analysis;};
+	void SetMT2bAnalysis(bool isMT2bAnalysis){fMT2bAnalysis=isMT2bAnalysis;};
+	void SetEventsPerGeV(bool eventspergev){fEventsPerGeV=eventspergev;};
 	
 	struct sample{
 		TString name;
@@ -220,6 +223,9 @@ private:
 	TString fPath;
 	bool fSave;
 	bool fisPhoton;
+	bool fMT2bAnalysis;
+	bool fMT2Analysis;
+	bool fEventsPerGeV;
 
 	MT2tree* fMT2tree;
 	TTree*   fTree;

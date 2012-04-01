@@ -1232,7 +1232,7 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 	}
 
 	// legend
-	TLegend* Legend1 = new TLegend(.71,.54,.91,.92);
+	TLegend* Legend1 = new TLegend(.71,.68,.91,.92);
 	//TLegend* Legend1 = new TLegend(.3,.5,.6,.88);
 
 	for(size_t i = 0; i < Samples.size(); ++i){
@@ -2134,7 +2134,7 @@ void MassPlotter::plotRatioStack(THStack* hstack, TH1* h1_orig, TH1* h2_orig, TH
 
 	
 	//TCanvas* c1 = new TCanvas(name,"", 20,100,1000,700);
-	TCanvas* c1 = new TCanvas(name,"",1838,242,612,672 /*37, 60,636,670*/);
+	TCanvas* c1 = new TCanvas("c_ratio","",0,0,600,600 /*37, 60,636,670*/);
 	c1->SetFrameLineWidth(1);
 	c1 -> cd();
 	
@@ -2146,19 +2146,19 @@ void MassPlotter::plotRatioStack(THStack* hstack, TH1* h1_orig, TH1* h2_orig, TH
 	//p_plot->SetTopMargin(0.09);
 	//p_plot->SetLeftMargin(0.1669107);
       	//p_plot->SetRightMargin(0.02);
-	p_plot->SetLeftMargin(0.1329114);
-	p_plot->SetRightMargin(0.02056962);
-	p_plot->SetTopMargin(0.07009346);
-	p_plot->SetBottomMargin(0.07126168);
+	p_plot->SetLeftMargin(0.131579);
+	p_plot->SetRightMargin(0.08);
+	p_plot->SetTopMargin(0.06895515);
+	p_plot->SetBottomMargin(0.07206074);
  	p_plot->Draw();
- 	TPad *p_ratio = new TPad(name+"_ratiopad", "Pad containing the ratio",   0,0.01713396,1,0.2180685/*     0.00, 0.05, 1.00, border, 0, 0*/);
+ 	TPad *p_ratio = new TPad(name+"_ratiopad", "Pad containing the ratio",   0,0.01863354,0.9967105,0.2189441/*     0.00, 0.05, 1.00, border, 0, 0*/);
  	//p_ratio->SetTopMargin(0.03);
  	//p_ratio->SetBottomMargin(0.05/*5*/);
 	//p_ratio->SetRightMargin(0.02);
-p_ratio->SetLeftMargin(0.1348684);	
-p_ratio->SetRightMargin(0.02631579);
-p_ratio->SetTopMargin(0.06976745);
-p_ratio->SetBottomMargin(0.2790698);
+	p_ratio->SetLeftMargin(0.1336634);	
+	p_ratio->SetRightMargin(0.075);
+	p_ratio->SetTopMargin(0.06976745);
+	p_ratio->SetBottomMargin(0.2790698);
 
 	p_ratio->Draw();
  
@@ -2185,10 +2185,25 @@ p_ratio->SetBottomMargin(0.2790698);
 	hstack->SetMaximum(max);
 //	h1->SetMinimum(0.000000001);
 //	h2->SetMinimum(0.000000001);
-	hstack->GetXaxis()->SetLabelSize(0.05);
+	stringstream yTitle;
+	if(fEventsPerGeV){
+		if(fabs(h1_orig->GetBinWidth(1) -h1_orig->GetBinWidth(h1_orig->GetNbinsX()-1))<0.01){
+		double binwidth = h1_orig->GetBinWidth(1);
+		yTitle.precision(3);
+		yTitle << ytitle.Data();
+		yTitle << " / ";
+		yTitle << binwidth;
+		yTitle << " GeV";
+		} else{
+		cout << h1_orig->GetBinWidth(1) << " " << h1_orig->GetBinWidth(h1_orig->GetNbinsX()-1) << endl;
+		}
+	}else{
+		yTitle << ytitle.Data();
+	}
+	hstack->GetYaxis()->SetTitle(yTitle.str().c_str());
 	hstack->GetYaxis()->SetLabelSize(0.05);
 	hstack->GetYaxis()->SetTitleSize(0.05);
-	hstack->GetYaxis()->SetTitle(ytitle);
+	hstack->GetYaxis()->SetTitleOffset(1.3);
 
 	
 	//MT2_bSel[0]->SetTitleSize(0.03);
@@ -2201,26 +2216,14 @@ p_ratio->SetBottomMargin(0.2790698);
 	h3->SetLineStyle(kDotted);
 	h3->Draw("samehist");
 
-	// title
-	TLatex lat;
-	lat.SetNDC(1);
-	lat.SetTextColor(4);
-	lat.SetTextSize(0.1);
-
-	// y axis title 
-	//lat.SetTextAlign(33); 
-	//lat.SetTextColor(1);
-	//lat.SetTextAngle(90);
-	//lat.DrawLatex(0.035, 0.9, ytitle);
-		
 	TLatex TitleBox;
 	TitleBox.SetNDC();
-	TitleBox.SetTextSize(0.04);
-	//TString text = njets < 0 ? TString::Format("#geq %d Jets",abs(njets)) : TString::Format("%d Jets",abs(njets));
-	//TString text = njets < 0 ? TString::Format("#geq %d Jets",abs(njets)) : TString::Format("%d Jets",abs(njets));
-	TString text = "CMS Preliminary #sqrt{s} = 7 teV";
-	//text += nleps == 1 ? ", 1 Lepton" : "";
-	TitleBox.DrawLatex(0.18,0.943,text.Data());
+	TitleBox.SetTextSize(0.03);
+	TString text ="";
+	text = fMT2Analysis?  "M_{T2} Analysis                                          ":"";
+	text +=fMT2bAnalysis? "M_{T2}b Analysis                                         ":"";
+	text +="CMS Preliminary, #sqrt{s} = 7 TeV, L = 4.73 fb^{-1}";
+	TitleBox.DrawLatex(0.13,0.943,text.Data());
 
  	p_plot ->Draw();
 	gPad->RedrawAxis();
@@ -2236,20 +2239,8 @@ p_ratio->SetBottomMargin(0.2790698);
 	//gPad->SetLogy();
  
 	TH1D *h_ratio = (TH1D*)h2_orig->Clone("h2_copy");	
-	/*
-	h_ratio->GetXaxis()->SetTitleSize(scale * h1->GetXaxis()->GetTitleSize());
-	h_ratio->GetYaxis()->SetTitleSize(scale * h1->GetYaxis()->GetTitleSize());
-	h_ratio->GetXaxis()->SetLabelSize( 0.);
-	h_ratio->GetYaxis()->SetLabelSize(scale * h1->GetYaxis()->GetLabelSize());
-	h_ratio->GetXaxis()->SetTickLength(scale * h1->GetXaxis()->GetTickLength());
-	h_ratio->GetYaxis()->SetTickLength(h1->GetYaxis()->GetTickLength());
-	h_ratio->SetLineWidth(2);
-*/
-	//h_ratio->SetFillColor(kBlue);
-	//h_ratio->SetLineColor(kBlue);
 	h_ratio ->SetStats(0);
 	h_ratio ->SetMarkerStyle(20);
-	//h_ratio ->SetMarkerSize(0.1);
 
  	h_ratio ->Divide(h2, h1);
  	h_ratio ->SetMinimum(0.4);
@@ -2261,13 +2252,14 @@ p_ratio->SetBottomMargin(0.2790698);
 	h_ratio_mc->Divide(h1);
 	h_ratio_mc->GetYaxis()->SetRangeUser(0,2);
 	h_ratio_mc->GetXaxis()->SetLabelSize( 0.);
-	h_ratio_mc->GetYaxis()->SetTitle("data / MC");
+	h_ratio_mc->GetYaxis()->SetTitle("Data / MC");
 	h_ratio_mc->GetXaxis()->SetTitle(xtitle);
 	h_ratio_mc->GetXaxis()->SetTitleSize(0.2);
 	h_ratio_mc->GetXaxis()->SetTitleOffset(0.5);
-	h_ratio_mc->GetYaxis()->SetLabelSize(0.1);
-	h_ratio_mc	->GetYaxis()->SetTitleSize(0.16);
-	h_ratio_mc->GetYaxis()->SetTitleOffset(0.42);
+	h_ratio_mc->GetYaxis()->SetLabelSize(0.19);
+	h_ratio_mc->GetXaxis()->SetTickLength(0.09);
+	h_ratio_mc	->GetYaxis()->SetTitleSize(0.18);
+	h_ratio_mc->GetYaxis()->SetTitleOffset(0.36);
 
 	
 	h_ratio_mc->SetFillStyle(3001);
@@ -2278,19 +2270,7 @@ p_ratio->SetBottomMargin(0.2790698);
 	l3->SetLineWidth(2);
 	l3->SetLineStyle(7);
 	l3->Draw();
-	// ratio title
-	//lat.SetTextAlign(33);
-	//lat.SetTextColor(1);
-	//lat.SetTextSize(0.15);
-	//lat.SetNDC(1);
-	//lat.SetTextAngle(90);
-	//lat.DrawLatex(0.035, 1.0, "data / MC");
 	
-	// x axis title
-	lat.SetTextSize(0.2);
-	lat.SetTextAngle(0);
-	float ypos = xtitle.Contains("slash") || xtitle.Contains("_") || xtitle.Contains("^") ? 0.23 : 0.16;
-	//lat.DrawLatex(0.9, ypos, xtitle);
 	gPad->RedrawAxis();
  	p_ratio ->Draw();
  	c1->Update();
@@ -2298,12 +2278,6 @@ p_ratio->SetBottomMargin(0.2790698);
 	TString save=name+"_ratio";
 	if(fSave)Util::Print(c1, save, fOutputDir, fOutputFile);	
 
-// 	delete h1;
-// 	delete h2;
-// 	delete h_ratio;
-// 	delete p_plot;
-// 	delete p_ratio;
-// 	delete c1;
 
 }
 //_________________________________________________________________________________
@@ -2546,9 +2520,16 @@ void MassPlotter::printHisto(THStack* h, TH1* h_data, TH1* h_mc_sum, TLegend* le
 
 }
 //____________________________________________________________________________
-void MassPlotter::printHisto(THStack* h, TH1* h_data, TH1* h_mc_sum, TH1* h_susy, TLegend* leg,  TString canvname, Option_t *drawopt, bool logflag, TString xtitle, TString ytitle,int njets, int nleps, float overlayScale){
+void MassPlotter::printHisto(THStack* h, TH1* h_data, TH1* h_mc_sum, TH1* h_susy, TLegend* legend,  TString canvname, Option_t *drawopt, bool logflag, TString xtitle, TString ytitle,int njets, int nleps, float overlayScale){
 
-	TCanvas *col = new TCanvas(canvname, "", 0, 0, 900, 700);
+	TCanvas *col = new TCanvas(canvname, "", 0, 0, 600, 600);
+	col->SetRightMargin(0.08);
+	col->SetLeftMargin(0.18);
+	col->SetTopMargin(0.07);
+	col->SetBottomMargin(0.17);
+
+	TLegend *leg = (TLegend*) legend->Clone("leg");
+
 	col->SetFillStyle(0);
 	col->SetFrameFillStyle(0);
 	col->cd();
@@ -2583,6 +2564,7 @@ void MassPlotter::printHisto(THStack* h, TH1* h_data, TH1* h_mc_sum, TH1* h_susy
 	h_susy->SetFillColor(0);
 	h_susy->Draw("samehist");
 	if(leg != NULL ){
+		leg -> SetY1NDC(0.68);
 		leg -> SetFillColor(0);
 		leg -> SetBorderSize(0);
 		leg -> Draw();
@@ -2592,27 +2574,38 @@ void MassPlotter::printHisto(THStack* h, TH1* h_data, TH1* h_mc_sum, TH1* h_susy
 
 	TLatex TitleBox;
 	TitleBox.SetNDC();
-	TitleBox.SetTextSize(0.05);
-	TString text = njets < 0 ? TString::Format("#geq %d Jets",abs(njets)) : TString::Format("%d Jets",abs(njets));
-	text += nleps == 1 ? ", 1 Lepton" : "";
+	TitleBox.SetTextSize(0.0305);
+	TString text = fMT2Analysis? "M_{T2} Analysis        ":"";
+	text +=fMT2bAnalysis? "M_{T2}b Analysis     ":"";
+	text +="CMS Preliminary, #sqrt{s} = 7 TeV, L = 4.73 fb^{-1}";
 	TitleBox.DrawLatex(0.18,0.943,text.Data());
 
-	// title
-	TLatex lat;
-	lat.SetNDC(1);
-	lat.SetTextColor(4);
-	lat.SetTextSize(0.07);
 
-	// y axis title 
-	lat.SetTextAlign(33); 
-	lat.SetTextColor(1);
-	lat.SetTextAngle(90);
-	lat.DrawLatex(0.03, 0.9, ytitle);
+	h->GetXaxis()->SetTitle(xtitle);
+	h->GetXaxis()->SetLabelSize(0.05);
+	h->GetXaxis()->SetTitleSize(0.05);
+	h->GetXaxis()->SetTitleOffset(1.1);
 	
-	// x axis title
-	lat.SetTextAngle(0);
-	float ypos = xtitle.Contains("slash") || xtitle.Contains("_") || xtitle.Contains("^") ? 0.1 : 0.06;
-	lat.DrawLatex(0.9, ypos, xtitle);
+	stringstream yTitle;
+	if(fEventsPerGeV){
+		if(fabs(h_data->GetBinWidth(1) -h_data->GetBinWidth(h_data->GetNbinsX()-1))<0.01){
+		double binwidth = h_data->GetBinWidth(1);
+		yTitle.precision(3);
+		yTitle << ytitle.Data();
+		yTitle << " / ";
+		yTitle << binwidth;
+		yTitle << " GeV";
+		} else{
+		cout << h_data->GetBinWidth(1) << " " << h_data->GetBinWidth(h_data->GetNbinsX()-1) << endl;
+		}
+	}else{
+		yTitle << ytitle.Data();
+	}
+	h->GetYaxis()->SetTitle(yTitle.str().c_str());
+	h->GetYaxis()->SetLabelSize(0.05);
+	h->GetYaxis()->SetTitleSize(0.05);
+	h->GetYaxis()->SetTitleOffset(1.47);
+
 	gPad->RedrawAxis();
 	if(fSave)Util::PrintNoEPS(col, canvname, fOutputDir, fOutputFile);
 	if(fSave)Util::PrintEPS(col, canvname, fOutputDir);

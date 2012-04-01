@@ -11,6 +11,7 @@ MT2Analyzer::MT2Analyzer(TTree *tree) : TreeAnalyzerBase(tree) {
 	Util::SetStyle();
 	removePhoton =false;
 	fID          =-1;  //default process ID
+	fbtagFileName="";
 }
 
 MT2Analyzer::~MT2Analyzer(){
@@ -87,8 +88,8 @@ void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, str
 	fMT2Analysis                    ->SetBTagEfficiency(fbtagFileName);
         fMT2Analysis                    ->isS3         = isS3;
 	fMT2Analysis                    ->noPU         = noPU;
-	fMT2Analysis             ->doPDF        = doPDF;
-        fMT2Analysis             ->isScan        = isScan;
+	fMT2Analysis             	->doPDF        = doPDF;
+        fMT2Analysis             	->isScan        = isScan;
 
 
 	fMT2Analysis                    ->Begin(filename);

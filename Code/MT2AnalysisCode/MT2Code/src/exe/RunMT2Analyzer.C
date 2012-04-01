@@ -131,10 +131,8 @@ int main(int argc, char* argv[]) {
 	//if(data_PileUp.length()!=0){data_PileUp ="/shome/leo/Analysis/Certification/pileUp_data/"+data_PileUp;}
 //        if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/leo/Analysis/Certification/pileUp_mc/"  + mc_PileUp;}
 
-//	if(jsonFileName.length() !=0){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"           +jsonFileName;}
-	if(jsonFileName.length() !=0){jsonFileName="/shome/haweber/MT2Analysis/Code/Certification/"                             +jsonFileName;}
+	if(jsonFileName.length() !=0){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"           +jsonFileName;}
 	if(btagFileName.length() !=0){btagFileName="/shome/haweber/MT2Analysis/Code/Efficiencies/" + btagFileName;}
-	else {btagFileName="/shome/haweber/MT2Analysis/Code/Efficiencies/BEffHistos_PTbinned_allHT_SSVHPT.root";}//define a default histogram
 
 	if(puScenario=="3D"){ isS3=true; noPU=true; } // THIS IS A DIRTY TRICK TO TEST 3D REWEIGHT WITHOUT ADD A NEW VAR
 	if(puScenario=="S3") isS3=true;
@@ -164,7 +162,9 @@ int main(int argc, char* argv[]) {
   	cout << "JSON file is:                   " << (jsonFileName.length()>0?jsonFileName:"empty") << endl;
   	cout << "MC_PileUp file:                 " << (mc_PileUp.length()>0?mc_PileUp:"empty") << endl;
   	cout << "Data_PileUp file:               " << (data_PileUp.length()>0?data_PileUp:"empty") << endl;
-  	cout << "btag file is:                   " << (btagFileName.length()>0?btagFileName:"empty") << endl;
+  	if(btagFileName.length() !=0){
+	cout << "btag file is:                   " << (btagFileName.length()>0?btagFileName:"empty") << endl;
+	}
 	if(noPU && !isS3) cout << "WARNING: NoPU option set, all the PU weights will be set to 1" << endl;
 	cout << "Set of Cuts is:                 " << setofcuts << endl;
 	cout << "Number of events:               " << theChain->GetEntries() << endl;

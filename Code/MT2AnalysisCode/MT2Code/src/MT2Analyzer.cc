@@ -6,7 +6,8 @@
 
 using namespace std;
 
-MT2Analyzer::MT2Analyzer(TTree *tree) : TreeAnalyzerBase(tree) {
+MT2Analyzer::MT2Analyzer(std::vector<std::string>& fileList) 
+	: TreeAnalyzerBase(fileList) {
 	fMT2Analysis             = new MT2Analysis(fTR);
 	Util::SetStyle();
 	removePhoton =false;
@@ -16,7 +17,6 @@ MT2Analyzer::MT2Analyzer(TTree *tree) : TreeAnalyzerBase(tree) {
 
 MT2Analyzer::~MT2Analyzer(){
 	delete fMT2Analysis;
-	if(!fTR->fChain) cout << "MT2Analyzer ==> No chain!" << endl;
 }
 
 // Method for looping over the tree
@@ -31,9 +31,9 @@ void MT2Analyzer::Loop(){
 	}
 
 	// loop over all ntuple entries
-	for( Long64_t jentry = 0; jentry < nentries; jentry++ ){
-		PrintProgress(jentry);
-		fTR->GetEntry(jentry);
+    	Long64_t jentry=0;
+    	for ( fTR->ToBegin(); !(fTR->AtEnd()) && (jentry<nentries || nentries<0); ++(*fTR) ) {
+		PrintProgress(jentry++);
                 if ( fCurRun != fTR->Run ) {
         		fCurRun = fTR->Run;
 			fMT2Analysis        ->BeginRun(fCurRun);
@@ -56,8 +56,8 @@ void MT2Analyzer::Loop(){
 			}
 			else if(noPU)
 			  PUWeight            = 1;
-			else if(isS3)
-			  PUWeight            = (fTR->fChain->GetBranch("PUOOTnumInteractionsLate")==NULL) ? 1: fMT2Analysis->GetPUWeight(fTR->PUnumInteractions, fTR->PUOOTnumInteractionsLate); // branch added in V02-03-01 
+// fixme		else if(isS3)         
+//			  PUWeight            = (fTR->fChain->GetBranch("PUOOTnumInteractionsLate")==NULL) ? 1: fMT2Analysis->GetPUWeight(fTR->PUnumInteractions, fTR->PUOOTnumInteractionsLate); // branch added in V02-03-01 
 			else
 			  PUWeight            = fMT2Analysis->GetPUWeight(fTR->PUnumInteractions);
 			

@@ -11,6 +11,8 @@
 
 #include "QuickAnalyzer.hh"
 
+#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
+
 using namespace std;
 
 //________________________________________________________________________________________
@@ -62,30 +64,29 @@ int main(int argc, char* argv[]) {
 		usage(-1);
 	}
 
-	TChain *theChain = new TChain("analyze/Analysis");
+	std::vector<std::string> fileList;
 	for(int i = 0; i < argc; i++){
 		if( !isList ){
-			theChain->Add(argv[i]);
+	    		fileList.push_back(argv[i]);
 			printf(" Adding file: %s\n",argv[i]);
 		} else {
 			TString rootFile;
 			ifstream is(argv[i]);
 			while(rootFile.ReadLine(is) && (!rootFile.IsNull())){
-				if(rootFile[0] == '#') continue;
-				theChain->Add(rootFile);
+	      			if(rootFile[0] == '#') continue;
+				fileList.push_back(rootFile.Data());
 				printf(" Adding file: %s\n", rootFile.Data());
-			}
-		}
+	    		}
+	  	}
 	}
 
 	cout << "--------------" << endl;
 	cout << "OutputDir is:     " << outputdir << endl;
 	cout << "OutputFile is:    " << filename << endl;
 	cout << "Verbose level is: " << verbose << endl;
-	cout << "Number of events: " << theChain->GetEntries() << endl;
 	cout << "--------------" << endl;
 
-	QuickAnalyzer *tA = new QuickAnalyzer(theChain);
+	QuickAnalyzer *tA = new QuickAnalyzer(fileList);
 	tA->SetOutputDir(outputdir);
 	tA->SetVerbose(verbose);
 	tA->BeginJob(filename);

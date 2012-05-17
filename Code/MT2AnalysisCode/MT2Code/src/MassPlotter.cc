@@ -709,7 +709,7 @@ void MassPlotter::PrintCutFlow(int njets, int nleps, TString trigger, TString cu
 	      }
 	      else if( nleps==0 ) { // lepton veto
 		string cut_name = "Lepton veto";
-		if( fMT2tree->misc.LeptConfig != 9 )  continue;
+		if( (fMT2tree->NEles + fMT2tree->NMuons) != 0 )  continue;
 		counters[i].fill(cut_name,weight);
 		FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, cut_name, weight);
 		if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, cut_name, weight);

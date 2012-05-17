@@ -22,8 +22,9 @@
 #include "FactorizedJetCorrector.h" 
 
 #include "TH2F.h"
+#include "TTree.h"
 
-#include </shome/leo/Installations/LHAPDF/lhapdf-5.8.4/include/LHAPDF/LHAPDF.h>
+// #include </shome/leo/Installations/LHAPDF/lhapdf-5.8.4/include/LHAPDF/LHAPDF.h>
 
 
 static const int gNHemispheres = 4;
@@ -150,12 +151,6 @@ private:
 	typedef std::map <string, bool*> StringBoolMap;
 	StringBoolMap fTriggerMap;
 	
-	// structs
-	enum LeptConfig {
-	 	e, mu, OS_emu, OS_ee, OS_mumu, SS_emu, SS_ee, SS_mumu, multilept, null
-  	};
-	LeptConfig fLeptConfig;
-	
 	struct DeadCellFilter{
 		vector<int> run;
 		vector<int> lumi;
@@ -175,7 +170,6 @@ private:
 	void ResetTree(); 
 	bool FillMT2TreeBasics();
 	void FillMT2treeCalculations();
-	void FindLeptonConfig();
 	void GetLeptonJetIndices();
 	bool IsSelectedEvent();
 	void InitializeEvent();
@@ -187,10 +181,19 @@ private:
 	bool IsGoodPhotonEGMTightISO(int index);
 	bool IsGoodPhotonEGMTightID(int index);
 	bool IsGoodPhoton(int index);
+	//Muons 
+	bool IsGoodMT2Muon(const int index);
+	float MuonIso(const int index);
+	// Electrons
+	bool IsGoodMT2ElectronVetoID(const int index);
+	bool IsGoodMT2ElectronMediumID(const int index);
+	const float EffArea(float abseta);
+	float EleIso(const int index);
+
 	//pfJetID
-	bool IsGoodBasicPFJetPAT3(int index, float ptcut, float absetacut);
-	bool IsGoodPFJetMediumPAT3(int index, float ptcut, float absetacut);
-	bool IsGoodPFJetTightPAT3(int index, float ptcut, float absetacut);
+	bool IsGoodMT2PFJetIDLoose(int index, float ptcut, float absetacut);
+	bool IsGoodMT2PFJetIDMedium(int index, float ptcut, float absetacut);
+	bool IsGoodMT2PFJetIDTight(int index, float ptcut, float absetacut);
 	// jets
 	TLorentzVector Jet(int index);
 	TLorentzVector CAJet(int index);

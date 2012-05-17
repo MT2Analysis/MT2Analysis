@@ -31,7 +31,6 @@ public:
   Int_t    Event;
   Int_t    LumiSection;
   Int_t    ProcessID;             // 0=data, 1=Znunu, 2=Zll, 3=WJets, 4=ttbar, 5=Gamma+jets, 6=QCD ,[empty], 9=Other, 10=Signal
-  Int_t    LeptConfig;
   Int_t    Jet0Pass;
   Int_t    Jet1Pass;
   Int_t    PassJetID;
@@ -62,7 +61,7 @@ public:
   Int_t    TopDecayMode;
   Float_t  BTagWeight;
   
-  ClassDef(MT2Misc, 28)
+  ClassDef(MT2Misc, 29)
 };
 
 
@@ -369,8 +368,9 @@ public:
   Float_t bTagProbTCHP;
   Float_t bTagProbSSVHE;
   Float_t bTagProbSSVHP;
+  Float_t bTagProbJProb;
+  Float_t bTagProbCSV;
 
-  Bool_t isPATPFIDLoose;
   Bool_t isPFIDLoose;
   Bool_t isPFIDMedium;
   Bool_t isPFIDTight;
@@ -379,6 +379,7 @@ public:
   Float_t NeuHadFrac;
   Float_t ChEmFrac;
   Float_t NeuEmFrac;
+  Float_t ChMuFrac;
   Int_t   ChMult;
   Int_t   NeuMult;
   Int_t   NConstituents;
@@ -394,7 +395,7 @@ public:
   Float_t TauDPt;
   Int_t   NTauMatch;
 
-  ClassDef(MT2Jet, 11)
+  ClassDef(MT2Jet, 14)
 };
 
 // MT2GenJet -------------------------
@@ -461,12 +462,10 @@ public:
   Float_t  MT;
   Float_t  Iso;
   Int_t    Charge;
-  Int_t    ID95;
-  Int_t    ID90;
-  Int_t    CAJ_n90;
-  Int_t    CAJ_n90Hits;
+  Int_t    IDMedium;
+  Int_t    IDVeto;
 
-  ClassDef(MT2Elec, 8)
+  ClassDef(MT2Elec, 10)
 };
 
 // MT2Muon ----------------------------------
@@ -484,10 +483,8 @@ public:
   Float_t  MT;
   Float_t  Iso;
   Int_t    Charge;
-  Int_t    NMatches;
-  Float_t  PtErr;
 
-  ClassDef(MT2Muon, 7)
+  ClassDef(MT2Muon, 8)
 };
 
 // MT2Photon  ----------------------------------
@@ -536,11 +533,9 @@ public:
   Int_t          GMID;
   Int_t          GMStatus;
   Float_t        MT;
-  Float_t        CAJ_n90;
-  Float_t        CAJ_n90Hits;
 
 
-  ClassDef(MT2GenLept, 4)
+  ClassDef(MT2GenLept, 5)
 };
 
 // MT2tree ----------------------------------

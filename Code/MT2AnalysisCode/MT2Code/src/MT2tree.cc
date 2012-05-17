@@ -39,7 +39,6 @@ void MT2Misc::Reset() {
   Event		  	  = -1;	  
   LumiSection		  = -1;	  
   ProcessID               = -1; 
-  LeptConfig		  = -1;	  
   PassJetID               = -1;
   Jet0Pass                = -1;
   Jet1Pass                = -1;
@@ -370,8 +369,9 @@ void MT2Jet::Reset() {
   bTagProbTCHP  = -99999.99;
   bTagProbSSVHE = -99999.99;
   bTagProbSSVHP = -99999.99;
+  bTagProbJProb = -99999.99;
+  bTagProbCSV   = -99999.99;
 
-  isPATPFIDLoose= 0; // PAT PFJetIDLoose regardless of eta and pt
   isPFIDLoose   = 0;
   isPFIDMedium  = 0;
   isPFIDTight   = 0;
@@ -379,6 +379,7 @@ void MT2Jet::Reset() {
   NeuHadFrac    = -99999.99; 
   ChEmFrac      = -99999.99;
   NeuEmFrac     = -99999.99; 
+  ChMuFrac      = -99999.99; 
   ChMult        = -1; 
   NeuMult       = -1; 
   NConstituents = -1;
@@ -408,15 +409,13 @@ Bool_t MT2Jet::IsGoodPFJet(float minJPt, float maxJEta, int PFJID) {
   
   switch (PFJID) {
   case 3:               // TIGHT
-    if ( !(NeuEmFrac     < 0.90) ) return false;
-    if ( !(NeuHadFrac    < 0.90) ) return false;
-    // break;   // No break: medium contains tight -> check common cuts
+    if ( ! isPFIDTight     )    return false; // tight PF-jet ID 
+    // break;   // No break: medium contains tight
   case 2:               // MEDIUM
-    if ( !(NeuEmFrac     < 0.95) ) return false;
-    if ( !(NeuHadFrac    < 0.95) ) return false;
-    // break;   // No break: loose contains medium -> check common cuts
+    if ( ! isPFIDMedium     )   return false; // medium PF-jet ID
+    // break;   // No break: loose contains medium 
   case 1:               // LOOSE
-    if ( ! isPATPFIDLoose     )    return false; // loose PF-jet ID from PAT
+    if ( ! isPFIDLoose     )    return false; // loose PF-jet ID f
     break;
   default:
     // None of the above. Do we want any default cut?
@@ -504,8 +503,6 @@ void MT2GenLept::Reset(){
   GMID        = -999;
   GMStatus    = -999;
   MT          = -9999.99;
-  CAJ_n90     = -9999.99;
-  CAJ_n90Hits = -9999.99;
 }
 
 // MT2Muon -----------------------------------
@@ -521,8 +518,6 @@ void MT2Muon::Reset() {
   MT            = -9999.99;
   Iso           = -9999.99;
   Charge        = -999;
-  NMatches      = -999;
-  PtErr         = -999.99;
 }
 
 void MT2Muon::SetLV(const TLorentzVector v) {
@@ -572,10 +567,8 @@ void MT2Elec::Reset() {
   MT            = -9999.99;
   Iso           = -9999.99;
   Charge        = -999;
-  ID95          = -999;
-  ID90          = -999;
-  CAJ_n90       = -999;
-  CAJ_n90Hits   = -999;
+  IDMedium      = -999;
+  IDVeto        = -999;
 }
 
 void MT2Elec::SetLV(const TLorentzVector v) {
@@ -2296,9 +2289,9 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	logStream << "  jet " << i << ":\n"
 	     << "   pt " << jet[i].lv.Pt() << ", eta " << jet[i].lv.Eta() << ", phi " <<   jet[i].lv.Phi() << ", E " << jet[i].lv.E() << ", Mass " << jet[i].lv.M() << "\n"	
 	     << "   px " << jet[i].lv.Px() << ", py "  << jet[i].lv.Py()  << ", pz "  <<   jet[i].lv.Pz() << "\n"
-	     << "   JID " << jet[i].isPATPFIDLoose << ", isTau " << jet[i].isTauMatch    << " Flavour " << jet[i].Flavour <<"\n"
+	     << "   JID " << jet[i].isPFIDLoose << ", isTau " << jet[i].isTauMatch    << " Flavour " << jet[i].Flavour <<"\n"
 	     << "   CHF " << jet[i].ChHadFrac << ", NHF " << jet[i].NeuHadFrac << ", CEF " << jet[i].ChEmFrac 
-	                  << ", NEF " << jet[i].NeuEmFrac << ", NConstituents " << jet[i].NConstituents  
+	                  << ", NEF " << jet[i].NeuEmFrac << ", ChMuFrac " << jet[i].ChMuFrac << ", NConstituents " << jet[i].NConstituents  
 	                  << ", Ch Mult " << jet[i].ChMult << ", Neu Mul " << jet[i].NeuMult << "\n"
 	     << "   isBtag SSVHP: " << (jet[i].IsBJet(3)? "true (":"false (") << jet[i].bTagProbSSVHP 
 	     << "), isBtag SSVHE: " << (jet[i].IsBJet(2)? "true (":"false (") << jet[i].bTagProbSSVHE << ")\n"
@@ -2332,7 +2325,6 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	logStream << "    Px " << ele[i].lv.Px() << "  Py " << ele[i].lv.Py()  << "  Pz " << ele[i].lv.Pz()             << endl;
 	logStream << "    Isolation " << ele[i].Iso                                                                     << endl;
 	logStream << "    Charge    " << ele[i].Charge                                                                  << endl;
-	logStream << "    VBTF ID 95 " << ele[i].ID95  << ", ID90 " << ele[i].ID90                                      << endl;
 	logStream << "    transverse Mass with MET " << ele[i].MT                                                       << endl; 
 	     e += ele[i].lv.E(); px += ele[i].lv.Px(); py += ele[i].lv.Py(); pz += ele[i].lv.Pz(); 
 	}

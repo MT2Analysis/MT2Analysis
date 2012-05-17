@@ -11,7 +11,7 @@
 
 class MT2Analyzer : public TreeAnalyzerBase {
 public:
-	MT2Analyzer(TTree *tree = 0);
+	MT2Analyzer(std::vector<std::string>& fileList);
 	virtual ~MT2Analyzer();
 	void BeginJob(TString filename="MassTree.root" , TString setofcuts="default",
 	              bool isData=false, string data_PileUp="", string mc_PileUp="", string JEC="");

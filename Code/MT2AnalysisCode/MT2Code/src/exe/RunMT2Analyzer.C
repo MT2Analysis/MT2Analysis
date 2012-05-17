@@ -11,6 +11,8 @@
 
 #include "MT2Analyzer.hh"
 
+#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
+
 using namespace std;
 
 //________________________________________________________________________________________
@@ -52,6 +54,8 @@ void usage( int status = 0 ) {
 
 //________________________________________________________________________________________
 int main(int argc, char* argv[]) {
+  	AutoLibraryLoader::enable();
+
 // Default options
 	bool isList = false;
 	TString outputdir = "TempOutput/";
@@ -93,7 +97,7 @@ int main(int argc, char* argv[]) {
 	  case 'w': pdf             = string(optarg); break;
 	  case 'i': ID              = atoi(optarg);   break;
 	  case 's': puScenario      = string(optarg); break;
-          case 'C': JEC             = "/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+string(optarg)+"/"; break;
+          case 'C': JEC             = string(optarg); break;
 	  case 'l': isList          = true; break;
 	    //case 'noPU': noPU = true; break;  
 	  case '?':
@@ -124,36 +128,30 @@ int main(int argc, char* argv[]) {
 	}
 
 	setofcuts   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/MT2_cuts/"+setofcuts+".dat";
-	if(data_PileUp.length()!=0){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
-	//if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/haweber/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
-	if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
-	//setofcuts   ="/shome/leo/Analysis/MT2_cuts/"+setofcuts+".dat";
-	//if(data_PileUp.length()!=0){data_PileUp ="/shome/leo/Analysis/Certification/pileUp_data/"+data_PileUp;}
-//        if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/leo/Analysis/Certification/pileUp_mc/"  + mc_PileUp;}
-
-	if(jsonFileName.length() !=0){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"           +jsonFileName;}
-	if(btagFileName.length() !=0){btagFileName="/shome/haweber/MT2Analysis/Code/Efficiencies/" + btagFileName;}
+	if(data_PileUp.length()!=0   ){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
+	if(mc_PileUp.length()  !=0   ){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
+	if(jsonFileName.length() !=0 ){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"            +jsonFileName;}
+	if(btagFileName.length() !=0 ){btagFileName="/shome/haweber/MT2Analysis/Code/Efficiencies/"                               + btagFileName;}
 
 	if(puScenario=="3D"){ isS3=true; noPU=true; } // THIS IS A DIRTY TRICK TO TEST 3D REWEIGHT WITHOUT ADD A NEW VAR
 	if(puScenario=="S3") isS3=true;
 	else if(puScenario=="noPU") noPU=true;
 
-	TChain *theChain = new TChain("analyze/Analysis");
+	std::vector<std::string> fileList;
 	for(int i = 0; i < argc; i++){
 		if( !isList ){
-			theChain->Add(argv[i]);
+	    		fileList.push_back(argv[i]);
 			printf(" Adding file: %s\n",argv[i]);
 		} else {
 			TString rootFile;
 			ifstream is(argv[i]);
 			while(rootFile.ReadLine(is) && (!rootFile.IsNull())){
-				if(rootFile[0] == '#') continue;
-				theChain->Add(rootFile);
+	      			if(rootFile[0] == '#') continue;
+				fileList.push_back(rootFile.Data());
 				printf(" Adding file: %s\n", rootFile.Data());
-			}
-		}
+	    		}
+	  	}
 	}
-
 
 	cout << "--------------" << endl;
 	cout << "OutputDir is:                   " << outputdir << endl;
@@ -167,9 +165,9 @@ int main(int argc, char* argv[]) {
 	}
 	if(noPU && !isS3) cout << "WARNING: NoPU option set, all the PU weights will be set to 1" << endl;
 	cout << "Set of Cuts is:                 " << setofcuts << endl;
-	cout << "Number of events:               " << theChain->GetEntries() << endl;
+//	cout << "Number of events:               " << theChain->GetEntries() << endl;
 	if(JEC.length()!=0){
-	cout << "Redo JEC with set               " << JEC << endl;
+	cout << "Redo JEC with GlobalTag         " << JEC << endl;
 	}
 	if(removePhoton){
 	cout << "WARNING: Photon is added to MET and jet/ele match to photon is removed!!" << endl;
@@ -178,7 +176,7 @@ int main(int argc, char* argv[]) {
 	}
 	cout << "--------------" << endl;
 
-	MT2Analyzer *tA = new MT2Analyzer(theChain);
+	MT2Analyzer *tA = new MT2Analyzer(fileList);
 	tA->SetOutputDir(outputdir);
 	tA->SetVerbose(verbose);
 	tA->SetMaxEvents(maxEvents);

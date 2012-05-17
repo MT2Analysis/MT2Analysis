@@ -1,7 +1,6 @@
 /*****************************************************************************
 *   Small Class to make Shape-Templated for MT2Analysis                      *
 *****************************************************************************/
-
 #include "MT2Shapes.hh"
 
 #include "TLorentzVector.h"

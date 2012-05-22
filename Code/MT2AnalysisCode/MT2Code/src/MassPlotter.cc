@@ -640,16 +640,16 @@ void MassPlotter::PrintCutFlow(int njets, int nleps, TString trigger, TString cu
       if( !(!fMT2tree->misc.isData   || (fMT2tree->misc.Run <162803 || fMT2tree->misc.Run >162909  )) )  continue;
       if(trigger=="HT"){
 	      if( fMT2tree->misc.isData ==1 
-		  && fMT2tree->trigger.HLT_HT440_v2 ==0 
-		  && fMT2tree->trigger.HLT_HT450_v2 ==0 
-		  && fMT2tree->trigger.HLT_HT500_v3 ==0 ) continue;
+		  && fMT2tree->trigger.HLT_PFHT650_v5 ==0 
+		  && fMT2tree->trigger.HLT_PFHT650_v6 ==0 
+		  && fMT2tree->trigger.HLT_PFHT650_v7 ==0 ) continue;
               if( fMT2tree->misc.caloHT50_ID< 550)        continue;
               if( fMT2tree->misc.MET     < 30)  continue;
       }else if(trigger=="MHT_HT"){
       	      if( fMT2tree->misc.isData ==1 
-		  && fMT2tree->trigger.HLT_HT260_MHT60_v2 ==0 
-		  && fMT2tree->trigger.HLT_HT250_MHT60_v2 ==0 
-		  && fMT2tree->trigger.HLT_HT250_MHT60_v3 ==0 ) continue;
+		  && fMT2tree->trigger.HLT_PFHT350_PFMET100_v3 ==0 
+		  && fMT2tree->trigger.HLT_PFHT350_PFMET100_v4 ==0 
+		  && fMT2tree->trigger.HLT_PFHT350_PFMET100_v5 ==0 ) continue;
               if( fMT2tree->misc.caloHT50  <= 320) continue;
               if( fMT2tree->misc.caloMHT30 <  130) continue;
               if( fMT2tree->misc.MET       <   30) continue;

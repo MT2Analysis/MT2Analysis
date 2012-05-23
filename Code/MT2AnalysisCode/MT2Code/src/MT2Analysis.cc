@@ -260,7 +260,7 @@ void MT2Analysis::Analyze(){
 	if(basicfilled) FillMT2treeCalculations();
 
 	// FillTree
-	FillTree();
+	if(basicfilled) FillTree();
 }
 
 // ***********************************************************************************************
@@ -371,21 +371,21 @@ bool MT2Analysis::FillMT2TreeBasics(){
 
 	// --------------------------------------------------------------
 	// match taus to jets
-	for(int i=0; i<fTaus.size(); ++i){
-		TLorentzVector tau;
-		tau.SetPxPyPzE(fTR->PfTau3Px[fTaus[i]],fTR->PfTau3Py[fTaus[i]],fTR->PfTau3Pz[fTaus[i]],fTR->PfTau3E[fTaus[i]]);
-		float mindR =10000; int jindex =-1;
-		for(int j=0; j<fJets.size(); ++j){
-			float dR = tau.DeltaR(fMT2tree->jet[j].lv);
-			if(dR < mindR && dR < 0.5) {mindR=dR; jindex = j;} 	
-		}
-		if(jindex ==-1) continue;
-		fMT2tree->jet[jindex].NTauMatch++;
-		if(fMT2tree->jet[jindex].isTauMatch && fMT2tree->jet[jindex].TauDR < mindR) continue;
-		fMT2tree->jet[jindex].isTauMatch = 1;
-		fMT2tree->jet[jindex].TauDR      = mindR;
-		fMT2tree->jet[jindex].TauDPt     = fMT2tree->jet[jindex].lv.Pt()-tau.Pt();
-	}
+// 	for(int i=0; i<fTaus.size(); ++i){
+// 		TLorentzVector tau;
+// 		tau.SetPxPyPzE(fTR->PfTau3Px[fTaus[i]],fTR->PfTau3Py[fTaus[i]],fTR->PfTau3Pz[fTaus[i]],fTR->PfTau3E[fTaus[i]]);
+// 		float mindR =10000; int jindex =-1;
+// 		for(int j=0; j<fJets.size(); ++j){
+// 			float dR = tau.DeltaR(fMT2tree->jet[j].lv);
+// 			if(dR < mindR && dR < 0.5) {mindR=dR; jindex = j;} 	
+// 		}
+// 		if(jindex ==-1) continue;
+// 		fMT2tree->jet[jindex].NTauMatch++;
+// 		if(fMT2tree->jet[jindex].isTauMatch && fMT2tree->jet[jindex].TauDR < mindR) continue;
+// 		fMT2tree->jet[jindex].isTauMatch = 1;
+// 		fMT2tree->jet[jindex].TauDR      = mindR;
+// 		fMT2tree->jet[jindex].TauDPt     = fMT2tree->jet[jindex].lv.Pt()-tau.Pt();
+// 	}
 
 	// -----------------------------------------------------------------
 	// Photons
@@ -1037,13 +1037,13 @@ void MT2Analysis::GetLeptonJetIndices(){
 
 	// Warning: taus are also contained in the jet-collection.
 	vector<float> taus;
-	for(int i=0; i< fTR->PfTau3NObjs; ++i){
-		if(std::isnan(fTR->PfTau3Pt[i])) { fIsNANObj = true; continue;} //protection against objects with NAN-Pt
-		if(fTR->PfTau3Pt[i]   < 20    ) continue; // note: taus go up to 2.5 in Eta
-		fTaus.push_back(i);
-		taus.push_back(fTR->PfTau3Pt[i]);
-	}
-	fTaus          = Util::VSort(fTaus     , taus);
+// 	for(int i=0; i< fTR->PfTau3NObjs; ++i){
+// 		if(std::isnan(fTR->PfTau3Pt[i])) { fIsNANObj = true; continue;} //protection against objects with NAN-Pt
+// 		if(fTR->PfTau3Pt[i]   < 20    ) continue; // note: taus go up to 2.5 in Eta
+// 		fTaus.push_back(i);
+// 		taus.push_back(fTR->PfTau3Pt[i]);
+// 	}
+// 	fTaus          = Util::VSort(fTaus     , taus);
 
 	// Photons ---------------------------------------------------------------------------------
 	vector<float> photon_pts;

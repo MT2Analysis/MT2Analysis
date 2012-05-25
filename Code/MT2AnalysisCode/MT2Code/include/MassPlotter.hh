@@ -10,7 +10,9 @@
 #include "helper/Monitor.hh"
 #include "THStack.h"
 #include "TTree.h"
+#include "TH2.h"
 #include <map>
+
 
 static const int gNMT2bins                   = 19;
 static const double  gMT2bins[gNMT2bins+1]   = {0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70, 85, 105, 135, 180, 260, 360, 500}; 	
@@ -214,7 +216,17 @@ public:
 			  const int nbins, const double *bins, bool add_underflow, bool logflag, double scale_factor, bool normalize);
 	void compSamples(TString var, TString cuts, TString optcut,  bool RemoveLepts, TString xtitle, 
 			  const int nbins, const double min, const double max, bool add_underflow, bool logflag, double scale_factor, bool normalize);
+  
 
+  //public material for the tau estimation
+  void TauContamination(int sample_index, Long64_t nevents, int flag);//sample_index != -1 reads only a special sample, nevents determines the number of events to read
+  void setFlags(int flag); //To determine which analysis we look at HighHT/LowHT MT2(b) options are:
+  // 5  :: LowHT  MT2  
+  // 7  :: HighHT MT2 
+  // 15 :: LowHT  MT2b 
+  // 17 :: HighHT MT2b 
+  // 19 :: HighHT MT2b(Relaxed BTagging) 
+  
 private:
 
 	TString fOutputDir;
@@ -261,6 +273,33 @@ private:
 			  const int nbins, const double *bins, bool add_underflow, bool logflag, double scale_factor, bool normalize);
 	void  CompSamples(std::vector<sample> Samples, TString var, TString cuts, TString optcut,  bool RemoveLepts, TString xtitle, 
 			  const int nbins, const double min, const double max, bool add_underflow, bool logflag, double scale_factor, bool normalize);
+ 
+
+  //private material for the tau estimation
+  double newxMT2bin[10];
+
+  int FlagsAreSet; //To determine which analysis we look at HighHT/LowHT MT2(b)
+
+  int mT2;
+  int mT2b;
+  int Low;
+  int High;
+  int BTagRelaxed; 
+  float  MT2Min;
+
+  static const int NumberOfMT2Bins = 6;
+
+  float xMT2bin[NumberOfMT2Bins];//bins of MT2
+
+  static const int NumberOfSamples = 6;
+  TH1F* MT2[NumberOfSamples];
+
+  //Few functions for debugging and ready for .tex printout
+  void printYield();
+
+  void AddOverAndUnderFlow(TH1 * Histo);
+  void Cout(int k, TH1F * Histo);
+  void Cout(int k, TH2F * Histo);
 };
 
 #endif

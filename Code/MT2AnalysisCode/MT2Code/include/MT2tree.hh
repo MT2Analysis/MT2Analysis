@@ -5,7 +5,7 @@
 #include "TLorentzVector.h"
 #include "TVector3.h"
 
-enum {m_jetSize = 25, m_genjetSize = 20, m_eleSize = 5, m_muoSize = 5, m_phoSize = 5, m_genleptSize=20, m_hemiSize=2};
+enum {m_jetSize = 25, m_genjetSize = 20,  m_tauSize = 20, m_eleSize = 5, m_muoSize = 5, m_phoSize = 5, m_genleptSize=20, m_hemiSize=2};
 
 
 
@@ -31,6 +31,7 @@ public:
   Int_t    Event;
   Int_t    LumiSection;
   Int_t    ProcessID;             // 0=data, 1=Znunu, 2=Zll, 3=WJets, 4=ttbar, 5=Gamma+jets, 6=QCD ,[empty], 9=Other, 10=Signal
+  Int_t    LeptConfig;
   Int_t    Jet0Pass;
   Int_t    Jet1Pass;
   Int_t    PassJetID;
@@ -117,89 +118,184 @@ public:
 	virtual ~MT2Trigger();
 	void Reset();
 
-        // 2012 datasets
+	// HT with DPhi
+	Bool_t HLT_HT500_JetPt60_DPhi2p94_v1;
+	Bool_t HLT_HT550_JetPt60_DPhi2p94_v1;
 
-	// HT/jetHT dataset
-	Bool_t HLT_HT500_v1;
+	// HT
+	Bool_t HLT_HT150_v2;
+	Bool_t HLT_HT150_v3;
+	Bool_t HLT_HT160_v2;
+	Bool_t HLT_HT200_v2;
+	Bool_t HLT_HT200_v3;
+	Bool_t HLT_HT240_v2;
+	Bool_t HLT_HT250_v2;
+	Bool_t HLT_HT250_v3;
+	Bool_t HLT_HT260_v2;
+	Bool_t HLT_HT300_v2;
+	Bool_t HLT_HT300_v3;
+	Bool_t HLT_HT300_v4;
+	Bool_t HLT_HT300_v5;
+	Bool_t HLT_HT350_v2;
+	Bool_t HLT_HT350_v3;
+	Bool_t HLT_HT350_v4;
+	Bool_t HLT_HT360_v2;
+	Bool_t HLT_HT400_v10;
+	Bool_t HLT_HT400_v2;
+	Bool_t HLT_HT400_v3;
+	Bool_t HLT_HT400_v4;
+	Bool_t HLT_HT400_v5;
+	Bool_t HLT_HT400_v6;
+	Bool_t HLT_HT400_v7;
+	Bool_t HLT_HT400_v8;
+	Bool_t HLT_HT400_v9;
+	Bool_t HLT_HT440_v2;
+	Bool_t HLT_HT450_v10;
+	Bool_t HLT_HT450_v2;
+	Bool_t HLT_HT450_v3;
+	Bool_t HLT_HT450_v4;
+	Bool_t HLT_HT450_v5;
+	Bool_t HLT_HT450_v6;
+	Bool_t HLT_HT450_v7;
+	Bool_t HLT_HT450_v8;
+	Bool_t HLT_HT450_v9;
+	Bool_t HLT_HT500_v10;
+	Bool_t HLT_HT500_v11;
 	Bool_t HLT_HT500_v2;
 	Bool_t HLT_HT500_v3;
-	Bool_t HLT_HT550_v1;
+	Bool_t HLT_HT500_v4;
+	Bool_t HLT_HT500_v5;
+	Bool_t HLT_HT500_v6;
+	Bool_t HLT_HT500_v7;
+	Bool_t HLT_HT500_v8;
+	Bool_t HLT_HT500_v9;
+	Bool_t HLT_HT550_v10;
+	Bool_t HLT_HT550_v11;
 	Bool_t HLT_HT550_v2;
 	Bool_t HLT_HT550_v3;
+	Bool_t HLT_HT550_v4;
+	Bool_t HLT_HT550_v5;
+	Bool_t HLT_HT550_v6;
+	Bool_t HLT_HT550_v7;
+	Bool_t HLT_HT550_v8;
+	Bool_t HLT_HT550_v9;
 	Bool_t HLT_HT600_v1;
 	Bool_t HLT_HT600_v2;
 	Bool_t HLT_HT600_v3;
+	Bool_t HLT_HT600_v4;
 	Bool_t HLT_HT650_v1;
 	Bool_t HLT_HT650_v2;
 	Bool_t HLT_HT650_v3;
-	Bool_t HLT_PFHT350_v3;
-	Bool_t HLT_PFHT350_v4;
-	Bool_t HLT_PFHT350_v5;
-	Bool_t HLT_PFHT350_v6;
-	Bool_t HLT_PFHT650_v5;
-	Bool_t HLT_PFHT650_v6;
-	Bool_t HLT_PFHT650_v7;
-	Bool_t HLT_PFHT650_v8;
-	Bool_t HLT_PFHT700_v3;
-	Bool_t HLT_PFHT700_v4;
-	Bool_t HLT_PFHT700_v5;
-	Bool_t HLT_PFHT700_v6;
-	Bool_t HLT_PFHT750_v3;
-	Bool_t HLT_PFHT750_v4;
-	Bool_t HLT_PFHT750_v5;
-	Bool_t HLT_PFHT750_v6;
-
-	// HT/HTMHT dataset
-	Bool_t HLT_PFHT350_PFMET100_v3;
-	Bool_t HLT_PFHT350_PFMET100_v4;
-	Bool_t HLT_PFHT350_PFMET100_v5;
-	Bool_t HLT_PFHT350_PFMET100_v6;
-	Bool_t HLT_PFHT450_PFMET100_v3;
-	Bool_t HLT_PFHT450_PFMET100_v4;
-	Bool_t HLT_PFHT450_PFMET100_v5;
-	Bool_t HLT_PFHT450_PFMET100_v6;
-
-        // MET Dataset
-        Bool_t HLT_MET120_v9;
-        Bool_t HLT_MET120_v10;
-        Bool_t HLT_MET200_v9;
-        Bool_t HLT_MET200_v10;
-        Bool_t HLT_MET120_HBHENoiseCleaned_v2;
-        Bool_t HLT_MET120_HBHENoiseCleaned_v3;
-        Bool_t HLT_MET120_HBHENoiseCleaned_v4;
-        Bool_t HLT_MET200_HBHENoiseCleaned_v2;
-        Bool_t HLT_MET200_HBHENoiseCleaned_v3;
-        Bool_t HLT_MET200_HBHENoiseCleaned_v4;
-        Bool_t HLT_PFMET150_v2;
-        Bool_t HLT_PFMET150_v3;
-        Bool_t HLT_PFMET150_v4;
-        Bool_t HLT_PFMET180_v2;
-        Bool_t HLT_PFMET180_v3;
-        Bool_t HLT_PFMET180_v4;
-        Bool_t HLT_DiCentralPFJet30_PFMHT80_v5;
-        Bool_t HLT_DiCentralPFJet30_PFMHT80_v6;
-        Bool_t HLT_DiCentralPFJet30_PFMHT80_v7;
-        Bool_t HLT_DiCentralPFJet50_PFMET80_v3;
-        Bool_t HLT_DiCentralPFJet50_PFMET80_v4;
-        Bool_t HLT_DiCentralPFJet50_PFMET80_v5;
-        Bool_t HLT_DiCentralPFJet50_PFMET80_v6;
-
-        // Multijet dataset
-        Bool_t HLT_DiJet80_DiJet_60_DiJet20_v1;
-        Bool_t HLT_DiJet80_DiJet_60_DiJet20_v2;
-        Bool_t HLT_QuadJet_60_DiJet20_v1;
-        Bool_t HLT_QuadJet_60_DiJet20_v2;
-        Bool_t HLT_QuadJet_50_v1;
-        Bool_t HLT_QuadJet_50_v2;
-        Bool_t HLT_QuadJet_70_v1;
-        Bool_t HLT_QuadJet_70_v2;
-        Bool_t HLT_QuadJet_80_v1;
-        Bool_t HLT_QuadJet_80_v2;
-        Bool_t HLT_SixJet_35_v1;
-        Bool_t HLT_SixJet_35_v2;
-        Bool_t HLT_SixJet_45_v1;
-        Bool_t HLT_SixJet_45_v2;
-
+	Bool_t HLT_HT650_v4;
+	Bool_t HLT_HT700_v2;
+	Bool_t HLT_HT750_v3;
+	Bool_t HLT_HT750_L1FastJet_v3;
+	Bool_t HLT_PFHT650_v1;
+	// HT_MHT
+	Bool_t HLT_HT250_MHT60_v2;
+	Bool_t HLT_HT250_MHT60_v3;
+	Bool_t HLT_HT250_MHT60_v4;
+	Bool_t HLT_HT250_MHT60_v5;
+	Bool_t HLT_HT250_MHT60_v6;
+	Bool_t HLT_HT250_MHT70_v1;
+	Bool_t HLT_HT250_MHT70_v2;
+	Bool_t HLT_HT250_MHT70_v3;
+	Bool_t HLT_HT250_MHT70_v4;
+	Bool_t HLT_HT250_MHT90_v1;
+	Bool_t HLT_HT250_MHT90_v2;
+	Bool_t HLT_HT250_MHT100_v2;
+	Bool_t HLT_HT260_MHT60_v2;
+	Bool_t HLT_HT300_MHT75_v4;
+	Bool_t HLT_HT300_MHT75_v5;
+	Bool_t HLT_HT300_MHT75_v7;
+	Bool_t HLT_HT300_MHT75_v8;
+	Bool_t HLT_HT300_MHT80_v1;
+	Bool_t HLT_HT300_MHT80_v2;
+	Bool_t HLT_HT300_MHT90_v1;
+	Bool_t HLT_HT300_MHT90_v2;
+	Bool_t HLT_HT350_MHT70_v1;
+	Bool_t HLT_HT350_MHT70_v2;
+	Bool_t HLT_HT350_MHT80_v1;
+	Bool_t HLT_HT350_MHT80_v2;
+	Bool_t HLT_HT350_MHT90_v1;
+	Bool_t HLT_HT350_MHT100_v3;
+	Bool_t HLT_HT350_L1FastJet_MHT100_v1;
+	Bool_t HLT_HT350_MHT110_v3;
+	Bool_t HLT_HT400_MHT80_v1;
+	Bool_t HLT_HT400_MHT90_v3;
+	Bool_t HLT_PFHT350_PFMHT90_v1;
+	Bool_t HLT_PFHT350_PFMHT100_v1;
+        Bool_t HLT_PFHT400_PFMHT80_v1;
+        Bool_t HLT_PFHT400_PFMHT90_v1;
+	// Muons
+	Bool_t HLT_DoubleMu3_HT160_v2;
+	Bool_t HLT_Mu8_Jet40_v2;
+	Bool_t HLT_DoubleMu3_v3;
+        // **** MET Dataset ****
+        // CentralJet+MET
+        Bool_t HLT_PFMHT150_v1;
+        Bool_t HLT_PFMHT150_v2;
+        Bool_t HLT_PFMHT150_v4;
+        Bool_t HLT_PFMHT150_v6;
+        Bool_t HLT_PFMHT150_v7;
+        Bool_t HLT_PFMHT150_v8;
+        Bool_t HLT_PFMHT150_v9;
+        Bool_t HLT_PFMHT150_v11;
+        Bool_t HLT_PFMHT150_v12;
+        Bool_t HLT_PFMHT150_v16;
+        Bool_t HLT_CentralJet80_MET65_v1;
+        Bool_t HLT_CentralJet80_MET65_v2;
+        Bool_t HLT_CentralJet80_MET65_v3;
+        Bool_t HLT_CentralJet80_MET65_v4;
+        Bool_t HLT_CentralJet80_MET65_v5;
+        Bool_t HLT_CentralJet80_MET65_v6;
+        Bool_t HLT_CentralJet80_MET65_v7;
+        Bool_t HLT_CentralJet80_MET65_v10;
+        Bool_t HLT_CentralJet80_MET80_v1;
+        Bool_t HLT_CentralJet80_MET80_v2;
+        Bool_t HLT_CentralJet80_MET80HF_v2;
+        Bool_t HLT_CentralJet80_MET80HF_v3;
+        Bool_t HLT_CentralJet80_MET80HF_v4;
+        Bool_t HLT_CentralJet80_MET80HF_v5;
+        Bool_t HLT_CentralJet80_MET80_v6;
+        Bool_t HLT_CentralJet80_MET80_v9;
+        Bool_t HLT_CentralJet80_MET95_v3;
+        Bool_t HLT_CentralJet80_MET110_v3;
+        Bool_t HLT_CentralJet80_MET100_v1;
+        Bool_t HLT_CentralJet80_MET100_v2;
+        Bool_t HLT_CentralJet80_MET100_v3;
+        Bool_t HLT_CentralJet80_MET100_v4;
+        Bool_t HLT_CentralJet80_MET100_v5;
+        Bool_t HLT_CentralJet80_MET100_v6;
+        Bool_t HLT_CentralJet80_MET100_v7;
+        // DiCentralJet+MET
+        Bool_t HLT_DiCentralJet20_MET80_v1;
+        Bool_t HLT_DiCentralJet20_MET80_v2;
+        Bool_t HLT_DiCentralJet20_MET80_v3;
+        Bool_t HLT_DiCentralJet20_MET80_v4;
+        Bool_t HLT_DiCentralJet20_MET80_v5;
+        Bool_t HLT_DiCentralJet20_MET80_v8;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v2;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v3;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v4;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v5;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v6;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v7;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v10;
+        Bool_t HLT_DiCentralJet20_BTagIP_MET65_v11;
+        Bool_t HLT_DiCentralJet20_MET100_HBHENoiseFiltered_v1;
+        Bool_t HLT_DiCentralJet20_MET100_HBHENoiseFiltered_v4;
+        Bool_t HLT_DiCentralPFJet30_PFMHT80_v1;
+        Bool_t HLT_DiCentralPFJet50_PFMHT80_v1;
+        // DiJet+MET
+        Bool_t HLT_DiJet60_MET45_v1;
+        Bool_t HLT_DiJet60_MET45_v2;
+        Bool_t HLT_DiJet60_MET45_v3;
+        Bool_t HLT_DiJet60_MET45_v4;
+        Bool_t HLT_DiJet60_MET45_v5;
+        Bool_t HLT_DiJet60_MET45_v6;
+        Bool_t HLT_DiJet60_MET45_v7;
+        Bool_t HLT_DiJet60_MET45_v10;
 	// Photon
 	Bool_t HLT_SinglePhotons;
 	Bool_t HLT_DiElectrons;
@@ -209,7 +305,7 @@ public:
 	//EMu
 	Bool_t HLT_EMu;
 
-	ClassDef(MT2Trigger, 16);
+	ClassDef(MT2Trigger, 15);
 };
 
 // MT2Znunu --------------------------------
@@ -273,9 +369,8 @@ public:
   Float_t bTagProbTCHP;
   Float_t bTagProbSSVHE;
   Float_t bTagProbSSVHP;
-  Float_t bTagProbJProb;
-  Float_t bTagProbCSV;
 
+  Bool_t isPATPFIDLoose;
   Bool_t isPFIDLoose;
   Bool_t isPFIDMedium;
   Bool_t isPFIDTight;
@@ -284,7 +379,6 @@ public:
   Float_t NeuHadFrac;
   Float_t ChEmFrac;
   Float_t NeuEmFrac;
-  Float_t ChMuFrac;
   Int_t   ChMult;
   Int_t   NeuMult;
   Int_t   NConstituents;
@@ -295,12 +389,13 @@ public:
 
   Int_t   Flavour;   // JetFlavour for MC
   
-  Bool_t  isTauMatch; // tells you if pf-jet is matched to a tau
+//   Bool_t  isTauMatch; // tells you if pf-jet is matched to a tau
+  Int_t  isTauMatch; // tells you if pf-jet is matched to a tau, >= 0 gives the tau index in the tau collection, -1 not matched
   Float_t TauDR;
   Float_t TauDPt;
   Int_t   NTauMatch;
 
-  ClassDef(MT2Jet, 14)
+  ClassDef(MT2Jet, 11)
 };
 
 // MT2GenJet -------------------------
@@ -351,6 +446,29 @@ public:
   ClassDef(MT2Hemi, 6)
 };
 
+// MT2Tau  ----------------------------------
+class MT2Tau : public TObject {
+
+public:
+  MT2Tau();
+  virtual ~MT2Tau();
+
+  void Reset();
+  void SetLV(const TLorentzVector v);
+
+  TLorentzVector lv;
+
+  Float_t  MT;
+  Int_t    Charge;
+  Float_t  JetPt;
+  Float_t  JetEta;
+  Float_t  JetPhi;
+  Float_t  JetMass;
+  Int_t    Isolation;
+  Int_t    ElectronRej;
+  Int_t    MuonRej;
+  ClassDef(MT2Tau, 4)
+};
 
 // MT2Elec ----------------------------------
 class MT2Elec : public TObject {
@@ -367,10 +485,12 @@ public:
   Float_t  MT;
   Float_t  Iso;
   Int_t    Charge;
-  Int_t    IDMedium;
-  Int_t    IDVeto;
+  Int_t    ID95;
+  Int_t    ID90;
+  Int_t    CAJ_n90;
+  Int_t    CAJ_n90Hits;
 
-  ClassDef(MT2Elec, 10)
+  ClassDef(MT2Elec, 8)
 };
 
 // MT2Muon ----------------------------------
@@ -388,8 +508,10 @@ public:
   Float_t  MT;
   Float_t  Iso;
   Int_t    Charge;
+  Int_t    NMatches;
+  Float_t  PtErr;
 
-  ClassDef(MT2Muon, 8)
+  ClassDef(MT2Muon, 7)
 };
 
 // MT2Photon  ----------------------------------
@@ -438,9 +560,11 @@ public:
   Int_t          GMID;
   Int_t          GMStatus;
   Float_t        MT;
+  Float_t        CAJ_n90;
+  Float_t        CAJ_n90Hits;
 
 
-  ClassDef(MT2GenLept, 5)
+  ClassDef(MT2GenLept, 4)
 };
 
 // MT2tree ----------------------------------
@@ -456,6 +580,7 @@ public:
   void SetNGenJets      (int n);
   void SetNJetsIDLoose  (int n);
   void SetNBJets        (int n);
+  void SetNBJetsHE      (int n);
   void SetNEles         (int n);
   void SetNMuons        (int n);
   void SetNPhotons      (int n);
@@ -572,6 +697,7 @@ public:
   Int_t   NJetsIDLoose40;
   Int_t   NJetsIDLoose50;
   Int_t   NBJets;
+  Int_t   NBJetsHE;
   Int_t   NEles;
   Int_t   NMuons;
   Int_t   NPhotons;
@@ -589,6 +715,7 @@ public:
   MT2Jet         jet[m_jetSize];
   MT2GenJet      genjet[m_genjetSize];
   MT2Hemi        hemi[m_hemiSize];
+  MT2Tau         tau[m_tauSize];
   MT2Elec        ele[m_eleSize];
   MT2Muon        muo[m_muoSize];
   MT2Photon      photon[m_phoSize];

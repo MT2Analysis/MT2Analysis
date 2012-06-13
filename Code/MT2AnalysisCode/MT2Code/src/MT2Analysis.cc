@@ -372,7 +372,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 
 	// --------------------------------------------------------------
 	// match taus to jets
-	for(int i=0; i<fTaus.size(); ++i){
+/*	for(int i=0; i<fTaus.size(); ++i){
 		TLorentzVector tau;
 		tau.SetPxPyPzE(fTR->PfTau3Px[fTaus[i]],fTR->PfTau3Py[fTaus[i]],fTR->PfTau3Pz[fTaus[i]],fTR->PfTau3E[fTaus[i]]);
 		float mindR =10000; int jindex =-1;
@@ -387,6 +387,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->jet[jindex].TauDR      = mindR;
 		fMT2tree->jet[jindex].TauDPt     = fMT2tree->jet[jindex].lv.Pt()-tau.Pt();
 	}
+*/	
 
 	// -----------------------------------------------------------------
 	// Photons
@@ -463,7 +464,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	  	fMT2tree->ele[i].lv.SetPtEtaPhiE(fTR->ElPt [fElecs[i]], fTR->ElEta[fElecs[i]], fTR->ElPhi[fElecs[i]], fTR->ElE  [fElecs[i]]); 
 		fMT2tree->ele[i].MT       = fMT2tree->GetMT(fMT2tree->ele[i].lv, 0., METlv, 0.); 
 		fMT2tree->ele[i].Charge   = fTR->ElCharge[fElecs[i]];
-		fMT2tree->ele[i].Iso      = EleIso(fElecs[i]);
+		fMT2tree->ele[i].Iso      = ElePFIso(fElecs[i]);
 		fMT2tree->ele[i].IDMedium = IsGoodMT2ElectronMediumID(fElecs[i]);
 		fMT2tree->ele[i].IDVeto   = IsGoodMT2ElectronVetoID(fElecs[i]);
 	}
@@ -471,11 +472,11 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	  	fMT2tree->muo[i].lv.SetPtEtaPhiM(fTR->MuPt [fMuons[i]], fTR->MuEta[fMuons[i]], fTR->MuPhi[fMuons[i]], 0.106); 
 		fMT2tree->muo[i].MT       = fMT2tree->GetMT(fMT2tree->muo[i].lv, fMT2tree->muo[i].lv.M(), METlv, 0.); 
 		fMT2tree->muo[i].Charge   = fTR->MuCharge[fMuons[i]];	
-		fMT2tree->muo[i].Iso      = MuonIso(fMuons[i]);
+		fMT2tree->muo[i].Iso      = MuPFIso(fMuons[i]);
 	}
 	
 	//cout<<"===========Taus2=================== "<<endl;
-	for(int i=0; i<fTaus.size(); ++i) {
+/*	for(int i=0; i<fTaus.size(); ++i) {
 	  	fMT2tree->tau[i].lv.SetPtEtaPhiE(fTR->PfTau3Pt [fTaus[i]], fTR->PfTau3Eta[fTaus[i]], 
 				          fTR->PfTau3Phi[fTaus[i]], fTR->PfTau3E  [fTaus[i]]); 
 		fMT2tree->tau[i].MT       = fMT2tree->GetMT(fMT2tree->tau[i].lv, 0., METlv, 0.); 
@@ -509,6 +510,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		if(fTR->PfTau3TightMuonRejection[fTaus[i]]  > 0.5)
 		fMT2tree->tau[i].MuonRej= 3;
 	}
+*/
 
 
 	// ---------------------------------------------------------------
@@ -1069,14 +1071,14 @@ void MT2Analysis::GetLeptonJetIndices(){
 
 	// Warning: taus are also contained in the jet-collection.
 	vector<float> taus;
-	for(int i=0; i< fTR->PfTau3NObjs; ++i){
-		if(std::isnan(fTR->PfTau3Pt[i])) { fIsNANObj = true; continue;} //protection against objects with NAN-Pt
-// 		if(fTR->PfTau3Pt[i]   < 20    ) continue; // note: taus go up to 2.5 in Eta
-		if(!(IsGoodTau(i)))
-		  continue;
-		fTaus.push_back(i);
-		taus.push_back(fTR->PfTau3Pt[i]);
-	}
+//	for(int i=0; i< fTR->PfTau3NObjs; ++i){
+//		if(std::isnan(fTR->PfTau3Pt[i])) { fIsNANObj = true; continue;} //protection against objects with NAN-Pt
+//// 		if(fTR->PfTau3Pt[i]   < 20    ) continue; // note: taus go up to 2.5 in Eta
+//		if(!(IsGoodTau(i)))
+//		  continue;
+//		fTaus.push_back(i);
+//		taus.push_back(fTR->PfTau3Pt[i]);
+//	}
 	fTaus          = Util::VSort(fTaus     , taus);
 
 	// Photons ---------------------------------------------------------------------------------
@@ -1386,10 +1388,10 @@ void MT2Analysis::DeadCellParser(DeadCellFilter &DeadCellFilter_, string file_){
 bool MT2Analysis::IsGoodMT2Muon(const int index){
 	// Acceptance
 	if (!(fTR->MuPt[index] > 10) )             return false;
-	if (!(fabs(fTR->MuEta[index])<2.5) )       return false;
+	if (!(fabs(fTR->MuEta[index])<2.4) )       return false;
 	// Quality cuts
 	if ( !fTR->MuIsGlobalMuon[index] )         return false;
-	if ( !fTR->MuIsPFMuon[index] )             return false;
+//	if ( !fTR->MuIsPFMuon[index] )             return false;  // optional cut 
 	// Hits
 	if ( !(fTR->MuNChi2[index] < 10) )         return false;
 	if ( !(fTR->MuNMuHits[index] > 0) )        return false;   //  muon.outerTrack()->hitPattern().numberOfValidHits()
@@ -1397,19 +1399,17 @@ bool MT2Analysis::IsGoodMT2Muon(const int index){
 	if ( !(fTR->MuNMatches[index] > 1) )       return false;   //  numberOfMatches()
 	if ( !(fTR->MuNSiLayers[index] > 5) )      return false;   //  track()->hitPattern().trackerLayersWithMeasurement() 
 	// Vertex compatibility
-	if ( !(fabs(fTR->MuD0PV[index]) < 0.02) )  return false;
-	if ( !(fabs(fTR->MuDzPV[index]) < 0.1 ) )  return false;
+	if ( !(fabs(fTR->MuD0PV[index]) < 0.2 ) )  return false;
+	if ( !(fabs(fTR->MuDzPV[index]) < 0.5 ) )  return false;
 	// Isolation
-	double Iso = (fTR->MumuonPFIsoChHad04[index] + std::max(0.0,fTR->MumuonPFIsoNHad04[index]+fTR->MumuonPFIsoPhoton04[index]-0.5*fTR->MuPfIsoR04SumPUPt[index])
-	             )/fTR->MuPt[index];
-	if ( !(Iso < 0.2) )                        return false;
+	if ( !(MuPFIso(index) < 0.2))              return false;
 
 	return true;
 }
-float MT2Analysis::MuonIso(const int index){
-	double Iso = (fTR->MumuonPFIsoChHad04[index] + std::max(0.0,fTR->MumuonPFIsoNHad04[index]+fTR->MumuonPFIsoPhoton04[index]-0.5*fTR->MuPfIsoR04SumPUPt[index])
-	             )/fTR->MuPt[index];
-	return Iso;
+float MT2Analysis::MuPFIso(const int index){
+	  double neutral = (fTR->MuPfIsoR03NeHad[index] + fTR->MuPfIsoR03Photon[index] - 0.5*fTR->MuPfIsoR03SumPUPt[index] );
+	  float iso      = (fTR->MuPfIsoR03ChHad[index] + TMath::Max(0.0, neutral) ) / fTR->MuPt[index];
+	  return iso;
 }
 
 //***************************************************************************************************
@@ -1434,14 +1434,13 @@ bool MT2Analysis::IsGoodMT2ElectronVetoID(const int index){
 	}
   
 	// Vertex
-	if(!(abs(fTR->ElD0PV[index])<0.04)) return false;
-	if(!(abs(fTR->ElDzPV[index])<0.2)) return false;
+	if(!(abs(fTR->ElD0PV[index])<0.04))                               return false;
+	if(!(abs(fTR->ElDzPV[index])<0.2))                                return false;
 
 
-	// Isolation: EffArea corrected, with cone size 03
-	// see here: https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation
-  	float pfIso = (fTR->ElPfIsoChHad03[index] + std::max((float)0.0, fTR->ElPfIsoNeHad03[index] + fTR->ElPfIsoPhoton03[index] - fTR->RhoForIso * EffArea(fabs(fTR->ElEta[index]))))/fTR->ElPt[index];
-	if ( !((pfIso  < 0.15) ) ) return false;
+	// Iso
+	float pfIso = ElePFIso(index);
+	if ( !(pfIso  < 0.15 ) )                                          return false;
 
 	return true;
 }
@@ -1480,9 +1479,7 @@ bool MT2Analysis::IsGoodMT2ElectronMediumID(const int index){
 	if(!(fabs(1/e-1/p)<0.05)) return false;
   
 
-	// Isolation: EffArea corrected, with cone size 03
-	// see here: https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation
-  	float pfIso = (fTR->ElPfIsoChHad03[index] + std::max((float)0.0, fTR->ElPfIsoNeHad03[index] + fTR->ElPfIsoPhoton03[index] - fTR->RhoForIso * EffArea(fabs(fTR->ElEta[index]))))/fTR->ElPt[index];
+  	float pfIso = ElePFIso(index);
   	if ( fabs(fTR->ElEta[index]) < 1.479 || fTR->ElPt[index]>20.0) { // Barrel
 		if ( !((pfIso  < 0.15) ) ) return false;
 	} else {
@@ -1492,9 +1489,13 @@ bool MT2Analysis::IsGoodMT2ElectronMediumID(const int index){
 	return true;
 }
 
-float MT2Analysis::EleIso(const int index){
-  	float pfIso = (fTR->ElPfIsoChHad03[index] + std::max((float)0.0, fTR->ElPfIsoNeHad03[index] + fTR->ElPfIsoPhoton03[index] - fTR->RhoForIso * EffArea(fabs(fTR->ElEta[index]))))/fTR->ElPt[index];
-	return pfIso;
+float MT2Analysis::ElePFIso(const int index){
+	// Isolation: EffArea corrected, with cone size 03
+	// see here: https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation
+	double  neutral = fTR->ElEventelPFIsoValueNeutral03PFIdStandard[index] + fTR->ElEventelPFIsoValueGamma03PFIdStandard[index];
+	double  rhocorr = fTR->RhoForIso * EffArea(fTR->ElEta[index]);
+	float   iso = ( fTR->ElEventelPFIsoValueCharged03PFIdStandard[index] + TMath::Max(0., neutral - rhocorr) )/ fTR->ElPt[index];
+	return iso;
 }
 
 const float MT2Analysis::EffArea(float abseta) {
@@ -1571,9 +1572,9 @@ bool MT2Analysis::IsGoodPhoton(int i){
 
 bool MT2Analysis::IsGoodTau(int i){
 
-       if(fTR->PfTau3Pt[i]                       < 15.0         ) return false;    
-       if(fabs(fTR->PfTau3Eta[i])                > 2.3          ) return false;
-       if(fTR->PfTau3DecayModeFinding[i]         < 0.5          ) return false;  
+//       if(fTR->PfTau3Pt[i]                       < 15.0         ) return false;    
+//       if(fabs(fTR->PfTau3Eta[i])                > 2.3          ) return false;
+//       if(fTR->PfTau3DecayModeFinding[i]         < 0.5          ) return false;  
        //if(fTR->PfTau3LooseElectronRejection[i]   < 0.5          ) return false;  
        //if(fTR->PfTau3LooseMuonRejection[i]       < 0.5          ) return false;  
        return true;

@@ -192,12 +192,12 @@ private:
 
 	//Muons 
 	bool IsGoodMT2Muon(const int index);
-	float MuonIso(const int index);
+	float MuPFIso(const int index);
 	// Electrons
 	bool IsGoodMT2ElectronVetoID(const int index);
 	bool IsGoodMT2ElectronMediumID(const int index);
 	const float EffArea(float abseta);
-	float EleIso(const int index);
+	float ElePFIso(const int index);
 
 	//pfJetID
 	bool IsGoodMT2PFJetIDLoose(int index, float ptcut, float absetacut);

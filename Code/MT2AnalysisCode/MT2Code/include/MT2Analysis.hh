@@ -48,24 +48,29 @@ public:
 	// parser
 	void ReadCuts(const char* SetofCuts);
 
-  	//  reweight::LumiReWeighting *LumiReW;
-  	bool isS3;
-  	bool noPU;
+	// PU
+  	enum PUScenario {noPU, oneD, threeD};
+	PUScenario fPUScenario;
+	void SetPUReweighting(string PU, string data_PileUp, string mc_PileUp){
+		if      (PU =="1D") {fPUScenario=oneD;   SetPileUpSrc  (data_PileUp, mc_PileUp);}
+		else if (PU =="3D") {fPUScenario=threeD; SetPileUp3DSrc(data_PileUp, mc_PileUp);}
+		else                 fPUScenario=noPU;
+	};
 
-  //create pdf weights
+ 	 //create pdf weights
         bool doPDF;
 
-  //is a susy scan?
-  bool isScan;
+  	//is a susy scan?
+  	bool isScan;
 
-  // remove Photon
-  bool fRemovePhoton;
+  	// remove Photon
+  	bool fRemovePhoton;
   
-  //Control histos
-  TH1F *fH_PUWeights, *fH_Events ;
-  TH2F *fH2_SMSEvents, *fH2_mSugraEvents;
-  //SUSY subprocess histos
-  TH2F *fH_mSugraSubProcEvents[11];
+  	//Control histos
+  	TH1F *fH_PUWeights, *fH_Events ;
+  	TH2F *fH2_SMSEvents, *fH2_mSugraEvents;
+  	//SUSY subprocess histos
+  	TH2F *fH_mSugraSubProcEvents[11];
 
 
 private:

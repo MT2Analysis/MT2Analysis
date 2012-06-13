@@ -99,14 +99,14 @@ public:
 	Int_t    PUnumInt;
 	Int_t    PUnumIntEarly;
 	Int_t    PUnumIntLate;
-	Int_t    isS3;
+	Int_t    PUScenario;
 	Float_t  PtHat;
 	Float_t  Weight;
   	Int_t    NVertices;  // good reco vertices
 	Float_t  Rho;
 
 
-	ClassDef(MT2PileUp, 4);
+	ClassDef(MT2PileUp, 5);
 };
 
 // --------------------------------

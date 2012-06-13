@@ -525,21 +525,14 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->pileUp.PUnumIntLate      = fTR->PUOOTnumInteractionsLate;   // branch added in V02-03-01 
 		fMT2tree->pileUp.PUnumIntEarly     = fTR->PUOOTnumInteractionsEarly;  // branch added in V02-03-01 
 		fMT2tree->pileUp.PtHat             = fTR->PtHat;
-		fMT2tree->pileUp.isS3              = (int) isS3;
-		//////////// S3 vs S4
-		if(noPU && isS3){
-		  fMT2tree->pileUp.Weight=GetPUWeight3D(fTR->PUOOTnumInteractionsEarly ,fTR->PUnumInteractions , fTR->PUOOTnumInteractionsLate);
-		}
-		else if(noPU)
-		  fMT2tree->pileUp.Weight            = 1;
-	        else if(isS3)
-		  fMT2tree->pileUp.Weight            = GetPUWeight(fTR->PUnumInteractions, fTR->PUOOTnumInteractionsLate); // branch added in V02-03-01 
-		else
-		  fMT2tree->pileUp.Weight            = GetPUWeight(fTR->PUnumInteractions);
-		
+		fMT2tree->pileUp.PUScenario        = (int) fPUScenario;
+
+		if       (fPUScenario==oneD  )  {fMT2tree->pileUp.Weight            = GetPUWeight(fTR->PUnumInteractions);}
+		else if  (fPUScenario==threeD)  {fMT2tree->pileUp.Weight            = GetPUWeight3D(fTR->PUOOTnumInteractionsEarly ,fTR->PUnumInteractions , fTR->PUOOTnumInteractionsLate);}
+		else if  (fPUScenario==noPU  )  {fMT2tree->pileUp.Weight            = 1;}
 		if(fVerbose > 3) {
-			cout << "fTR->PUnumInteractions " <<  fTR->PUnumInteractions << " weight "  
-		     	     << " GetPUWeight() " << GetPUWeight(fTR->PUnumInteractions) << endl; 
+			cout << "fPUScenario " << fPUScenario <<  " fTR->PUnumInteractions " <<  fTR->PUnumInteractions << " weight "  
+		     	     << " fMT2tree->pileUp.Weight "         << fMT2tree->pileUp.Weight << endl; 
 		}
 	}
 	fMT2tree->pileUp.Rho               = fTR->Rho; // ATTENTION: this rho is from KT6 PF jets without pf-CHS

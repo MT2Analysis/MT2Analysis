@@ -104,7 +104,7 @@ void MT2PileUp::Reset(){
 	PUnumInt       = -999;
 	PUnumIntEarly  = -999;
 	PUnumIntLate   = -999;
-	isS3           = -1;
+	PUScenario     = -1;
 	PtHat          = -999.99;
 	Weight         = -999.99;
 	Rho            = -999.99;

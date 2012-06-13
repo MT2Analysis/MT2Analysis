@@ -21,7 +21,7 @@ void usage( int status = 0 ) {
 	cout << "Usage: RunMT2Analyzer [-d dir] [-o filename] [-v verbose] [-j json]                  " << endl;
 	cout << "                      [-m set_of_cuts] [-n maxEvents] [-t type]                      " << endl;
 	cout << "                      [-p data_PileUp] [-P mc_PileUP]                                " << endl; 
-        cout << "                      [-s S3,noPU,3D] [-C JEC]                                          " << endl;
+        cout << "                      [-s noPU,1D,3D] [-C JEC]                                       " << endl;
 	cout << "                      [-w pdf] [-b btag]                                             " << endl;
 	cout << "                      [-r photon ] [-i ID ]                                          " << endl;
 	cout << "                      [-l] file1 [... filen]"                                          << endl;
@@ -133,10 +133,6 @@ int main(int argc, char* argv[]) {
 	if(jsonFileName.length() !=0 ){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"            +jsonFileName;}
 	if(btagFileName.length() !=0 ){btagFileName="/shome/haweber/MT2Analysis/Code/Efficiencies/"                               + btagFileName;}
 
-	if(puScenario=="3D"){ isS3=true; noPU=true; } // THIS IS A DIRTY TRICK TO TEST 3D REWEIGHT WITHOUT ADD A NEW VAR
-	if(puScenario=="S3") isS3=true;
-	else if(puScenario=="noPU") noPU=true;
-
 	std::vector<std::string> fileList;
 	for(int i = 0; i < argc; i++){
 		if( !isList ){
@@ -158,14 +154,14 @@ int main(int argc, char* argv[]) {
 	cout << "Type is:                        " << type << endl;
 	cout << "Verbose level is:               " << verbose << endl;
   	cout << "JSON file is:                   " << (jsonFileName.length()>0?jsonFileName:"empty") << endl;
+	if(!(puScenario=="1D" || puScenario == "3D" || puScenario=="noPU")) cout << "ERROR: Invalid PU option" << endl;
+	else cout << "PileUp Scenario:                " << puScenario << endl;
   	cout << "MC_PileUp file:                 " << (mc_PileUp.length()>0?mc_PileUp:"empty") << endl;
   	cout << "Data_PileUp file:               " << (data_PileUp.length()>0?data_PileUp:"empty") << endl;
   	if(btagFileName.length() !=0){
 	cout << "btag file is:                   " << (btagFileName.length()>0?btagFileName:"empty") << endl;
 	}
-	if(noPU && !isS3) cout << "WARNING: NoPU option set, all the PU weights will be set to 1" << endl;
 	cout << "Set of Cuts is:                 " << setofcuts << endl;
-//	cout << "Number of events:               " << theChain->GetEntries() << endl;
 	if(JEC.length()!=0){
 	cout << "Redo JEC with GlobalTag         " << JEC << endl;
 	}
@@ -182,8 +178,7 @@ int main(int argc, char* argv[]) {
 	tA->SetMaxEvents(maxEvents);
 	tA->SetProcessID(ID);
 	tA->SetBTagEfficiency(btagFileName);
-	tA->isS3 = isS3;
-	tA->noPU = noPU;
+	tA->SetPUReweighting(puScenario);
 	tA->isScan = isScan;
 	tA->removePhoton = removePhoton;
 	if(pdf=="pdf") tA->doPDF=true;

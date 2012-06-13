@@ -20,11 +20,11 @@ public:
 	void SetMaxEvents(int a){fMaxEvents=a;};
 	void SetProcessID(int ID){fID=ID;};
 	void SetBTagEfficiency(string btagFileName){ fbtagFileName = btagFileName;};
-  	bool isS3;
-  	bool noPU;  
+	void SetPUReweighting(string puScenario){fPu = puScenario;};
 	bool removePhoton;
         bool doPDF;
         bool isScan;
+	string fPu;
 private:
 	MT2Analysis             *fMT2Analysis;
   	int fMaxEvents;   

@@ -39,7 +39,6 @@ void MT2Misc::Reset() {
   Event		  	  = -1;	  
   LumiSection		  = -1;	  
   ProcessID               = -1; 
-  LeptConfig		  = -1;	  
   PassJetID               = -1;
   Jet0Pass                = -1;
   Jet1Pass                = -1;
@@ -122,183 +121,86 @@ MT2Trigger::~MT2Trigger(){
 
 void MT2Trigger::Reset(){
 	
-	// HT with DPhi
-	HLT_HT500_JetPt60_DPhi2p94_v1 = false;
-	HLT_HT550_JetPt60_DPhi2p94_v1 = false;
-	
-	// HT
-	HLT_HT150_v2            = false;
-	HLT_HT150_v3            = false;
-	HLT_HT160_v2            = false;
-	HLT_HT200_v2            = false;
-	HLT_HT200_v3            = false;
-	HLT_HT240_v2            = false;
-	HLT_HT250_v2            = false;
-	HLT_HT250_v3            = false;
-	HLT_HT260_v2            = false;
-	HLT_HT300_v2            = false;
-	HLT_HT300_v3            = false;
-	HLT_HT300_v4            = false;
-	HLT_HT300_v5            = false;
-	HLT_HT350_v2            = false;
-	HLT_HT350_v3            = false;
-	HLT_HT350_v4            = false;
-	HLT_HT360_v2            = false;
-	HLT_HT400_v10           = false;
-	HLT_HT400_v2            = false;
-	HLT_HT400_v3            = false;
-	HLT_HT400_v4            = false;
-	HLT_HT400_v5            = false;
-	HLT_HT400_v6            = false;
-	HLT_HT400_v7            = false;
-	HLT_HT400_v8            = false;
-	HLT_HT400_v9            = false;
-	HLT_HT440_v2            = false;
-	HLT_HT450_v10           = false;
-	HLT_HT450_v2            = false;
-	HLT_HT450_v3            = false;
-	HLT_HT450_v4            = false;
-	HLT_HT450_v5            = false;
-	HLT_HT450_v6            = false;
-	HLT_HT450_v7            = false;
-	HLT_HT450_v8            = false;
-	HLT_HT450_v9            = false;
-	HLT_HT500_v10           = false;
-	HLT_HT500_v11           = false;
-	HLT_HT500_v2            = false;
-	HLT_HT500_v3            = false;
-	HLT_HT500_v4            = false;
-	HLT_HT500_v5            = false;
-	HLT_HT500_v6            = false;
-	HLT_HT500_v7            = false;
-	HLT_HT500_v8            = false;
-	HLT_HT500_v9            = false;
-	HLT_HT550_v10           = false;
-	HLT_HT550_v11           = false;
-	HLT_HT550_v2            = false;
-	HLT_HT550_v3            = false;
-	HLT_HT550_v4            = false;
-	HLT_HT550_v5            = false;
-	HLT_HT550_v6            = false;
-	HLT_HT550_v7            = false;
-	HLT_HT550_v8            = false;
-	HLT_HT550_v9            = false;
-	HLT_HT600_v1            = false;
-	HLT_HT600_v2            = false;
-	HLT_HT600_v3            = false;
-	HLT_HT600_v4            = false;
-	HLT_HT650_v1            = false;
-	HLT_HT650_v2            = false;
-	HLT_HT650_v3            = false;
-	HLT_HT650_v4            = false;
-	HLT_HT700_v2            = false;
-	HLT_HT750_v3            = false;
-	HLT_HT750_L1FastJet_v3  = false;
-	HLT_PFHT650_v1          = false;
-	// HT_MHT
-	HLT_HT250_MHT60_v2      = false;
-	HLT_HT250_MHT60_v3      = false;
-	HLT_HT250_MHT60_v4      = false;
-	HLT_HT250_MHT60_v5      = false;
-	HLT_HT250_MHT60_v6      = false;
-	HLT_HT250_MHT70_v1      = false;
-	HLT_HT250_MHT70_v2      = false;
-	HLT_HT250_MHT70_v3      = false;
-	HLT_HT250_MHT70_v4      = false;
-	HLT_HT250_MHT90_v1      = false;
-	HLT_HT250_MHT90_v2      = false;
-	HLT_HT250_MHT100_v2     = false;
-	HLT_HT260_MHT60_v2      = false;
-	HLT_HT300_MHT75_v4      = false;
-	HLT_HT300_MHT75_v5      = false;
-	HLT_HT300_MHT75_v7      = false;
-	HLT_HT300_MHT75_v8      = false;
-	HLT_HT300_MHT80_v1      = false;
-	HLT_HT300_MHT80_v2      = false;
-	HLT_HT300_MHT90_v1      = false;
-	HLT_HT300_MHT90_v2      = false;
-	HLT_HT350_MHT70_v1      = false;
-	HLT_HT350_MHT70_v2      = false;
-	HLT_HT350_MHT80_v1      = false;
-	HLT_HT350_MHT80_v2      = false;
-	HLT_HT350_MHT90_v1      = false;
-	HLT_HT350_MHT100_v3     = false;
-	HLT_HT350_L1FastJet_MHT100_v1= false;
-	HLT_HT350_MHT110_v3     = false;
-	HLT_HT400_MHT80_v1      = false;
-	HLT_HT400_MHT90_v3      = false;
-	HLT_PFHT350_PFMHT90_v1  = false;
-	HLT_PFHT350_PFMHT100_v1 = false;
-        HLT_PFHT400_PFMHT80_v1  = false;
-        HLT_PFHT400_PFMHT90_v1  = false;
-	// Muons
-	HLT_DoubleMu3_HT160_v2  = false;
-	HLT_Mu8_Jet40_v2        = false;
-	HLT_DoubleMu3_v3        = false;
-        // **** MET Dataset ****
-        // CentralJet+MET
-        HLT_PFMHT150_v1             = false;
-        HLT_PFMHT150_v2             = false;
-        HLT_PFMHT150_v4             = false;
-        HLT_PFMHT150_v6             = false;
-        HLT_PFMHT150_v7             = false;
-        HLT_PFMHT150_v8             = false;
-        HLT_PFMHT150_v9             = false;
-        HLT_PFMHT150_v11            = false;
-        HLT_PFMHT150_v12            = false;
-        HLT_PFMHT150_v16            = false;
-        HLT_CentralJet80_MET65_v1   = false;
-        HLT_CentralJet80_MET65_v2   = false;
-        HLT_CentralJet80_MET65_v3   = false;
-        HLT_CentralJet80_MET65_v4   = false;
-        HLT_CentralJet80_MET65_v5   = false;
-        HLT_CentralJet80_MET65_v6   = false;
-        HLT_CentralJet80_MET65_v7   = false;
-        HLT_CentralJet80_MET65_v10  = false;
-        HLT_CentralJet80_MET80_v1   = false;
-        HLT_CentralJet80_MET80_v2   = false;
-        HLT_CentralJet80_MET80HF_v2 = false;
-        HLT_CentralJet80_MET80HF_v3 = false;
-        HLT_CentralJet80_MET80HF_v4 = false;
-        HLT_CentralJet80_MET80HF_v5 = false;
-        HLT_CentralJet80_MET80_v6   = false;
-        HLT_CentralJet80_MET80_v9   = false;
-        HLT_CentralJet80_MET95_v3   = false;
-        HLT_CentralJet80_MET110_v3  = false;
-        HLT_CentralJet80_MET100_v1  = false;
-        HLT_CentralJet80_MET100_v2  = false;
-        HLT_CentralJet80_MET100_v3  = false;
-        HLT_CentralJet80_MET100_v4  = false;
-        HLT_CentralJet80_MET100_v5  = false;
-        HLT_CentralJet80_MET100_v6  = false;
-        HLT_CentralJet80_MET100_v7  = false;
-        // DiCentralJet+MET
-        HLT_DiCentralJet20_MET80_v1 = false;
-        HLT_DiCentralJet20_MET80_v2 = false;
-        HLT_DiCentralJet20_MET80_v3 = false;
-        HLT_DiCentralJet20_MET80_v4 = false;
-        HLT_DiCentralJet20_MET80_v5 = false;
-        HLT_DiCentralJet20_MET80_v8 = false;
-        HLT_DiCentralJet20_BTagIP_MET65_v2  = false;
-        HLT_DiCentralJet20_BTagIP_MET65_v3  = false;
-        HLT_DiCentralJet20_BTagIP_MET65_v4  = false;
-        HLT_DiCentralJet20_BTagIP_MET65_v5  = false;
-        HLT_DiCentralJet20_BTagIP_MET65_v6  = false;
-        HLT_DiCentralJet20_BTagIP_MET65_v7  = false;
-        HLT_DiCentralJet20_BTagIP_MET65_v10 = false;
-        HLT_DiCentralJet20_BTagIP_MET65_v11 = false;
-        HLT_DiCentralJet20_MET100_HBHENoiseFiltered_v1 = false;
-        HLT_DiCentralJet20_MET100_HBHENoiseFiltered_v4 = false;
-        HLT_DiCentralPFJet30_PFMHT80_v1 = false;
-        HLT_DiCentralPFJet50_PFMHT80_v1 = false;
-        HLT_DiJet60_MET45_v1            = false;
-        HLT_DiJet60_MET45_v2            = false;
-        HLT_DiJet60_MET45_v3            = false;
-        HLT_DiJet60_MET45_v4            = false;
-        HLT_DiJet60_MET45_v5            = false;
-        HLT_DiJet60_MET45_v6            = false;
-        HLT_DiJet60_MET45_v7            = false;
-        HLT_DiJet60_MET45_v10           = false;
+	// HT/jetHT dataset
+	HLT_HT500_v1       = false;
+	HLT_HT500_v2       = false;
+	HLT_HT500_v3       = false;
+	HLT_HT550_v1       = false;
+	HLT_HT550_v2       = false;
+	HLT_HT550_v3       = false;
+	HLT_HT600_v1       = false;
+	HLT_HT600_v2       = false;
+	HLT_HT600_v3       = false;
+	HLT_HT650_v1       = false;
+	HLT_HT650_v2       = false;
+	HLT_HT650_v3       = false;
+	HLT_PFHT350_v3     = false;
+	HLT_PFHT350_v4     = false;
+	HLT_PFHT350_v5     = false;
+	HLT_PFHT350_v6     = false;
+	HLT_PFHT650_v5     = false;
+	HLT_PFHT650_v6     = false;
+	HLT_PFHT650_v7     = false;
+	HLT_PFHT650_v8     = false;
+	HLT_PFHT700_v3     = false;
+	HLT_PFHT700_v4     = false;
+	HLT_PFHT700_v5     = false;
+	HLT_PFHT700_v6     = false;
+	HLT_PFHT750_v3     = false;
+	HLT_PFHT750_v4     = false;
+	HLT_PFHT750_v5     = false;
+	HLT_PFHT750_v6     = false;
+
+	// HT/HTMHT dataset
+	HLT_PFHT350_PFMET100_v3     = false;
+	HLT_PFHT350_PFMET100_v4     = false;
+	HLT_PFHT350_PFMET100_v5     = false;
+	HLT_PFHT350_PFMET100_v6     = false;
+	HLT_PFHT450_PFMET100_v3     = false;
+	HLT_PFHT450_PFMET100_v4     = false;
+	HLT_PFHT450_PFMET100_v5     = false;
+	HLT_PFHT450_PFMET100_v6     = false;
+
+        // MET Dataset
+        HLT_MET120_v9                       = false;
+        HLT_MET120_v10                      = false;
+        HLT_MET200_v9                       = false;
+        HLT_MET200_v10                      = false;
+        HLT_MET120_HBHENoiseCleaned_v2      = false;
+        HLT_MET120_HBHENoiseCleaned_v3      = false;
+        HLT_MET120_HBHENoiseCleaned_v4      = false;
+        HLT_MET200_HBHENoiseCleaned_v2      = false;
+        HLT_MET200_HBHENoiseCleaned_v3      = false;
+        HLT_MET200_HBHENoiseCleaned_v4      = false;
+        HLT_PFMET150_v2                     = false;
+        HLT_PFMET150_v3                     = false;
+        HLT_PFMET150_v4                     = false;
+        HLT_PFMET180_v2                     = false;
+        HLT_PFMET180_v3                     = false;
+        HLT_PFMET180_v4                     = false;
+        HLT_DiCentralPFJet30_PFMHT80_v5     = false;
+        HLT_DiCentralPFJet30_PFMHT80_v6     = false;
+        HLT_DiCentralPFJet30_PFMHT80_v7     = false;
+        HLT_DiCentralPFJet50_PFMET80_v3     = false;
+        HLT_DiCentralPFJet50_PFMET80_v4     = false;
+        HLT_DiCentralPFJet50_PFMET80_v5     = false;
+        HLT_DiCentralPFJet50_PFMET80_v6     = false;
+
+        // Multijet dataset
+        HLT_DiJet80_DiJet_60_DiJet20_v1     = false;
+        HLT_DiJet80_DiJet_60_DiJet20_v2     = false;
+        HLT_QuadJet_60_DiJet20_v1           = false;
+        HLT_QuadJet_60_DiJet20_v2           = false;
+        HLT_QuadJet_50_v1                   = false;
+        HLT_QuadJet_50_v2                   = false;
+        HLT_QuadJet_70_v1                   = false;
+        HLT_QuadJet_70_v2                   = false;
+        HLT_QuadJet_80_v1                   = false;
+        HLT_QuadJet_80_v2                   = false;
+        HLT_SixJet_35_v1                    = false;
+        HLT_SixJet_35_v2                    = false;
+        HLT_SixJet_45_v1                    = false;
+        HLT_SixJet_45_v2                    = false;
 
 	// Photons
 	HLT_SinglePhotons               = false;
@@ -370,8 +272,9 @@ void MT2Jet::Reset() {
   bTagProbTCHP  = -99999.99;
   bTagProbSSVHE = -99999.99;
   bTagProbSSVHP = -99999.99;
+  bTagProbJProb = -99999.99;
+  bTagProbCSV   = -99999.99;
 
-  isPATPFIDLoose= 0; // PAT PFJetIDLoose regardless of eta and pt
   isPFIDLoose   = 0;
   isPFIDMedium  = 0;
   isPFIDTight   = 0;
@@ -379,6 +282,7 @@ void MT2Jet::Reset() {
   NeuHadFrac    = -99999.99; 
   ChEmFrac      = -99999.99;
   NeuEmFrac     = -99999.99; 
+  ChMuFrac      = -99999.99; 
   ChMult        = -1; 
   NeuMult       = -1; 
   NConstituents = -1;
@@ -389,8 +293,7 @@ void MT2Jet::Reset() {
 
   Flavour       = -9999;
   
-//   isTauMatch    = 0;  // tell you if the jet is matched to a tau.
-  isTauMatch    = -1;  // tell you if the jet is matched to a tau. -1 not matched, >= 0 gives the tau index in the tau collection
+  isTauMatch    = 0;  // tell you if the jet is matched to a tau.
   TauDR         = -99999.99;
   TauDPt        = -99999.99;
   NTauMatch     = 0;
@@ -409,15 +312,13 @@ Bool_t MT2Jet::IsGoodPFJet(float minJPt, float maxJEta, int PFJID) {
   
   switch (PFJID) {
   case 3:               // TIGHT
-    if ( !(NeuEmFrac     < 0.90) ) return false;
-    if ( !(NeuHadFrac    < 0.90) ) return false;
-    // break;   // No break: medium contains tight -> check common cuts
+    if ( ! isPFIDTight     )    return false; // tight PF-jet ID 
+    // break;   // No break: medium contains tight
   case 2:               // MEDIUM
-    if ( !(NeuEmFrac     < 0.95) ) return false;
-    if ( !(NeuHadFrac    < 0.95) ) return false;
-    // break;   // No break: loose contains medium -> check common cuts
+    if ( ! isPFIDMedium     )   return false; // medium PF-jet ID
+    // break;   // No break: loose contains medium 
   case 1:               // LOOSE
-    if ( ! isPATPFIDLoose     )    return false; // loose PF-jet ID from PAT
+    if ( ! isPFIDLoose     )    return false; // loose PF-jet ID f
     break;
   default:
     // None of the above. Do we want any default cut?
@@ -505,8 +406,6 @@ void MT2GenLept::Reset(){
   GMID        = -999;
   GMStatus    = -999;
   MT          = -9999.99;
-  CAJ_n90     = -9999.99;
-  CAJ_n90Hits = -9999.99;
 }
 
 // MT2Muon -----------------------------------
@@ -522,8 +421,6 @@ void MT2Muon::Reset() {
   MT            = -9999.99;
   Iso           = -9999.99;
   Charge        = -999;
-  NMatches      = -999;
-  PtErr         = -999.99;
 }
 
 void MT2Muon::SetLV(const TLorentzVector v) {
@@ -560,32 +457,6 @@ void MT2Photon::SetLV(const TLorentzVector v) {
   lv = v;
 }
 
-//MT2Tau ----------------------------------
-MT2Tau::MT2Tau(){
-  Reset();
-}
-
-MT2Tau::~MT2Tau(){
-}
-
-void MT2Tau::Reset(){
-  lv.SetPxPyPzE(0, 0, 0, 0);
-  MT            = -9999.99;
-  Charge        = -9999;
-  JetPt         = -9999.99;
-  JetEta        = -9999.99;
-  JetPhi        = -9999.99;
-  JetMass       = -9999.99;
-  Isolation     = -9999;
-  ElectronRej   = -9999;
-  MuonRej       = -9999;
-}
-
-void MT2Tau::SetLV(const TLorentzVector v) {
-  lv = v;
-}
-
-
 // MT2Elec -----------------------------------
 MT2Elec::MT2Elec(){
   Reset();
@@ -599,10 +470,8 @@ void MT2Elec::Reset() {
   MT            = -9999.99;
   Iso           = -9999.99;
   Charge        = -999;
-  ID95          = -999;
-  ID90          = -999;
-  CAJ_n90       = -999;
-  CAJ_n90Hits   = -999;
+  IDMedium      = -999;
+  IDVeto        = -999;
 }
 
 void MT2Elec::SetLV(const TLorentzVector v) {
@@ -682,10 +551,6 @@ void MT2tree::SetNJetsIDLoose(int n) {
 
 void MT2tree::SetNBJets(int n) {
   NBJets = n;
-}
-
-void MT2tree::SetNBJetsHE(int n) {
-  NBJetsHE = n;
 }
 
 void MT2tree::SetNEles(int n) {
@@ -2305,7 +2170,7 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	logStream << "********************************************************************************************* " << endl;
 	logStream << "Event " << misc.Event   << " Lumi " << misc.LumiSection << " run " <<  misc.Run                 << endl;
 	logStream << "  NJetsIDLoose (pT > 20, |eta| < 2.4, Pf-JID) " << NJetsIDLoose                                 << endl;
-	logStream << "  NEles " << NEles  << ", NMuons "<< NMuons << ", NTaus "<<NTaus                                << endl;
+	logStream << "  NEles " << NEles  << ", NMuons "<< NMuons                                                     << endl;
 	logStream << "  NVertices " << pileUp.NVertices                                                               << endl;
         logStream << "  pf-HT " << misc.HT << ", caloHT50_ID " << misc.caloHT50_ID                                    << endl;
 	logStream << "  pf-MET Pt:" << misc.MET << " Phi " << pfmet[0].Phi() << " Px " << pfmet[0].Px() << " Py " << pfmet[0].Py() << endl;
@@ -2327,16 +2192,9 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	logStream << "  jet " << i << ":\n"
 	     << "   pt " << jet[i].lv.Pt() << ", eta " << jet[i].lv.Eta() << ", phi " <<   jet[i].lv.Phi() << ", E " << jet[i].lv.E() << ", Mass " << jet[i].lv.M() << "\n"	
 	     << "   px " << jet[i].lv.Px() << ", py "  << jet[i].lv.Py()  << ", pz "  <<   jet[i].lv.Pz() << "\n"
-// 	     << "   JID " << jet[i].isPATPFIDLoose << ", isTau " << jet[i].isTauMatch    << " Flavour " << jet[i].Flavour <<"\n"
-		  << "   JID " << jet[i].isPATPFIDLoose <<endl;
-	if(jet[i].isTauMatch < 0)
-	  logStream <<", is not a Tau "<<endl;
-	else
-	  logStream <<", is Matched to Tau Number "<<  jet[i].isTauMatch <<endl;   
-         
-	logStream << " Flavour " << jet[i].Flavour <<"\n"
+	     << "   JID " << jet[i].isPFIDLoose << ", isTau " << jet[i].isTauMatch    << " Flavour " << jet[i].Flavour <<"\n"
 	     << "   CHF " << jet[i].ChHadFrac << ", NHF " << jet[i].NeuHadFrac << ", CEF " << jet[i].ChEmFrac 
-	                  << ", NEF " << jet[i].NeuEmFrac << ", NConstituents " << jet[i].NConstituents  
+	                  << ", NEF " << jet[i].NeuEmFrac << ", ChMuFrac " << jet[i].ChMuFrac << ", NConstituents " << jet[i].NConstituents  
 	                  << ", Ch Mult " << jet[i].ChMult << ", Neu Mul " << jet[i].NeuMult << "\n"
 	     << "   isBtag SSVHP: " << (jet[i].IsBJet(3)? "true (":"false (") << jet[i].bTagProbSSVHP 
 	     << "), isBtag SSVHE: " << (jet[i].IsBJet(2)? "true (":"false (") << jet[i].bTagProbSSVHE << ")\n"
@@ -2370,7 +2228,6 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	logStream << "    Px " << ele[i].lv.Px() << "  Py " << ele[i].lv.Py()  << "  Pz " << ele[i].lv.Pz()             << endl;
 	logStream << "    Isolation " << ele[i].Iso                                                                     << endl;
 	logStream << "    Charge    " << ele[i].Charge                                                                  << endl;
-	logStream << "    VBTF ID 95 " << ele[i].ID95  << ", ID90 " << ele[i].ID90                                      << endl;
 	logStream << "    transverse Mass with MET " << ele[i].MT                                                       << endl; 
 	     e += ele[i].lv.E(); px += ele[i].lv.Px(); py += ele[i].lv.Py(); pz += ele[i].lv.Pz(); 
 	}
@@ -2468,25 +2325,7 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	}
 	}
 	}
-	if(NTaus >0){
-	  logStream << " Taus Info -----------------------------------------------------------------------------------"   << endl;
-	  for (int i=0; i<NTaus; ++i){
-	logStream << "   Tau " << i << ":\n";
-	logStream << "    Pt " << tau[i].lv.Pt() << " Eta " <<tau[i].lv.Eta() << " Phi " << tau[i].lv.Phi() << " E " << tau[i].lv.E() << endl;
-	logStream << "    Charge    " << tau[i].Charge                                                                   << endl;
-	logStream << "    transverse Mass with MET " << tau[i].MT                                                        << endl; 
-	}
-	  if(NTaus>1){
-	    logStream << "   Tau-Tau combinations -----------------------------------------------------------------------"   << endl;
-	    for(int i=0; i<NTaus; ++i){
-	      for(int j=i+1; j<NTaus; ++j){
-		TLorentzVector pj=tau[i].lv +tau[j].lv;
-		logStream << "     Tau  " << i << " and Tau " << j << ": Pt " << pj.Pt() << " Px " << pj.Px() << " Py " << pj.Py() << " Pz " << pj.Pz()
-			  << " Eta " << pj.Eta() << " Phi " << pj.Phi() << " E " << pj.E() << " M " << pj.M() << endl;	
-	}
-	}
-	}
-	}
+
 	logStream << " MT2 Info ---------------------------------------------------------------------------------------" << endl;
 	logStream << "  MT2 " << misc.MT2  << " simple MT2 (sqrt{pt1*pt2*(1+cos phi)}) " << SimpleMT2(true, 1) << " UTM " << hemi[0].UTM.Pt()         << endl;
 	logStream << "  MET " << misc.MET  << " HT " << misc.HT << " SqrtSmin " << GetSqrtS(0,true,1,20,2.4,1)          << endl; 
@@ -2615,7 +2454,6 @@ ClassImp(MT2Znunu)
 ClassImp(MT2PileUp)
 ClassImp(MT2Trigger)
 ClassImp(MT2Jet)
-ClassImp(MT2Tau)
 ClassImp(MT2Elec)
 ClassImp(MT2Muon)
 ClassImp(MT2Photon)

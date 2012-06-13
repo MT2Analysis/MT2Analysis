@@ -186,6 +186,10 @@ private:
 	bool IsGoodPhotonEGMTightISO(int index);
 	bool IsGoodPhotonEGMTightID(int index);
 	bool IsGoodPhoton(int index);
+
+        //Taus
+        bool IsGoodTau(int index);
+
 	//Muons 
 	bool IsGoodMT2Muon(const int index);
 	float MuonIso(const int index);

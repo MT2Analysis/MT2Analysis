@@ -5,7 +5,7 @@
 #include "TLorentzVector.h"
 #include "TVector3.h"
 
-enum {m_jetSize = 25, m_genjetSize = 20, m_eleSize = 5, m_muoSize = 5, m_phoSize = 5, m_genleptSize=20, m_hemiSize=2};
+enum {m_jetSize = 25, m_genjetSize = 20,  m_tauSize = 10, m_eleSize = 5, m_muoSize = 5, m_phoSize = 5, m_genleptSize=20, m_hemiSize=2};
 
 
 
@@ -295,7 +295,8 @@ public:
 
   Int_t   Flavour;   // JetFlavour for MC
   
-  Bool_t  isTauMatch; // tells you if pf-jet is matched to a tau
+  //  Bool_t  isTauMatch; // tells you if pf-jet is matched to a tau
+  Int_t  isTauMatch; // tells you if pf-jet is matched to a tau, >= 0 gives the tau index in the tau collection, -1 not matched
   Float_t TauDR;
   Float_t TauDPt;
   Int_t   NTauMatch;
@@ -351,6 +352,29 @@ public:
   ClassDef(MT2Hemi, 6)
 };
 
+// MT2Tau  ----------------------------------
+class MT2Tau : public TObject {
+
+public:
+  MT2Tau();
+  virtual ~MT2Tau();
+
+  void Reset();
+  void SetLV(const TLorentzVector v);
+
+  TLorentzVector lv;
+
+  Float_t  MT;
+  Int_t    Charge;
+  Float_t  JetPt;
+  Float_t  JetEta;
+  Float_t  JetPhi;
+  Float_t  JetMass;
+  Int_t    Isolation;
+  Int_t    ElectronRej;
+  Int_t    MuonRej;
+  ClassDef(MT2Tau, 4)
+};
 
 // MT2Elec ----------------------------------
 class MT2Elec : public TObject {
@@ -456,6 +480,7 @@ public:
   void SetNGenJets      (int n);
   void SetNJetsIDLoose  (int n);
   void SetNBJets        (int n);
+  void SetNBJetsHE      (int n);
   void SetNEles         (int n);
   void SetNMuons        (int n);
   void SetNPhotons      (int n);
@@ -572,6 +597,7 @@ public:
   Int_t   NJetsIDLoose40;
   Int_t   NJetsIDLoose50;
   Int_t   NBJets;
+  Int_t   NBJetsHE;
   Int_t   NEles;
   Int_t   NMuons;
   Int_t   NPhotons;
@@ -589,6 +615,7 @@ public:
   MT2Jet         jet[m_jetSize];
   MT2GenJet      genjet[m_genjetSize];
   MT2Hemi        hemi[m_hemiSize];
+  MT2Tau         tau[m_tauSize];
   MT2Elec        ele[m_eleSize];
   MT2Muon        muo[m_muoSize];
   MT2Photon      photon[m_phoSize];

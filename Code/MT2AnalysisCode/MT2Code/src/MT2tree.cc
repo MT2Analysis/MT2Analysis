@@ -293,7 +293,8 @@ void MT2Jet::Reset() {
 
   Flavour       = -9999;
   
-  isTauMatch    = 0;  // tell you if the jet is matched to a tau.
+  //  isTauMatch    = 0;  // tell you if the jet is matched to a tau.
+  isTauMatch    = -1;  // tell you if the jet is matched to a tau. -1 not matched, >= 0 gives the tau index in the tau collection
   TauDR         = -99999.99;
   TauDPt        = -99999.99;
   NTauMatch     = 0;
@@ -457,6 +458,33 @@ void MT2Photon::SetLV(const TLorentzVector v) {
   lv = v;
 }
 
+//MT2Tau ----------------------------------
+MT2Tau::MT2Tau(){
+  Reset();
+}
+
+MT2Tau::~MT2Tau(){
+}
+
+void MT2Tau::Reset(){
+  lv.SetPxPyPzE(0, 0, 0, 0);
+  MT            = -9999.99;
+  Charge        = -9999;
+  JetPt         = -9999.99;
+  JetEta        = -9999.99;
+  JetPhi        = -9999.99;
+  JetMass       = -9999.99;
+  Isolation     = -9999;
+  ElectronRej   = -9999;
+  MuonRej       = -9999;
+}
+
+void MT2Tau::SetLV(const TLorentzVector v) {
+  lv = v;
+}
+
+
+
 // MT2Elec -----------------------------------
 MT2Elec::MT2Elec(){
   Reset();
@@ -551,6 +579,10 @@ void MT2tree::SetNJetsIDLoose(int n) {
 
 void MT2tree::SetNBJets(int n) {
   NBJets = n;
+}
+
+void MT2tree::SetNBJetsHE(int n) {
+  NBJetsHE = n;
 }
 
 void MT2tree::SetNEles(int n) {
@@ -2170,7 +2202,7 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	logStream << "********************************************************************************************* " << endl;
 	logStream << "Event " << misc.Event   << " Lumi " << misc.LumiSection << " run " <<  misc.Run                 << endl;
 	logStream << "  NJetsIDLoose (pT > 20, |eta| < 2.4, Pf-JID) " << NJetsIDLoose                                 << endl;
-	logStream << "  NEles " << NEles  << ", NMuons "<< NMuons                                                     << endl;
+	logStream << "  NEles " << NEles  << ", NMuons "<< NMuons << ", NTaus "<<NTaus                                << endl;
 	logStream << "  NVertices " << pileUp.NVertices                                                               << endl;
         logStream << "  pf-HT " << misc.HT << ", caloHT50_ID " << misc.caloHT50_ID                                    << endl;
 	logStream << "  pf-MET Pt:" << misc.MET << " Phi " << pfmet[0].Phi() << " Px " << pfmet[0].Px() << " Py " << pfmet[0].Py() << endl;
@@ -2192,7 +2224,14 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	logStream << "  jet " << i << ":\n"
 	     << "   pt " << jet[i].lv.Pt() << ", eta " << jet[i].lv.Eta() << ", phi " <<   jet[i].lv.Phi() << ", E " << jet[i].lv.E() << ", Mass " << jet[i].lv.M() << "\n"	
 	     << "   px " << jet[i].lv.Px() << ", py "  << jet[i].lv.Py()  << ", pz "  <<   jet[i].lv.Pz() << "\n"
-	     << "   JID " << jet[i].isPFIDLoose << ", isTau " << jet[i].isTauMatch    << " Flavour " << jet[i].Flavour <<"\n"
+//	     << "   JID " << jet[i].isPFIDLoose << ", isTau " << jet[i].isTauMatch    << " Flavour " << jet[i].Flavour <<"\n"
+	  << "   JID " << jet[i].isPFIDLoose <<endl;
+	if(jet[i].isTauMatch < 0)
+	  logStream <<", is not a Tau "<<endl;
+	else
+	  logStream <<", is Matched to Tau Number "<<  jet[i].isTauMatch <<endl;   
+         
+	logStream << " Flavour " << jet[i].Flavour <<"\n"
 	     << "   CHF " << jet[i].ChHadFrac << ", NHF " << jet[i].NeuHadFrac << ", CEF " << jet[i].ChEmFrac 
 	                  << ", NEF " << jet[i].NeuEmFrac << ", ChMuFrac " << jet[i].ChMuFrac << ", NConstituents " << jet[i].NConstituents  
 	                  << ", Ch Mult " << jet[i].ChMult << ", Neu Mul " << jet[i].NeuMult << "\n"
@@ -2321,6 +2360,25 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	TLorentzVector pj = muo[i].lv + jet[j].lv + pfmet[0];
 	logStream << "    Muon " << i << " and jet " << j << " and pfmet: Pt " << pj.Pt() << " Px " << pj.Px() << " Py " << pj.Py() << " Pz " << pj.Pz()
 		  << " Eta " << pj.Eta() << " Phi " << pj.Phi() << " E " << pj.E() << " M " << pj.M() << endl;	
+	}
+	}
+	}
+	}
+	if(NTaus >0){
+	  logStream << " Taus Info -----------------------------------------------------------------------------------"   << endl;
+	  for (int i=0; i<NTaus; ++i){
+	logStream << "   Tau " << i << ":\n";
+	logStream << "    Pt " << tau[i].lv.Pt() << " Eta " <<tau[i].lv.Eta() << " Phi " << tau[i].lv.Phi() << " E " << tau[i].lv.E() << endl;
+	logStream << "    Charge    " << tau[i].Charge                                                                   << endl;
+	logStream << "    transverse Mass with MET " << tau[i].MT                                                        << endl; 
+	}
+	  if(NTaus>1){
+	    logStream << "   Tau-Tau combinations -----------------------------------------------------------------------"   << endl;
+	    for(int i=0; i<NTaus; ++i){
+	      for(int j=i+1; j<NTaus; ++j){
+		TLorentzVector pj=tau[i].lv +tau[j].lv;
+		logStream << "     Tau  " << i << " and Tau " << j << ": Pt " << pj.Pt() << " Px " << pj.Px() << " Py " << pj.Py() << " Pz " << pj.Pz()
+			  << " Eta " << pj.Eta() << " Phi " << pj.Phi() << " E " << pj.E() << " M " << pj.M() << endl;	
 	}
 	}
 	}
@@ -2454,6 +2512,7 @@ ClassImp(MT2Znunu)
 ClassImp(MT2PileUp)
 ClassImp(MT2Trigger)
 ClassImp(MT2Jet)
+ClassImp(MT2Tau)
 ClassImp(MT2Elec)
 ClassImp(MT2Muon)
 ClassImp(MT2Photon)

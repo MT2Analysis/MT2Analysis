@@ -5,7 +5,7 @@
 #include "TLorentzVector.h"
 #include "TVector3.h"
 
-enum {m_jetSize = 25, m_genjetSize = 20,  m_tauSize = 10, m_eleSize = 5, m_muoSize = 5, m_phoSize = 5, m_genleptSize=20, m_hemiSize=2};
+enum {m_jetSize = 25, m_genjetSize = 20,  m_tauSize = 20, m_eleSize = 5, m_muoSize = 5, m_phoSize = 5, m_genleptSize=20, m_hemiSize=2};
 
 
 

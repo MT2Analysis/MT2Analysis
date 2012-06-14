@@ -282,7 +282,7 @@ void MT2Analysis::FillTree(){
 bool MT2Analysis::FillMT2TreeBasics(){
 	// check size of jets electrons muons and genleptons
 	if(fJets.size()     > 25) {cout << "ERROR: fJets.size()   > 25: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
-	if(fTaus.size()     > 10) {cout << "ERROR: fTaus.size()   > 10: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(fTaus.size()     > 20) {cout << "ERROR: fTaus.size()   > 20: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
 	if(fElecs.size()    > 5 ) {cout << "ERROR: fElecs.size()  >  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
 	if(fMuons.size()    > 5 ) {cout << "ERROR: fMuons.size()  >  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
 	if(fPhotons.size()  > 5 ) {cout << "ERROR: fPhotons.size()>  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
@@ -372,9 +372,9 @@ bool MT2Analysis::FillMT2TreeBasics(){
 
 	// --------------------------------------------------------------
 	// match taus to jets
-/*	for(int i=0; i<fTaus.size(); ++i){
+	for(int i=0; i<fTaus.size(); ++i){
 		TLorentzVector tau;
-		tau.SetPxPyPzE(fTR->PfTau3Px[fTaus[i]],fTR->PfTau3Py[fTaus[i]],fTR->PfTau3Pz[fTaus[i]],fTR->PfTau3E[fTaus[i]]);
+		tau.SetPxPyPzE(fTR->TauPx[fTaus[i]],fTR->TauPy[fTaus[i]],fTR->TauPz[fTaus[i]],fTR->TauE[fTaus[i]]);
 		float mindR =10000; int jindex =-1;
 		for(int j=0; j<fJets.size(); ++j){
 			float dR = tau.DeltaR(fMT2tree->jet[j].lv);
@@ -387,7 +387,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->jet[jindex].TauDR      = mindR;
 		fMT2tree->jet[jindex].TauDPt     = fMT2tree->jet[jindex].lv.Pt()-tau.Pt();
 	}
-*/	
+	
 
 	// -----------------------------------------------------------------
 	// Photons
@@ -476,41 +476,41 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	}
 	
 	//cout<<"===========Taus2=================== "<<endl;
-/*	for(int i=0; i<fTaus.size(); ++i) {
-	  	fMT2tree->tau[i].lv.SetPtEtaPhiE(fTR->PfTau3Pt [fTaus[i]], fTR->PfTau3Eta[fTaus[i]], 
-				          fTR->PfTau3Phi[fTaus[i]], fTR->PfTau3E  [fTaus[i]]); 
+	for(int i=0; i<fTaus.size(); ++i) {
+	  	fMT2tree->tau[i].lv.SetPtEtaPhiE(fTR->TauPt [fTaus[i]], fTR->TauEta[fTaus[i]], 
+				          fTR->TauPhi[fTaus[i]], fTR->TauE  [fTaus[i]]); 
 		fMT2tree->tau[i].MT       = fMT2tree->GetMT(fMT2tree->tau[i].lv, 0., METlv, 0.); 
-		fMT2tree->tau[i].Charge   = fTR->PfTau3Charge[fTaus[i]];
-		fMT2tree->tau[i].JetPt    = fTR->PfTau3JetPt[fTaus[i]];
-		fMT2tree->tau[i].JetEta   = fTR->PfTau3JetEta[fTaus[i]];
-		fMT2tree->tau[i].JetPhi   = fTR->PfTau3JetPhi[fTaus[i]];
-		fMT2tree->tau[i].JetMass  = fTR->PfTau3JetMass[fTaus[i]];
+		fMT2tree->tau[i].Charge   = fTR->TauCharge[fTaus[i]];
+		fMT2tree->tau[i].JetPt    = fTR->TauJetPt[fTaus[i]];
+		fMT2tree->tau[i].JetEta   = fTR->TauJetEta[fTaus[i]];
+		fMT2tree->tau[i].JetPhi   = fTR->TauJetPhi[fTaus[i]];
+		fMT2tree->tau[i].JetMass  = fTR->TauJetMass[fTaus[i]];
 
 		fMT2tree->tau[i].Isolation= 0;
-		if(fTR->PfTau3VLooseCombinedIsoDBSumPtCorr[fTaus[i]] > 0.5)
+		if(fTR->TauVLooseCombinedIsoDBSumPtCorr[fTaus[i]] > 0.5)
 		  fMT2tree->tau[i].Isolation = 1;
-		if(fTR->PfTau3LooseCombinedIsoDBSumPtCorr[fTaus[i]] > 0.5)
+		if(fTR->TauLooseCombinedIsoDBSumPtCorr[fTaus[i]] > 0.5)
 		  fMT2tree->tau[i].Isolation = 2;
-		if(fTR->PfTau3MediumCombinedIsoDBSumPtCorr[fTaus[i]] > 0.5)
+		if(fTR->TauMediumCombinedIsoDBSumPtCorr[fTaus[i]] > 0.5)
 		  fMT2tree->tau[i].Isolation = 3;
-		if(fTR->PfTau3TightCombinedIsoDBSumPtCorr[fTaus[i]] > 0.5)
+		if(fTR->TauTightCombinedIsoDBSumPtCorr[fTaus[i]] > 0.5)
 		  fMT2tree->tau[i].Isolation = 4;
 		
 		fMT2tree->tau[i].ElectronRej= 0;
-		if(fTR->PfTau3LooseElectronRejection[fTaus[i]]  > 0.5)
+		if(fTR->TauLooseElectronRejection[fTaus[i]]  > 0.5)
 		fMT2tree->tau[i].ElectronRej= 1;
-		if(fTR->PfTau3MediumElectronRejection[fTaus[i]] > 0.5)
+		if(fTR->TauMediumElectronRejection[fTaus[i]] > 0.5)
 		fMT2tree->tau[i].ElectronRej= 2;
-		if(fTR->PfTau3TightElectronRejection[fTaus[i]]  > 0.5)
+		if(fTR->TauTightElectronRejection[fTaus[i]]  > 0.5)
 		fMT2tree->tau[i].ElectronRej= 3;
 	
 		fMT2tree->tau[i].MuonRej= 0;
-		if(fTR->PfTau3LooseMuonRejection[fTaus[i]]  > 0.5)
+		if(fTR->TauLooseMuonRejection[fTaus[i]]  > 0.5)
 		fMT2tree->tau[i].MuonRej= 1;
-		if(fTR->PfTau3TightMuonRejection[fTaus[i]]  > 0.5)
+		if(fTR->TauTightMuonRejection[fTaus[i]]  > 0.5)
 		fMT2tree->tau[i].MuonRej= 3;
 	}
-*/
+
 
 
 	// ---------------------------------------------------------------
@@ -1071,14 +1071,14 @@ void MT2Analysis::GetLeptonJetIndices(){
 
 	// Warning: taus are also contained in the jet-collection.
 	vector<float> taus;
-//	for(int i=0; i< fTR->PfTau3NObjs; ++i){
-//		if(std::isnan(fTR->PfTau3Pt[i])) { fIsNANObj = true; continue;} //protection against objects with NAN-Pt
+	for(int i=0; i< fTR->TauNObjs; ++i){
+		if(std::isnan(fTR->TauPt[i])) { fIsNANObj = true; continue;} //protection against objects with NAN-Pt
 //// 		if(fTR->PfTau3Pt[i]   < 20    ) continue; // note: taus go up to 2.5 in Eta
-//		if(!(IsGoodTau(i)))
-//		  continue;
-//		fTaus.push_back(i);
-//		taus.push_back(fTR->PfTau3Pt[i]);
-//	}
+		if(!(IsGoodTau(i)))
+		  continue;
+		fTaus.push_back(i);
+		taus.push_back(fTR->TauPt[i]);
+	}
 	fTaus          = Util::VSort(fTaus     , taus);
 
 	// Photons ---------------------------------------------------------------------------------

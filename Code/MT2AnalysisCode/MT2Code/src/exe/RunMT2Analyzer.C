@@ -21,7 +21,7 @@ void usage( int status = 0 ) {
 	cout << "Usage: RunMT2Analyzer [-d dir] [-o filename] [-v verbose] [-j json]                  " << endl;
 	cout << "                      [-m set_of_cuts] [-n maxEvents] [-t type]                      " << endl;
 	cout << "                      [-p data_PileUp] [-P mc_PileUP]                                " << endl; 
-        cout << "                      [-s noPU,1D,3D] [-C JEC]                                       " << endl;
+        cout << "                      [-s noPU,MC2012] [-C JEC]                                       " << endl;
 	cout << "                      [-w pdf] [-b btag]                                             " << endl;
 	cout << "                      [-r photon ] [-i ID ]                                          " << endl;
 	cout << "                      [-l] file1 [... filen]"                                          << endl;
@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
 	TString outputdir = "TempOutput/";
 	TString filename  = "MassTree.root";
 	TString setofcuts = "default";
-	string  puScenario = "";
+	string  puScenario = "noPU";
   	string  jsonFileName = "";
 	string  data_PileUp = "";
 	string  mc_PileUp = "";
@@ -73,8 +73,6 @@ int main(int argc, char* argv[]) {
 	int verbose  = 0;
 	int maxEvents=-1;
 	int ID       =-1;
-	bool isS3    = false;
-	bool noPU    = false;
     	bool removePhoton = false;
 	string photon = "";
 	string pdf = "";
@@ -120,11 +118,9 @@ int main(int argc, char* argv[]) {
 	else if (type=="scan"  ) isScan =true;
 	else    usage(-1);
 	if      (photon == "photon") removePhoton=true;
-	if      (!isData && data_PileUp.length()==0  ) {
-		cout << "                        WARNING: need data_PileUp to run on MC " << endl;
-	}
-	if      ( isData && (data_PileUp.length() >0 || mc_PileUp.length() >0)  ) {
-		cout << "ERROR: you are running on data, no reweighting needed... " << endl; exit(-1);
+	if      (type=="data" && puScenario!="noPU"){ cout << "ERROR: this is data. don't run PUreweighting" << endl; exit(-1);}
+	if      (type=="mc"   && (data_PileUp.length()==0 || mc_PileUp.length()==0) && puScenario!="noPU") {
+		cout << "ERROR: need puScenario" << puScenario << " required input files."  << endl; exit(-1);
 	}
 
 	setofcuts   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/MT2_cuts/"+setofcuts+".dat";
@@ -149,15 +145,15 @@ int main(int argc, char* argv[]) {
 	  	}
 	}
 
+
 	cout << "--------------" << endl;
 	cout << "OutputDir is:                   " << outputdir << endl;
 	cout << "Type is:                        " << type << endl;
 	cout << "Verbose level is:               " << verbose << endl;
   	cout << "JSON file is:                   " << (jsonFileName.length()>0?jsonFileName:"empty") << endl;
-	if(!(puScenario=="1D" || puScenario == "3D" || puScenario=="noPU")) cout << "ERROR: Invalid PU option" << endl;
-	else cout << "PileUp Scenario:                " << puScenario << endl;
   	cout << "MC_PileUp file:                 " << (mc_PileUp.length()>0?mc_PileUp:"empty") << endl;
   	cout << "Data_PileUp file:               " << (data_PileUp.length()>0?data_PileUp:"empty") << endl;
+	cout << "PileUp Scenario:                " << puScenario << endl;
   	if(btagFileName.length() !=0){
 	cout << "btag file is:                   " << (btagFileName.length()>0?btagFileName:"empty") << endl;
 	}

@@ -49,12 +49,11 @@ public:
 	void ReadCuts(const char* SetofCuts);
 
 	// PU
-  	enum PUScenario {noPU, oneD, threeD};
+  	enum PUScenario {noPU, MC2012};
 	PUScenario fPUScenario;
 	void SetPUReweighting(string PU, string data_PileUp, string mc_PileUp){
-		if      (PU =="1D") {fPUScenario=oneD;   SetPileUpSrc  (data_PileUp, mc_PileUp);}
-		else if (PU =="3D") {fPUScenario=threeD; SetPileUp3DSrc(data_PileUp, mc_PileUp);}
-		else                 fPUScenario=noPU;
+		if      (PU =="MC2012") {fPUScenario=MC2012;   SetPileUpSrc  (data_PileUp, mc_PileUp);}
+		else                     fPUScenario=noPU;
 	};
 
  	 //create pdf weights

@@ -1852,7 +1852,6 @@ deps: $(SRCS)
 ../TESCO/src/base/UserAnalysisBase.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw/CMSSW_5_2_5/src/CondFormats/JetMETObjects/interface/JetCorrectorParameters.h
 ../TESCO/src/base/UserAnalysisBase.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw/CMSSW_5_2_5/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 ../TESCO/src/base/UserAnalysisBase.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw/CMSSW_5_2_5/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
-../TESCO/src/base/UserAnalysisBase.o: ../TESCO/include/helper/Lumi3DReWeighting_standalone.hh
 ../TESCO/src/base/UserAnalysisBase.o: ../TESCO/include/base/UserAnalysisBase.hh
 ../TESCO/src/base/UserAnalysisBase.o: ../TESCO/include/helper/Utilities.hh
 ../TESCO/src/base/UserAnalysisBase.o: /usr/include/stdio.h
@@ -1863,7 +1862,7 @@ deps: $(SRCS)
 ../TESCO/src/base/UserAnalysisBase.o: /usr/include/gconv.h
 ../TESCO/src/base/UserAnalysisBase.o: /usr/include/bits/stdio_lim.h
 ../TESCO/src/base/UserAnalysisBase.o: /usr/include/bits/sys_errlist.h
-../TESCO/src/base/UserAnalysisBase.o: ../TESCO/include/helper/PUWeight.h
+../TESCO/src/base/UserAnalysisBase.o: ../TESCO/include/helper/LumiReweightingStandAlone.h
 ../TESCO/src/base/UserAnalysisBase.o: ../TESCO/include/base/TreeReader.hh
 src/MT2tree.o: ./include/MT2tree.hh ../TESCO/include/helper/Davismt2.h
 src/MT2tree.o: /usr/include/math.h /usr/include/features.h
@@ -1904,8 +1903,7 @@ src/MT2Analysis.o: /usr/include/bits/pthreadtypes.h /usr/include/alloca.h
 src/MT2Analysis.o: ./include/MT2Analysis.hh
 src/MT2Analysis.o: ../TESCO/include/base/UserAnalysisBase.hh
 src/MT2Analysis.o: ../TESCO/include/helper/pdgparticle.hh
-src/MT2Analysis.o: ../TESCO/include/helper/PUWeight.h
-src/MT2Analysis.o: ../TESCO/include/helper/Lumi3DReWeighting_standalone.hh
+src/MT2Analysis.o: ../TESCO/include/helper/LumiReweightingStandAlone.h
 src/MT2Analysis.o: ../TESCO/include/base/TreeReader.hh
 src/MT2Analysis.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw/CMSSW_5_2_5/src/DataFormats/FWLite/interface/Handle.h
 src/MT2Analysis.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw/CMSSW_5_2_5/src/DataFormats/FWLite/interface/EventBase.h
@@ -2839,8 +2837,7 @@ src/MT2Analyzer.o: ../TESCO/include/base/TreeReader.hh
 src/MT2Analyzer.o: ./include/MT2Analysis.hh
 src/MT2Analyzer.o: ../TESCO/include/base/UserAnalysisBase.hh
 src/MT2Analyzer.o: ../TESCO/include/helper/pdgparticle.hh
-src/MT2Analyzer.o: ../TESCO/include/helper/PUWeight.h
-src/MT2Analyzer.o: ../TESCO/include/helper/Lumi3DReWeighting_standalone.hh
+src/MT2Analyzer.o: ../TESCO/include/helper/LumiReweightingStandAlone.h
 src/MT2Analyzer.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw/CMSSW_5_2_5/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
 src/MT2Analyzer.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw/CMSSW_5_2_5/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 src/MT2Analyzer.o: ../TESCO/include/helper/Davismt2.h /usr/include/math.h
@@ -3314,8 +3311,7 @@ src/QuickAnalysis.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw/CMSSW_5_2_5/src/Da
 src/QuickAnalysis.o: ../TESCO/include/base/TreeClassBase.hh
 src/QuickAnalysis.o: ../TESCO/include/base/UserAnalysisBase.hh
 src/QuickAnalysis.o: ../TESCO/include/helper/pdgparticle.hh
-src/QuickAnalysis.o: ../TESCO/include/helper/PUWeight.h
-src/QuickAnalysis.o: ../TESCO/include/helper/Lumi3DReWeighting_standalone.hh
+src/QuickAnalysis.o: ../TESCO/include/helper/LumiReweightingStandAlone.h
 src/QuickAnalysis.o: ../TESCO/include/base/TreeReader.hh
 src/QuickAnalysis.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw/CMSSW_5_2_5/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
 src/QuickAnalysis.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw/CMSSW_5_2_5/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
@@ -3764,8 +3760,7 @@ src/QuickAnalyzer.o: ../TESCO/include/base/TreeReader.hh
 src/QuickAnalyzer.o: ./include/QuickAnalysis.hh
 src/QuickAnalyzer.o: ../TESCO/include/base/UserAnalysisBase.hh
 src/QuickAnalyzer.o: ../TESCO/include/helper/pdgparticle.hh
-src/QuickAnalyzer.o: ../TESCO/include/helper/PUWeight.h
-src/QuickAnalyzer.o: ../TESCO/include/helper/Lumi3DReWeighting_standalone.hh
+src/QuickAnalyzer.o: ../TESCO/include/helper/LumiReweightingStandAlone.h
 src/QuickAnalyzer.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw/CMSSW_5_2_5/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
 src/QuickAnalyzer.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw/CMSSW_5_2_5/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 src/MT2Shapes.o: ./include/MT2Shapes.hh ./include/MT2tree.hh

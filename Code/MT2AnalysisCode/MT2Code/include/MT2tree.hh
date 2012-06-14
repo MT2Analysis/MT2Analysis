@@ -99,6 +99,7 @@ public:
 	Int_t    PUnumInt;
 	Int_t    PUnumIntEarly;
 	Int_t    PUnumIntLate;
+	Int_t	 PUtrueNumInt;
 	Int_t    PUScenario;
 	Float_t  PtHat;
 	Float_t  Weight;
@@ -106,7 +107,7 @@ public:
 	Float_t  Rho;
 
 
-	ClassDef(MT2PileUp, 5);
+	ClassDef(MT2PileUp, 6);
 };
 
 // --------------------------------

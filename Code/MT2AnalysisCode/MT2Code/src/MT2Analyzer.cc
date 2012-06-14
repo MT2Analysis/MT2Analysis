@@ -51,10 +51,9 @@ void MT2Analyzer::Loop(){
 
 			double PUWeight = 0;
 			//PU mean weight
-			if (fPu=="3D"){
-			  	PUWeight = fMT2Analysis->GetPUWeight3D(fTR->PUOOTnumInteractionsEarly ,fTR->PUnumInteractions , fTR->PUOOTnumInteractionsLate);
-			} else if(fPu=="1D") {
-			  	PUWeight  = fMT2Analysis->GetPUWeight(fTR->PUnumInteractions);
+			if (fPu=="MC2012"){
+			  	PUWeight  = fMT2Analysis->GetPUWeight(fTR->PUnumTrueInteractions);
+				cout << "analyzer: PUWeight " << PUWeight << endl;
 			} else {
 			  	PUWeight  = 1;
 			}
@@ -90,7 +89,7 @@ void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, str
 	fMT2Analysis                    ->Begin(filename);
 
 
-	fMT2Analysis->fH_PUWeights = new TH1F("h_PUWeights",";PU weights",100,0,5);
+	fMT2Analysis->fH_PUWeights = new TH1F("h_PUWeights",";PU weights",400,0,20);
 	fMT2Analysis->fH_Events = new TH1F("h_Events",";Events",10,0,10);
 	fMT2Analysis->fH2_mSugraEvents = new TH2F("h_mSugraEvents",";m_{0};m_{1/2}",600,0,3000, 200,0,1000);
 	fMT2Analysis->fH2_SMSEvents = new TH2F("h_SMSEvents",";m_{0};m_{1/2}",500,0,2500, 500,0,2500);

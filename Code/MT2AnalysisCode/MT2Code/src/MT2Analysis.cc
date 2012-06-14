@@ -563,14 +563,14 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	// Pile UP info and reco vertices
 	if(!fisData){
 		fMT2tree->pileUp.PUnumInt          = fTR->PUnumInteractions;        
+		fMT2tree->pileUp.PUtrueNumInt      = fTR->PUnumTrueInteractions;
 		fMT2tree->pileUp.PUnumIntLate      = fTR->PUOOTnumInteractionsLate;   // branch added in V02-03-01 
 		fMT2tree->pileUp.PUnumIntEarly     = fTR->PUOOTnumInteractionsEarly;  // branch added in V02-03-01 
 		fMT2tree->pileUp.PtHat             = fTR->PtHat;
 		fMT2tree->pileUp.PUScenario        = (int) fPUScenario;
 
-		if       (fPUScenario==oneD  )  {fMT2tree->pileUp.Weight            = GetPUWeight(fTR->PUnumInteractions);}
-		else if  (fPUScenario==threeD)  {fMT2tree->pileUp.Weight            = GetPUWeight3D(fTR->PUOOTnumInteractionsEarly ,fTR->PUnumInteractions , fTR->PUOOTnumInteractionsLate);}
-		else if  (fPUScenario==noPU  )  {fMT2tree->pileUp.Weight            = 1;}
+		if       (fPUScenario==noPU  )  {fMT2tree->pileUp.Weight            = 1;}
+		else if  (fPUScenario==MC2012)  {fMT2tree->pileUp.Weight            = GetPUWeight(fTR->PUnumTrueInteractions);}
 		if(fVerbose > 3) {
 			cout << "fPUScenario " << fPUScenario <<  " fTR->PUnumInteractions " <<  fTR->PUnumInteractions << " weight "  
 		     	     << " fMT2tree->pileUp.Weight "         << fMT2tree->pileUp.Weight << endl; 

@@ -53,7 +53,6 @@ void MT2Analyzer::Loop(){
 			//PU mean weight
 			if (fPu=="MC2012"){
 			  	PUWeight  = fMT2Analysis->GetPUWeight(fTR->PUnumTrueInteractions);
-				cout << "analyzer: PUWeight " << PUWeight << endl;
 			} else {
 			  	PUWeight  = 1;
 			}

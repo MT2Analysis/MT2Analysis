@@ -191,12 +191,12 @@ public:
 		      int njets=-2, int nleps=0, TString HLT="", //njets: 2 -> njets==2, -2 -> njets>=2
 		      TString xtitle="MT2 [GeV]", const int nbins=50, const double min=0., const double max=1., 
 		      bool cleaned=false, bool logflag=true, bool composited=false, bool ratio=false, 
-		      bool stacked=true, bool overlaySUSY=false, float overlayScale = 0);
+		      bool stacked=true, bool overlaySUSY=false, float overlayScale = 0, bool add_underflow=false);
         void MakePlot(TString var="misc.PseudoJetMT2", TString cuts="misc.HBHENoiseFlag == 1", 
 		      int njets=-2, int nleps=0, TString HLT="",//njets: 2 -> njets==2, -2 -> njets>=2
 		      TString xtitle="MT2 [GeV]", const int nbins=gNMT2bins, const double *bins=gMT2bins, 
 		      bool cleaned=false, bool logflag=true, bool composited=false, bool ratio=false, 
-		      bool stacked=true, bool overlaySUSY=false, float overlayScale = 0);
+		      bool stacked=true, bool overlaySUSY=false, float overlayScale = 0, bool add_underflow=false);
         void plotSig(TString var="misc.PseudoJetMT2", TString cuts="misc.HBHENoiseFlag == 1", TString xtitle="MT2 [GeV]", 
 		     int nbins=50, double min=0., double max=1., bool cleaned=false, int type=0 ); // 0: s/sqrt(b), 1: s/sqrt(s+b), 3:s/b
   	void PrintCutFlow(int njets=-2, int nleps=0, TString trigger="", TString cuts="");
@@ -250,12 +250,12 @@ private:
 		      int njets=-2, int nleps=0, TString HLT="", //njets: 2 -> njets==2, -2 -> njets>=2
 		      TString xtitle="MT2 [GeV]", const int nbins=50, const double min=0, const double max=1, 
 		      bool cleaned=false, bool logflag=true, bool composited=false, bool ratio=false, 
-		      bool stacked=true, bool overlaySUSY=false, float overlayScale = 0);
+		      bool stacked=true, bool overlaySUSY=false, float overlayScale = 0, bool add_underflow=false);
         void MakePlot(std::vector<sample> Samples, TString var="misc.PseudoJetMT2", TString cuts="misc.HBHENoiseFlag == 1", 
 		      int njets=-2, int nleps=0, TString HLT="", //njets: 2 -> njets==2, -2 -> njets>=2
 		      TString xtitle="MT2 [GeV]", const int nbins=gNMT2bins, const double *bins=gMT2bins, 
 		      bool cleaned=false, bool logflag=true, bool composited=false, bool ratio=false, 
-		      bool stacked=true, bool overlaySUSY=false, float overlayScale = 0);
+		      bool stacked=true, bool overlaySUSY=false, float overlayScale = 0, bool add_underflow=false);
 	void printHisto(THStack* h, TString canvname, Option_t *drawopt,  bool logflag);
 	void printHisto(THStack* h, TH1* h_data, TLegend* leg,  TString canvname, Option_t *drawopt,  bool logflag, TString xtitle, TString ytitle);
         void printHisto(THStack* h, TH1* h_data, TH1* h_prediction, TLegend* leg,  TString canvname, Option_t *drawopt, bool logflag, TString xtitle, TString ytitle,int njets=-2, int nleps=0, bool stacked=true);

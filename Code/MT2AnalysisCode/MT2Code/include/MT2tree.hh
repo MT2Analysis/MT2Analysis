@@ -52,7 +52,10 @@ public:
   Float_t  QCDPartonicHT;
   Float_t  caloHT40;    
   Float_t  caloHT50;  
-  Float_t  caloHT50_ID;
+  Float_t  pfHT30;
+  Float_t  pfHT35;
+  Float_t  pfHT40;
+  Float_t  pfHT45;
   Float_t  caloMHT30;  
   Float_t  caloMHT40;  
   Float_t  TrackingFailure;
@@ -61,7 +64,7 @@ public:
   Int_t    TopDecayMode;
   Float_t  BTagWeight;
   
-  ClassDef(MT2Misc, 29)
+  ClassDef(MT2Misc, 30)
 };
 
 
@@ -201,16 +204,59 @@ public:
         Bool_t HLT_SixJet_45_v1;
         Bool_t HLT_SixJet_45_v2;
 
+        // Jet/JetMon dataset
+        Bool_t HLT_PFJet320_v3; //JetHT
+        Bool_t HLT_PFJet320_v4; //JetHT
+        Bool_t HLT_PFJet320_v5; //JetHT
+        Bool_t HLT_PFJet260_v3;
+        Bool_t HLT_PFJet260_v4;
+        Bool_t HLT_PFJet260_v5;
+        Bool_t HLT_PFJet200_v3;
+        Bool_t HLT_PFJet200_v4;
+        Bool_t HLT_PFJet200_v5;
+        Bool_t HLT_PFJet140_v3;
+        Bool_t HLT_PFJet140_v4;
+        Bool_t HLT_PFJet140_v5;
+        Bool_t HLT_DiPFJetAve200_v3;
+        Bool_t HLT_DiPFJetAve200_v4;
+        Bool_t HLT_DiPFJetAve200_v5;
+        Bool_t HLT_DiPFJetAve200_v6;
+        Bool_t HLT_DiPFJetAve140_v3;
+        Bool_t HLT_DiPFJetAve140_v4;
+        Bool_t HLT_DiPFJetAve140_v5;
+        Bool_t HLT_DiPFJetAve140_v6;
+        Bool_t HLT_DiPFJetAve80_v3;
+        Bool_t HLT_DiPFJetAve80_v4;
+        Bool_t HLT_DiPFJetAve80_v5;
+        Bool_t HLT_DiPFJetAve80_v6;
+        Bool_t HLT_DiPFJetAve40_v3;
+        Bool_t HLT_DiPFJetAve40_v4;
+        Bool_t HLT_DiPFJetAve40_v5;
+        Bool_t HLT_DiPFJetAve40_v6;
+
 	// Photon
 	Bool_t HLT_SinglePhotons;
 	Bool_t HLT_DiElectrons;
 	Bool_t HLT_DiMuons;
-	// MuHad
+	// MuHad/SingleMu
 	Bool_t HLT_MuHad;
+        Bool_t HLT_Mu40_FJHT200_v3;
+        Bool_t HLT_Mu40_FJHT200_v4;
+        Bool_t HLT_Mu40_HT200_v1;
+        Bool_t HLT_Mu40_HT200_v2;
+        Bool_t HLT_IsoMu20_eta2p1_CentralPFJet80_v3;
+        Bool_t HLT_IsoMu20_eta2p1_CentralPFJet80_v4;
+        Bool_t HLT_IsoMu20_eta2p1_CentralPFJet80_v5;
+        Bool_t HLT_IsoMu20_eta2p1_CentralPFJet80_v6;
+        Bool_t HLT_IsoMu20_eta2p1_CentralPFJet80_v7;
+        Bool_t HLT_IsoMu24_eta2p1_v11;
+        Bool_t HLT_IsoMu24_eta2p1_v12;
+        Bool_t HLT_IsoMu24_eta2p1_v13;
+        Bool_t HLT_IsoMu24_eta2p1_v14;
 	//EMu
 	Bool_t HLT_EMu;
 
-	ClassDef(MT2Trigger, 16);
+	ClassDef(MT2Trigger, 17);
 };
 
 // MT2Znunu --------------------------------

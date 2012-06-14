@@ -183,9 +183,9 @@ void MassPlotter::MakeMT2PredictionAndPlots(bool cleaned , double dPhisplit[], d
 void MassPlotter::makePlot(TString var, TString cuts, int njets, int nleps, TString HLT,  TString xtitle,
 			   const int nbins, const double min, const double max,
 			   bool flip_order, bool logflag, bool composited, bool ratio, bool stacked, 
-			   bool overlaySUSY, float overlayScale){
+			   bool overlaySUSY, float overlayScale, bool add_underflow){
 
-  MakePlot(fSamples, var, cuts, njets, nleps, HLT, xtitle, nbins, min, max, flip_order, logflag, composited, ratio, stacked, overlaySUSY, overlayScale);
+  MakePlot(fSamples, var, cuts, njets, nleps, HLT, xtitle, nbins, min, max, flip_order, logflag, composited, ratio, stacked, overlaySUSY, overlayScale, add_underflow);
   
 
 }
@@ -195,9 +195,9 @@ void MassPlotter::makePlot(TString var, TString cuts, int njets, int nleps, TStr
 void MassPlotter::MakePlot(TString var, TString cuts, int njets, int nleps, TString HLT, TString xtitle, 
 			   const int nbins,  const double *bins,
 			   bool flip_order, bool logflag, bool composited, bool ratio, bool stacked, 
-			   bool overlaySUSY, float overlayScale){
+			   bool overlaySUSY, float overlayScale, bool add_underflow){
 
-  MakePlot(fSamples, var, cuts, njets, nleps, HLT, xtitle, nbins, bins, flip_order, logflag, composited, ratio, stacked, overlaySUSY, overlayScale);
+  MakePlot(fSamples, var, cuts, njets, nleps, HLT, xtitle, nbins, bins, flip_order, logflag, composited, ratio, stacked, overlaySUSY, overlayScale, add_underflow);
 
 
 }
@@ -260,7 +260,7 @@ void MassPlotter::PrintWEfficiency(int sample_index ,TString process,  std::stri
 		// presel
 		if(fMT2tree->misc.MET                     < 30    )  continue;
 		if(fMT2tree->misc.HT                      < 300   )  continue;
-		if(fMT2tree->misc.caloHT50_ID             < 600   )  continue;
+		//if(fMT2tree->misc.caloHT50_ID             < 600   )  continue;
 		if(fMT2tree->misc.Jet0Pass                ==0     )  continue;
 		if(fMT2tree->misc.Jet1Pass                ==0     )  continue;
 //		if(fMT2tree->misc.LeadingJPt              < 150   )  continue;
@@ -476,7 +476,7 @@ void MassPlotter::PrintZllEfficiency(int sample_index , bool data, std::string l
 			if(fMT2tree->Znunu.NJetsIDLoose_matched   <3      )  continue;
 		} else if(lept == "neutrinos"){
 			if(fMT2tree->misc.HT                      <300    )  continue;
-			if(fMT2tree->misc.caloHT50_ID             <600    )  continue;
+			//if(fMT2tree->misc.caloHT50_ID             <600    )  continue;
 			if(fMT2tree->misc.Jet0Pass                ==0     )  continue;
 			if(fMT2tree->misc.Jet1Pass                ==0     )  continue;
 			if(fMT2tree->misc.SecondJPt               <100     )  continue;
@@ -643,7 +643,7 @@ void MassPlotter::PrintCutFlow(int njets, int nleps, TString trigger, TString cu
 		  && fMT2tree->trigger.HLT_PFHT650_v5 ==0 
 		  && fMT2tree->trigger.HLT_PFHT650_v6 ==0 
 		  && fMT2tree->trigger.HLT_PFHT650_v7 ==0 ) continue;
-              if( fMT2tree->misc.caloHT50_ID< 550)        continue;
+              //if( fMT2tree->misc.caloHT50_ID< 550)        continue;
               if( fMT2tree->misc.MET     < 30)  continue;
       }else if(trigger=="MHT_HT"){
       	      if( fMT2tree->misc.isData ==1 
@@ -1154,13 +1154,13 @@ void MassPlotter::CompSamples(std::vector<sample> Samples, TString var, TString 
 void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cuts, int njets, int nleps, TString HLT,
 			   TString xtitle, const int nbins, const double min, const double max,
 			   bool flip_order, bool logflag, bool composited, bool ratio, 
-			   bool stacked, bool overlaySUSY, float overlayScale){
+			   bool stacked, bool overlaySUSY, float overlayScale, bool add_underflow){
 
   double bins[nbins];
   bins[0] = min;
   for(int i=1; i<=nbins; i++)
     bins[i] = min+i*(max-min)/nbins;
-  MakePlot(Samples, var, cuts, njets, nleps, HLT, xtitle, nbins, bins, flip_order, logflag, composited, ratio, stacked, overlaySUSY, overlayScale);
+  MakePlot(Samples, var, cuts, njets, nleps, HLT, xtitle, nbins, bins, flip_order, logflag, composited, ratio, stacked, overlaySUSY, overlayScale, add_underflow);
 
 }
 
@@ -1169,11 +1169,11 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cuts, int njets, int nleps, TString HLT,
 			   TString xtitle, const int nbins, const double *bins, 
 			   bool flip_order, bool logflag, bool composited, bool ratio, 
-			   bool stacked, bool overlaySUSY, float overlayScale){
+			   bool stacked, bool overlaySUSY, float overlayScale, bool add_underflow){
 
         TString varname = Util::removeFunnyChar(var.Data());
 
-	TString nJets = "NJetsIDLoose";
+	TString nJets = "NJetsIDLoose40";
 	nJets += njets < 0 ? ">=" : "==";
 	nJets += TString::Format("%d",abs(njets));
 
@@ -1275,11 +1275,13 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 		// This failed for older ROOT version when the first(last) bin is empty
 		// and there are underflow (overflow) events --- must check whether this 
 		// is still the case
-		h_samples[i]->SetBinContent(1,
-				    h_samples[i]->GetBinContent(0) + h_samples[i]->GetBinContent(1));
-		h_samples[i]->SetBinError(1,
-				  sqrt(h_samples[i]->GetBinError(0)*h_samples[i]->GetBinError(0)+
-				       h_samples[i]->GetBinError(1)*h_samples[i]->GetBinError(1) ));
+		if(add_underflow) {
+		  h_samples[i]->SetBinContent(1,
+					      h_samples[i]->GetBinContent(0) + h_samples[i]->GetBinContent(1));
+		  h_samples[i]->SetBinError(1,
+					    sqrt(h_samples[i]->GetBinError(0)*h_samples[i]->GetBinError(0)+
+						 h_samples[i]->GetBinError(1)*h_samples[i]->GetBinError(1) ));
+		}
 		h_samples[i]->SetBinContent(h_samples[i]->GetNbinsX(),
 					    h_samples[i]->GetBinContent(h_samples[i]->GetNbinsX()  )+ 
 					    h_samples[i]->GetBinContent(h_samples[i]->GetNbinsX()+1) );
@@ -1468,10 +1470,14 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 	oname.ReplaceAll("&&","_");
 	oname.ReplaceAll("||","_");
 	oname.ReplaceAll("misc.","");
+	oname.ReplaceAll("LeadingJPt","J1Pt");
+	oname.ReplaceAll("SecondJPt","J2Pt");
 	oname.ReplaceAll("LeptConfig","LepCfg");
 	oname.ReplaceAll("Vectorsumpt","VSPT");
 	oname.ReplaceAll("EcalDeadCellBEFlag","BEFlg");
 	oname.ReplaceAll("HBHENoiseFlag","HBHEFlg");
+	oname.ReplaceAll("CSCTightHaloID","CSCFlg");
+	oname.ReplaceAll("NJetsIDLoose40","NJIDLoose40");
 	oname.ReplaceAll("NJetsIDLoose","NJIDLoose");
 	oname.ReplaceAll("isPFIDLoose","isJLoose");
 	oname.ReplaceAll("IsGoodPFJet","IsGoodPFJ");
@@ -1490,6 +1496,8 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 	oname.ReplaceAll("trigger.HLT_HT500_v3","HLT_HT500_v3");
 	oname.ReplaceAll(",","-");
         TString outname = Util::removeFunnyChar(oname.Data());
+	outname.ReplaceAll("NMuons.eq0_muo0.lv.Pt.lt10_NEles.eq0_ele0.lv.Pt.lt10","noLepPt10");
+	outname.ReplaceAll("NMuons.gt0_muo0.lv.Pt.gt10_NEles.gt0_ele0.lv.Pt.gt10","gt1lepPt10");
 
 	if(!stacked) {
 	  outname = outname + (flip_order ? "_flipped" : "") + (logflag ? "_log" : "") + "_shape";
@@ -2222,7 +2230,8 @@ void MassPlotter::plotRatioStack(THStack* hstack, TH1* h1_orig, TH1* h2_orig, TH
 	TString text ="";
 	text = fMT2Analysis?  "M_{T2} Analysis                                          ":"";
 	text +=fMT2bAnalysis? "M_{T2}b Analysis                                         ":"";
-	text +="CMS Preliminary, #sqrt{s} = 7 TeV, L = 4.73 fb^{-1}";
+	TString lumi = TString::Format("%1.2f",fSamples[0].lumi/1000.);
+	text +="CMS Preliminary, #sqrt{s} = 8 TeV, L = "+lumi+" fb^{-1}";
 	TitleBox.DrawLatex(0.13,0.943,text.Data());
 
  	p_plot ->Draw();
@@ -2577,7 +2586,8 @@ void MassPlotter::printHisto(THStack* h, TH1* h_data, TH1* h_mc_sum, TH1* h_susy
 	TitleBox.SetTextSize(0.0305);
 	TString text = fMT2Analysis? "M_{T2} Analysis        ":"";
 	text +=fMT2bAnalysis? "M_{T2}b Analysis     ":"";
-	text +="CMS Preliminary, #sqrt{s} = 7 TeV, L = 4.73 fb^{-1}";
+	TString lumi = TString::Format("%1.2f",fSamples[0].lumi/1000.);
+	text +="CMS Preliminary, #sqrt{s} = 8 TeV, L = "+lumi+" fb^{-1}";
 	TitleBox.DrawLatex(0.18,0.943,text.Data());
 
 

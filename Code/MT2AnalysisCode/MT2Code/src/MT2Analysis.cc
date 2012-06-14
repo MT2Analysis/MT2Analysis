@@ -183,7 +183,51 @@ void MT2Analysis::Begin(const char* filename){
 	  fTriggerMap["HLT_SixJet_35_v2"]                    = &fMT2tree->trigger.HLT_SixJet_35_v2;
 	  fTriggerMap["HLT_SixJet_45_v1"]                    = &fMT2tree->trigger.HLT_SixJet_45_v1;
 	  fTriggerMap["HLT_SixJet_45_v2"]                    = &fMT2tree->trigger.HLT_SixJet_45_v2;
+
+          // Jet/JetMon dataset
+          fTriggerMap["HLT_PFJet320_v3"]                     = &fMT2tree->trigger.HLT_PFJet320_v3;
+          fTriggerMap["HLT_PFJet320_v4"]                     = &fMT2tree->trigger.HLT_PFJet320_v4;
+          fTriggerMap["HLT_PFJet320_v5"]                     = &fMT2tree->trigger.HLT_PFJet320_v5;
+          fTriggerMap["HLT_PFJet260_v3"]                     = &fMT2tree->trigger.HLT_PFJet260_v3;
+          fTriggerMap["HLT_PFJet260_v4"]                     = &fMT2tree->trigger.HLT_PFJet260_v4;
+          fTriggerMap["HLT_PFJet260_v5"]                     = &fMT2tree->trigger.HLT_PFJet260_v5;
+          fTriggerMap["HLT_PFJet200_v3"]                     = &fMT2tree->trigger.HLT_PFJet200_v3;
+          fTriggerMap["HLT_PFJet200_v4"]                     = &fMT2tree->trigger.HLT_PFJet200_v4;
+          fTriggerMap["HLT_PFJet200_v5"]                     = &fMT2tree->trigger.HLT_PFJet200_v5;
+          fTriggerMap["HLT_PFJet140_v3"]                     = &fMT2tree->trigger.HLT_PFJet140_v3;
+          fTriggerMap["HLT_PFJet140_v4"]                     = &fMT2tree->trigger.HLT_PFJet140_v4;
+          fTriggerMap["HLT_PFJet140_v5"]                     = &fMT2tree->trigger.HLT_PFJet140_v5;
+          fTriggerMap["HLT_DiPFJetAve200_v3"]                = &fMT2tree->trigger.HLT_DiPFJetAve200_v3;
+          fTriggerMap["HLT_DiPFJetAve200_v4"]                = &fMT2tree->trigger.HLT_DiPFJetAve200_v4;
+          fTriggerMap["HLT_DiPFJetAve200_v5"]                = &fMT2tree->trigger.HLT_DiPFJetAve200_v5;
+          fTriggerMap["HLT_DiPFJetAve200_v6"]                = &fMT2tree->trigger.HLT_DiPFJetAve200_v6;
+          fTriggerMap["HLT_DiPFJetAve140_v3"]                = &fMT2tree->trigger.HLT_DiPFJetAve140_v3;
+          fTriggerMap["HLT_DiPFJetAve140_v4"]                = &fMT2tree->trigger.HLT_DiPFJetAve140_v4;
+          fTriggerMap["HLT_DiPFJetAve140_v5"]                = &fMT2tree->trigger.HLT_DiPFJetAve140_v5;
+          fTriggerMap["HLT_DiPFJetAve140_v6"]                = &fMT2tree->trigger.HLT_DiPFJetAve140_v6;
+          fTriggerMap["HLT_DiPFJetAve80_v3"]                 = &fMT2tree->trigger.HLT_DiPFJetAve80_v3;
+          fTriggerMap["HLT_DiPFJetAve80_v4"]                 = &fMT2tree->trigger.HLT_DiPFJetAve80_v4;
+          fTriggerMap["HLT_DiPFJetAve80_v5"]                 = &fMT2tree->trigger.HLT_DiPFJetAve80_v5;
+          fTriggerMap["HLT_DiPFJetAve80_v6"]                 = &fMT2tree->trigger.HLT_DiPFJetAve80_v6;
+          fTriggerMap["HLT_DiPFJetAve40_v3"]                 = &fMT2tree->trigger.HLT_DiPFJetAve40_v3;
+          fTriggerMap["HLT_DiPFJetAve40_v4"]                 = &fMT2tree->trigger.HLT_DiPFJetAve40_v4;
+          fTriggerMap["HLT_DiPFJetAve40_v5"]                 = &fMT2tree->trigger.HLT_DiPFJetAve40_v5;
+          fTriggerMap["HLT_DiPFJetAve40_v6"]                 = &fMT2tree->trigger.HLT_DiPFJetAve40_v6;
 	  
+	  //MuHad
+          fTriggerMap["HLT_Mu40_FJHT200_v3"]                      = &fMT2tree->trigger.HLT_Mu40_FJHT200_v3;
+          fTriggerMap["HLT_Mu40_FJHT200_v4"]                      = &fMT2tree->trigger.HLT_Mu40_FJHT200_v4;
+          fTriggerMap["HLT_Mu40_HT200_v1"]                        = &fMT2tree->trigger.HLT_Mu40_HT200_v1;
+          fTriggerMap["HLT_Mu40_HT200_v2"]                        = &fMT2tree->trigger.HLT_Mu40_HT200_v2;
+          fTriggerMap["HLT_IsoMu20_eta2p1_CentralPFJet80_v3"]     = &fMT2tree->trigger.HLT_IsoMu20_eta2p1_CentralPFJet80_v3;
+          fTriggerMap["HLT_IsoMu20_eta2p1_CentralPFJet80_v4"]     = &fMT2tree->trigger.HLT_IsoMu20_eta2p1_CentralPFJet80_v4;
+          fTriggerMap["HLT_IsoMu20_eta2p1_CentralPFJet80_v5"]     = &fMT2tree->trigger.HLT_IsoMu20_eta2p1_CentralPFJet80_v5;
+          fTriggerMap["HLT_IsoMu20_eta2p1_CentralPFJet80_v6"]     = &fMT2tree->trigger.HLT_IsoMu20_eta2p1_CentralPFJet80_v6;
+          fTriggerMap["HLT_IsoMu20_eta2p1_CentralPFJet80_v7"]     = &fMT2tree->trigger.HLT_IsoMu20_eta2p1_CentralPFJet80_v7;
+          fTriggerMap["HLT_IsoMu24_eta2p1_v11"]                   = &fMT2tree->trigger.HLT_IsoMu24_eta2p1_v11;
+          fTriggerMap["HLT_IsoMu24_eta2p1_v12"]                   = &fMT2tree->trigger.HLT_IsoMu24_eta2p1_v12;
+          fTriggerMap["HLT_IsoMu24_eta2p1_v13"]                   = &fMT2tree->trigger.HLT_IsoMu24_eta2p1_v13;
+          fTriggerMap["HLT_IsoMu24_eta2p1_v14"]                   = &fMT2tree->trigger.HLT_IsoMu24_eta2p1_v14;
 	}
 
 
@@ -772,10 +816,22 @@ void MT2Analysis::FillMT2treeCalculations(){
 	    	caHT40   += CAJet(j).Pt();
 	    	mht40    -= CAJet(j);
 	}
+	// pf HT and MHT
+	float pfHT30=0,pfHT35=0,pfHT40=0,pfHT45=0;
+	for(int j=0; j<fJets.size(); ++j){
+	  if(Jet(fJets[j]).Pt() > 30 && fabs(Jet(fJets[j]).Eta())<3.0)   pfHT30 += Jet(fJets[j]).Pt();	  
+	  if(Jet(fJets[j]).Pt() > 35 && fabs(Jet(fJets[j]).Eta())<3.0)   pfHT35 += Jet(fJets[j]).Pt();	  
+	  if(Jet(fJets[j]).Pt() > 40 && fabs(Jet(fJets[j]).Eta())<3.0)   pfHT40 += Jet(fJets[j]).Pt();	  
+	  if(Jet(fJets[j]).Pt() > 45 && fabs(Jet(fJets[j]).Eta())<3.0)   pfHT45 += Jet(fJets[j]).Pt();	  
+	}
 	fMT2tree->misc.caloHT40     = caHT40;
+	fMT2tree->misc.pfHT30       = pfHT30;
+	fMT2tree->misc.pfHT35       = pfHT35;
+	fMT2tree->misc.pfHT40       = pfHT40;
+	fMT2tree->misc.pfHT45       = pfHT45;
 	fMT2tree->misc.caloMHT40    = mht40.Pt();
 	fMT2tree->misc.caloHT50     = fCaloHT50;
-	fMT2tree->misc.caloHT50_ID  = fCaloHT50_ID;
+	//fMT2tree->misc.caloHT50_ID  = fCaloHT50_ID;
 	fMT2tree->misc.caloMHT30    = fCaloMHT30;
 
 	// W and Top decay modes
@@ -1197,7 +1253,7 @@ bool MT2Analysis::IsSelectedEvent(){
 	
 	//caloHT and calo MHT
 	TLorentzVector mht30(0,0,0,0);
-	fCaloHT50 =0.0, fCaloHT50_ID =0.0;
+	//fCaloHT50 =0.0, fCaloHT50_ID =0.0;
 	for(int j=0; j<fTR->CANJets; ++j){
 		if( CAJet(j).Pt()<30 || fabs(CAJet(j).Eta())>3.0 ) continue;
 	  	// MHT
@@ -1206,11 +1262,11 @@ bool MT2Analysis::IsSelectedEvent(){
 		if( CAJet(j).Pt()<50 ) continue;
 		fCaloHT50  += CAJet(j).Pt();
 		// HT_ID
-		if(fTR->CAJn90[j]>=2 && fTR->CAJEMfrac[j]>=0.000001) fCaloHT50_ID += CAJet(j).Pt();
+		//if(fTR->CAJn90[j]>=2 && fTR->CAJEMfrac[j]>=0.000001) fCaloHT50_ID += CAJet(j).Pt();
 	}
 	fCaloMHT30   =mht30.Pt();
 	if(fCaloHT50      < fCut_caloHT50_min   ) return false;
-	if(fCaloHT50_ID   < fCut_caloHT50ID_min ) return false;
+	//if(fCaloHT50_ID   < fCut_caloHT50ID_min ) return false;
 	if(fCaloMHT30     < fCut_caloMHT30_min  ) return false;
 
 	// leading jets including JID for jets

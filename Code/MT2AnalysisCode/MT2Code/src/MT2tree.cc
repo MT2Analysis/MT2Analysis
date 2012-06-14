@@ -53,7 +53,10 @@ void MT2Misc::Reset() {
   QCDPartonicHT		  = -99999.99;
   caloHT40       	  = -99999.99;
   caloHT50       	  = -99999.99;
-  caloHT50_ID             = -99999.99;
+  pfHT30                  = -99999.99;
+  pfHT35                  = -99999.99;
+  pfHT40                  = -99999.99;
+  pfHT45                  = -99999.99;
   caloMHT30       	  = -99999.99;
   caloMHT40       	  = -99999.99;
   MinMetJetDPhi           = -99999.99;
@@ -203,6 +206,36 @@ void MT2Trigger::Reset(){
         HLT_SixJet_45_v1                    = false;
         HLT_SixJet_45_v2                    = false;
 
+        // Jet/JetMon dataset
+        HLT_PFJet320_v3                     = false;
+        HLT_PFJet320_v4                     = false;
+        HLT_PFJet320_v5                     = false;
+        HLT_PFJet260_v3                     = false;
+        HLT_PFJet260_v4                     = false;
+        HLT_PFJet260_v5                     = false;
+        HLT_PFJet200_v3                     = false;
+        HLT_PFJet200_v4                     = false;
+        HLT_PFJet200_v5                     = false;
+        HLT_PFJet140_v3                     = false;
+        HLT_PFJet140_v4                     = false;
+        HLT_PFJet140_v5                     = false;
+        HLT_DiPFJetAve200_v3                = false;
+        HLT_DiPFJetAve200_v4                = false;
+        HLT_DiPFJetAve200_v5                = false;
+        HLT_DiPFJetAve200_v6                = false;
+        HLT_DiPFJetAve140_v3                = false;
+        HLT_DiPFJetAve140_v4                = false;
+        HLT_DiPFJetAve140_v5                = false;
+        HLT_DiPFJetAve140_v6                = false;
+        HLT_DiPFJetAve80_v3                 = false;
+        HLT_DiPFJetAve80_v4                 = false;
+        HLT_DiPFJetAve80_v5                 = false;
+        HLT_DiPFJetAve80_v6                 = false;
+        HLT_DiPFJetAve40_v3                 = false;
+        HLT_DiPFJetAve40_v4                 = false;
+        HLT_DiPFJetAve40_v5                 = false;
+        HLT_DiPFJetAve40_v6                 = false;
+
 	// Photons
 	HLT_SinglePhotons               = false;
 	// Dileptons
@@ -210,7 +243,20 @@ void MT2Trigger::Reset(){
 	HLT_DiMuons                     = false;
 	HLT_EMu                         = false;
 	//MuHad
-	HLT_MuHad                       = false;
+	HLT_MuHad                                = false;
+        HLT_Mu40_FJHT200_v3                      = false;
+        HLT_Mu40_FJHT200_v4                      = false;
+        HLT_Mu40_HT200_v1                        = false;
+        HLT_Mu40_HT200_v2                        = false;
+        HLT_IsoMu20_eta2p1_CentralPFJet80_v3     = false;
+        HLT_IsoMu20_eta2p1_CentralPFJet80_v4     = false;
+        HLT_IsoMu20_eta2p1_CentralPFJet80_v5     = false;
+        HLT_IsoMu20_eta2p1_CentralPFJet80_v6     = false;
+        HLT_IsoMu20_eta2p1_CentralPFJet80_v7     = false;
+        HLT_IsoMu24_eta2p1_v11                   = false;
+        HLT_IsoMu24_eta2p1_v12                   = false;
+        HLT_IsoMu24_eta2p1_v13                   = false;
+        HLT_IsoMu24_eta2p1_v14                   = false;
 
 }
 
@@ -2205,7 +2251,7 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	logStream << "  NJetsIDLoose (pT > 20, |eta| < 2.4, Pf-JID) " << NJetsIDLoose                                 << endl;
 	logStream << "  NEles " << NEles  << ", NMuons "<< NMuons << ", NTaus "<<NTaus                                << endl;
 	logStream << "  NVertices " << pileUp.NVertices                                                               << endl;
-        logStream << "  pf-HT " << misc.HT << ", caloHT50_ID " << misc.caloHT50_ID                                    << endl;
+        //logStream << "  pf-HT " << misc.HT << ", caloHT50_ID " << misc.caloHT50_ID                                    << endl;
 	logStream << "  pf-MET Pt:" << misc.MET << " Phi " << pfmet[0].Phi() << " Px " << pfmet[0].Px() << " Py " << pfmet[0].Py() << endl;
 	logStream << "     MHT Pt:" << MHT[0].Pt() << " Phi " << MHT[0].Phi() << " Px " << MHT[0].Px() << " Py " << MHT[0].Py() << endl;
 

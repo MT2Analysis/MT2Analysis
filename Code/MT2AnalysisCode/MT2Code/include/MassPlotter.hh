@@ -73,6 +73,7 @@ public:
 	void SetMT2Analysis(bool isMT2Analysis){fMT2Analysis=isMT2Analysis;};
 	void SetMT2bAnalysis(bool isMT2bAnalysis){fMT2bAnalysis=isMT2bAnalysis;};
 	void SetEventsPerGeV(bool eventspergev){fEventsPerGeV=eventspergev;};
+	void SetPileUpReweight(bool PU){fPUReweight=PU; std::cout << "PU Reweighting =" << fPUReweight << std::endl;};
 	
 	struct sample{
 		TString name;
@@ -238,6 +239,7 @@ private:
 	bool fMT2bAnalysis;
 	bool fMT2Analysis;
 	bool fEventsPerGeV;
+	bool fPUReweight;
 
 	MT2tree* fMT2tree;
 	TTree*   fTree;

@@ -59,6 +59,7 @@ using namespace std;
 MassPlotter::MassPlotter(){
 	fSave=true;
 	fisPhoton=false;
+	fPUReweight=true;
 // Default constructor, no samples are set
 }
 
@@ -68,6 +69,7 @@ MassPlotter::MassPlotter(TString outputdir){
 	setOutputDir(outputdir);
 	fSave=true;
 	fisPhoton=false;
+	fPUReweight=true;
 }
 
 //____________________________________________________________________________
@@ -77,6 +79,7 @@ MassPlotter::MassPlotter(TString outputdir, TString outputfile){
 	setOutputFile(outputfile);
 	fSave=true;
 	fisPhoton=false;
+	fPUReweight=true;
 }
 
 //____________________________________________________________________________
@@ -197,658 +200,664 @@ void MassPlotter::MakePlot(TString var, TString cuts, int njets, int nleps, TStr
 			   bool flip_order, bool logflag, bool composited, bool ratio, bool stacked, 
 			   bool overlaySUSY, float overlayScale, bool add_underflow){
 
-  MakePlot(fSamples, var, cuts, njets, nleps, HLT, xtitle, nbins, bins, flip_order, logflag, composited, ratio, stacked, overlaySUSY, overlayScale, add_underflow);
+	  MakePlot(fSamples, var, cuts, njets, nleps, HLT, xtitle, nbins, bins, flip_order, logflag, composited, ratio, stacked, overlaySUSY, overlayScale, add_underflow);
 
 
-}
-
-// ________________________________________________________________________
-void MassPlotter::PrintWEfficiency(int sample_index ,TString process,  std::string lept, Long64_t nevents, bool includeTaus){
-	sample Sample = fSamples[sample_index];
-
-      	std::cout << setfill('=') << std::setw(70) << "" << std::endl;
-	cout << "printing W efficiency: \n"
-	     << Sample.name << endl;	
-      	std::cout << setfill('-') << std::setw(70) << "" << std::endl;
-
-        enum counters_t { count_begin, all=count_begin, presel, NJetsIDLoose , PassJetID, MinMetJetDPhi, VectorSumPt, MT2,  count_end };
- 	Monitor counters[count_end];
-	TString lablx[count_end] = {"all events", "presel", "NJetsIDLoose" , "PassJetID", "MinMetJetDPhi", "VectorSumPt", "MT2"};
-
-	string to_measure;
-	if     (lept == "ele" && process=="W" )       {to_measure = "W->enu  recoed";} 
-	else if(lept == "muo" && process=="W" )       {to_measure = "W->munu recoed";} 
-	else if(lept == "ele" && process=="Top")      {to_measure = "Top W->enu  recoed";}
-	else if(lept == "muo" && process=="Top")      {to_measure = "Top W->munu  recoed";}
-
-    	fMT2tree = new MT2tree();
-    	Sample.tree->SetBranchAddress("MT2tree", &fMT2tree);
-    	Long64_t nentries =  Sample.tree->GetEntries();
-    	Long64_t nbytes = 0, nb = 0;
-    	for (Long64_t jentry=0; jentry<min(nentries, nevents);jentry++) {
-      		nb = Sample.tree->GetEntry(jentry);   nbytes += nb;
-      		Sample.tree->SetBranchAddress("MT2tree", &fMT2tree);
-      
-      		if ( fVerbose>2 && jentry % 50000 == 0 )  cout << "+++ Proccessing event " << jentry << endl;
-
-		bool leptfound(false);
-		bool eventgood(false);
-		bool acceptance(false);
-		if(process=="W"){
-			if(lept=="ele" && fMT2tree->GenLeptFromW(11, 0 , 1000,includeTaus)==true)                                              eventgood =true;
-			if(lept=="muo" && fMT2tree->GenLeptFromW(13, 0 , 1000,includeTaus)==true)                                              eventgood =true;
-			if(lept=="ele" && fMT2tree->GenLeptFromW(11,10,  2.4 ,includeTaus)==true)                                              acceptance=true;
-			if(lept=="muo" && fMT2tree->GenLeptFromW(13,10,  2.4 ,includeTaus)==true)                                              acceptance=true;
-			if(lept=="ele" && fMT2tree->NEles==1 && fMT2tree->NMuons==0 && fMT2tree->GenLeptFromW(11, 0, 1000,includeTaus)==true && fMT2tree->ele[0].lv.Pt()>10)  leptfound =true;
-			if(lept=="muo" && fMT2tree->NMuons==1&& fMT2tree->NEles== 0 && fMT2tree->GenLeptFromW(13, 0, 1000,includeTaus)==true && fMT2tree->muo[0].lv.Pt()>10)  leptfound =true;
-		}else if(process=="Top"){ 
-			if(lept=="ele" && fMT2tree->TopDecayModeResult(11)==true)                                                 eventgood =true;
-			if(lept=="muo" && fMT2tree->TopDecayModeResult(13)==true)                                                 eventgood =true;
-			if(lept=="ele" && fMT2tree->TopDecayModeResult(11)==true && fMT2tree->SLTopAccept(10, 2.4)==true )        acceptance =true;
-			if(lept=="muo" && fMT2tree->TopDecayModeResult(13)==true && fMT2tree->SLTopAccept(10, 2.4)==true )        acceptance =true;
-			if(lept=="ele" && fMT2tree->NEles==1 && fMT2tree->NMuons==0 && eventgood &&fMT2tree->ele[0].lv.Pt()>10)             leptfound =true;
-			if(lept=="muo" && fMT2tree->NMuons==1&& fMT2tree->NEles== 0 && eventgood &&fMT2tree->muo[0].lv.Pt()>10)             leptfound =true;
-		}
-
-		Double_t weight = fMT2tree->pileUp.Weight;
-
-		// all events
-		if(eventgood)   counters[all].fill("all events", weight);
-		if(acceptance)  counters[all].fill("acceptance", weight);
-		if(leptfound)   counters[all].fill(to_measure, weight);
-		
-		// presel
-		if(fMT2tree->misc.MET                     < 30    )  continue;
-		if(fMT2tree->misc.HT                      < 300   )  continue;
-		//if(fMT2tree->misc.caloHT50_ID             < 600   )  continue;
-		if(fMT2tree->misc.Jet0Pass                ==0     )  continue;
-		if(fMT2tree->misc.Jet1Pass                ==0     )  continue;
-//		if(fMT2tree->misc.LeadingJPt              < 150   )  continue;
-		if(fMT2tree->misc.SecondJPt               < 100   )  continue;
-//		if(fMT2tree->NBJets                       < 1     )  continue;
-		if(fMT2tree->misc.HBHENoiseFlag           ==0     )  continue;
-		if(fMT2tree->misc.CrazyHCAL               ==1     )  continue;
-		if(eventgood)   counters[presel].fill("presel", weight);
-		if(acceptance)  counters[presel].fill("acceptance", weight);
-		if(leptfound)   counters[presel].fill(to_measure, weight);
-		
-		
-		// NJetsIDLoose
-		if(fMT2tree->NJetsIDLoose                 <3     ) continue;  
-		if(eventgood)   counters[NJetsIDLoose].fill("NJetsIDLoose", weight);
-		if(acceptance)  counters[NJetsIDLoose].fill("acceptance", weight);
-		if(leptfound)   counters[NJetsIDLoose].fill(to_measure, weight);
-
-		// PassJetID
-		if(fMT2tree->misc.PassJetID               ==0     ) continue;
-		if(eventgood)   counters[PassJetID].fill("PassJetID", weight);
-		if(acceptance)  counters[PassJetID].fill("acceptance", weight);
-		if(leptfound)   counters[PassJetID].fill(to_measure, weight);
-		
-		// MinMetJetDPhi
-		if(fMT2tree->misc.MinMetJetDPhi <0.3 )       continue;
-		if(eventgood)   counters[MinMetJetDPhi].fill("MinMetJetDPhi", weight);
-		if(acceptance)  counters[MinMetJetDPhi].fill("acceptance", weight);
-		if(leptfound)   counters[MinMetJetDPhi].fill(to_measure, weight);
-		
-		// VectorSumPt
-		if(fMT2tree->misc.Vectorsumpt             >70     )  continue;
-		if(eventgood)   counters[VectorSumPt].fill("VectorSumPt", weight);
-		if(acceptance)  counters[VectorSumPt].fill("acceptance", weight);
-		if(leptfound)   counters[VectorSumPt].fill(to_measure, weight);
-		
-		// MT2
-//		if(fMT2tree->misc.MT2             <400     )  continue;
-//		if(fMT2tree->misc.MT2             <150     )  continue;
-		if(fMT2tree->misc.MT2 <200 || fMT2tree->misc.MT2>400 )  continue;
-//		if(fMT2tree->misc.MT2 <150 || fMT2tree->misc.MT2>300 )  continue;
-//		if(fMT2tree->misc.MT2 <100 || fMT2tree->misc.MT2>150  )  continue;
-		if(eventgood)   counters[MT2].fill("MT2", weight);
-		if(acceptance)  counters[MT2].fill("acceptance", weight);
-		if(leptfound)   counters[MT2].fill(to_measure, weight);
-		
-      	}
-
-	// print stats     
-      	std::cout << setfill('=') << std::setw(70) << "" << std::endl;
-       	std::cout << "Statistics" << std::endl;
-       	std::cout << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;
-       	for ( counters_t iCount=count_begin; iCount<count_end; iCount = counters_t(iCount+1) ) {
-         	counters[iCount].print();
-         	std::cout << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;  
-       	}
-  	std::cout << setfill('=') << std::setw(70) << "" << std::endl;
-
-	// fill histo
-	TH1D* h_all = new TH1D("h_all", "", count_end, 0., (double) count_end );
-	TH1D* h_acc = new TH1D("h_acc", "", count_end, 0., (double) count_end );
-	TH1D* h_rec = new TH1D("h_rec", "", count_end, 0., (double) count_end );
-	TH1D* h_1   = new TH1D("h_1"  , "", count_end, 0., (double) count_end );
-	TH1D* h_2   = new TH1D("h_2"  , "", count_end, 0., (double) count_end );
-	TH1D* h_3   = new TH1D("h_3"  , "", count_end, 0., (double) count_end );
-	for(int i=0; i<count_end; ++i){
-		h_1    ->GetXaxis()->SetBinLabel(i+1, lablx[i]);
-		h_2    ->GetXaxis()->SetBinLabel(i+1, lablx[i]);
-		h_3    ->GetXaxis()->SetBinLabel(i+1, lablx[i]);
-		h_all->SetBinContent(i+1,counters[i].counts((string) lablx[i]));
-		h_acc->SetBinContent(i+1,counters[i].counts("acceptance"));
-		h_rec->SetBinContent(i+1,counters[i].counts(to_measure));
-	}
-	h_1    ->Sumw2();
-	h_2    ->Sumw2();
-	h_3    ->Sumw2();
-	h_1    ->Divide(h_acc,h_all);	
-	h_2    ->Divide(h_rec,h_acc);	
-	h_3    ->Divide(h_rec,h_all);	
-	TCanvas *col  = new TCanvas("Wevents", "", 0, 0, 900, 700);
-	col -> cd();
-	h_1    ->SetLineColor(kBlue);
-	h_1    ->SetMarkerStyle(20);
-	h_1    ->SetMinimum(0);
-	h_1    ->SetMaximum(1);
-	h_1    ->SetDrawOption("E");
-	h_1    ->Draw();
-	string name  ="Wevents_"+lept+"_acceptance_"+(string) Sample.name; 
-	h_2    ->SetLineColor(kBlue);
-	h_2    ->SetMinimum(0);
-	h_2    ->SetMaximum(1);
-	h_2    ->SetMarkerStyle(20);
-	h_2    ->SetDrawOption("E");
-	h_2    ->Draw();
-	name  ="Wevents_"+lept+"_reco_"+(string) Sample.name; 
-	h_3    ->SetLineColor(kBlue);
-	h_3    ->SetMinimum(0);
-	h_3    ->SetMaximum(1);
-	h_3    ->SetMarkerStyle(20);
-	h_3    ->SetDrawOption("E");
-	h_3    ->Draw();
-	name  ="Wevents_"+lept+"_prob_"+(string) Sample.name; 
-
-	cout << "lept " << lept << " process " << process << endl;	
-	//__________________________________
-	if        (lept=="ele" && process=="W") {
-		fWpred.Wenu_acc        =h_1->GetBinContent(count_end);
-		fWpred.Wenu_acc_err    =h_1->GetBinError(count_end); 
-		fWpred.Wenu_rec        =h_2->GetBinContent(count_end);
-		fWpred.Wenu_rec_err    =h_2->GetBinError(count_end);  
-		fWpred.Wenu_prob       =h_3->GetBinContent(count_end);
-		fWpred.Wenu_prob_err   =h_3->GetBinError(count_end);  
-	}else if  (lept=="ele" && process=="Top"){
-		fWpred.TopWenu_acc     =h_1->GetBinContent(count_end);
-		fWpred.TopWenu_acc_err =h_1->GetBinError(count_end); 
-		fWpred.TopWenu_rec     =h_2->GetBinContent(count_end);
-		fWpred.TopWenu_rec_err =h_2->GetBinError(count_end);  
-		fWpred.TopWenu_prob    =h_3->GetBinContent(count_end);
-		fWpred.TopWenu_prob_err=h_3->GetBinError(count_end);  
-	}else if  (lept=="muo" && process=="W") {
-		fWpred.Wmunu_acc       =h_1->GetBinContent(count_end);
-		fWpred.Wmunu_acc_err   =h_1->GetBinError(count_end); 
-		fWpred.Wmunu_rec       =h_2->GetBinContent(count_end);
-		fWpred.Wmunu_rec_err   =h_2->GetBinError(count_end); 
-		fWpred.Wmunu_prob      =h_3->GetBinContent(count_end);
-		fWpred.Wmunu_prob_err  =h_3->GetBinError(count_end);  
-	}else if  (lept=="muo" && process=="Top") {
-		fWpred.TopWmunu_acc    =h_1->GetBinContent(count_end);
-		fWpred.TopWmunu_acc_err=h_1->GetBinError(count_end); 
-		fWpred.TopWmunu_rec    =h_2->GetBinContent(count_end);
-		fWpred.TopWmunu_rec_err=h_2->GetBinError(count_end); 
-		fWpred.TopWmunu_prob    =h_3->GetBinContent(count_end);
-		fWpred.TopWmunu_prob_err=h_3->GetBinError(count_end);  
 	}
 
-	//_________________________________
-	delete h_1;
-	delete h_2;
-	delete h_3;
-	delete h_all;
-	delete h_acc;
-	delete h_rec;
-	delete col;
-}
+	// ________________________________________________________________________
+	void MassPlotter::PrintWEfficiency(int sample_index ,TString process,  std::string lept, Long64_t nevents, bool includeTaus){
+		sample Sample = fSamples[sample_index];
 
-// ________________________________________________________________________
-void MassPlotter::PrintZllEfficiency(int sample_index , bool data, std::string lept, Long64_t nevents, double lower_mass, double upper_mass, bool pileUp_reweight){
-//void MassPlotter::PrintZllEfficiency(int sample_index , bool data, std::string lept, Long64_t nevents, double lower_mass, double upper_mass){
-	sample Sample = fSamples[sample_index];
+		std::cout << setfill('=') << std::setw(70) << "" << std::endl;
+		cout << "printing W efficiency: \n"
+		     << Sample.name << endl;	
+		std::cout << setfill('-') << std::setw(70) << "" << std::endl;
 
-      	std::cout << setfill('=') << std::setw(70) << "" << std::endl;
-	cout << "printing kinetic & geom. acceptance for Z->ll for sample: \n"
-	     << Sample.name << endl;	
-      	std::cout << setfill('-') << std::setw(70) << "" << std::endl;
+		enum counters_t { count_begin, all=count_begin, presel, NJetsIDLoose , PassJetID, MinMetJetDPhi, VectorSumPt, MT2,  count_end };
+		Monitor counters[count_end];
+		TString lablx[count_end] = {"all events", "presel", "NJetsIDLoose" , "PassJetID", "MinMetJetDPhi", "VectorSumPt", "MT2"};
 
-        enum counters_t { count_begin, all=count_begin, presel,  HCAL_ECAL_noise, VectorSumPt ,PassJetID, MinMetJetDPhi, MET, count_end };
- 	Monitor counters[count_end];
-	TString lablx[count_end] = {"all events", "presel", "Cal_Noise", "VectorSumPt", "PassJetID", "MinMetJetDPhi", "MET"};
+		string to_measure;
+		if     (lept == "ele" && process=="W" )       {to_measure = "W->enu  recoed";} 
+		else if(lept == "muo" && process=="W" )       {to_measure = "W->munu recoed";} 
+		else if(lept == "ele" && process=="Top")      {to_measure = "Top W->enu  recoed";}
+		else if(lept == "muo" && process=="Top")      {to_measure = "Top W->munu  recoed";}
 
-	int pid=-1, flavour=-1; 
-	string to_measure;
-	if(lept == "ele" )            {pid = 11; flavour = 1; to_measure = "Zee recoed";} 
-	else if(lept == "muo" )       {pid = 13; flavour = 2; to_measure = "Zmumu recoed";} 
-	else if(lept == "neutrinos")  {pid = 12; flavour = 0; to_measure = "Znunu within acceptance";}
+		fMT2tree = new MT2tree();
+		Sample.tree->SetBranchAddress("MT2tree", &fMT2tree);
+		Long64_t nentries =  Sample.tree->GetEntries();
+		Long64_t nbytes = 0, nb = 0;
+		for (Long64_t jentry=0; jentry<min(nentries, nevents);jentry++) {
+			nb = Sample.tree->GetEntry(jentry);   nbytes += nb;
+			Sample.tree->SetBranchAddress("MT2tree", &fMT2tree);
+	      
+			if ( fVerbose>2 && jentry % 50000 == 0 )  cout << "+++ Proccessing event " << jentry << endl;
 
-    	fMT2tree = new MT2tree();
-    	Sample.tree->SetBranchAddress("MT2tree", &fMT2tree);
-    	Long64_t nentries =  Sample.tree->GetEntries();
-    	Long64_t nbytes = 0, nb = 0;
-    	for (Long64_t jentry=0; jentry<min(nentries, nevents);jentry++) {
-      		nb = Sample.tree->GetEntry(jentry);   nbytes += nb;
-      		Sample.tree->SetBranchAddress("MT2tree", &fMT2tree);
-      
-      		if ( fVerbose>2 && jentry % 50000 == 0 )  cout << "+++ Proccessing event " << jentry << endl;
+			bool leptfound(false);
+			bool eventgood(false);
+			bool acceptance(false);
+			if(process=="W"){
+				if(lept=="ele" && fMT2tree->GenLeptFromW(11, 0 , 1000,includeTaus)==true)                                              eventgood =true;
+				if(lept=="muo" && fMT2tree->GenLeptFromW(13, 0 , 1000,includeTaus)==true)                                              eventgood =true;
+				if(lept=="ele" && fMT2tree->GenLeptFromW(11,10,  2.4 ,includeTaus)==true)                                              acceptance=true;
+				if(lept=="muo" && fMT2tree->GenLeptFromW(13,10,  2.4 ,includeTaus)==true)                                              acceptance=true;
+				if(lept=="ele" && fMT2tree->NEles==1 && fMT2tree->NMuons==0 && fMT2tree->GenLeptFromW(11, 0, 1000,includeTaus)==true && fMT2tree->ele[0].lv.Pt()>10)  leptfound =true;
+				if(lept=="muo" && fMT2tree->NMuons==1&& fMT2tree->NEles== 0 && fMT2tree->GenLeptFromW(13, 0, 1000,includeTaus)==true && fMT2tree->muo[0].lv.Pt()>10)  leptfound =true;
+			}else if(process=="Top"){ 
+				if(lept=="ele" && fMT2tree->TopDecayModeResult(11)==true)                                                 eventgood =true;
+				if(lept=="muo" && fMT2tree->TopDecayModeResult(13)==true)                                                 eventgood =true;
+				if(lept=="ele" && fMT2tree->TopDecayModeResult(11)==true && fMT2tree->SLTopAccept(10, 2.4)==true )        acceptance =true;
+				if(lept=="muo" && fMT2tree->TopDecayModeResult(13)==true && fMT2tree->SLTopAccept(10, 2.4)==true )        acceptance =true;
+				if(lept=="ele" && fMT2tree->NEles==1 && fMT2tree->NMuons==0 && eventgood &&fMT2tree->ele[0].lv.Pt()>10)             leptfound =true;
+				if(lept=="muo" && fMT2tree->NMuons==1&& fMT2tree->NEles== 0 && eventgood &&fMT2tree->muo[0].lv.Pt()>10)             leptfound =true;
+			}
 
-		// check if event has Z->e+e- within acceptance	
-		
-		bool Zll(false);         
-		bool ZllSelect(false); 
-		bool ZllGood(false); 
-		if(  data) Zll              = (fMT2tree->GetDiLeptonInvMass(0,1,flavour,5,1) > 71 && fMT2tree->GetDiLeptonInvMass(0,1,flavour,5,1) < 111);
-		if(! data){ 
-			if     (pid ==11) {
-				ZllSelect =   (fMT2tree->Znunu.GenZee_mll_acc   > lower_mass && fMT2tree->Znunu.GenZee_mll_acc   < upper_mass  );
-				ZllGood     = (fMT2tree->Znunu.RecoOSee_mll     > lower_mass && fMT2tree->Znunu.RecoOSee_mll     < upper_mass  && ZllSelect );
-			}else if(pid ==13) {
-				ZllSelect =   (fMT2tree->Znunu.GenZmumu_mll_acc > lower_mass && fMT2tree->Znunu.GenZmumu_mll_acc < upper_mass  );
-				ZllGood     = (fMT2tree->Znunu.RecoOSmumu_mll   > lower_mass && fMT2tree->Znunu.RecoOSmumu_mll   < upper_mass  && ZllSelect  );
-			}else if(lept=="neutrinos"){
-				ZllSelect   =  ((fMT2tree->Znunu.GenZnunu_e_mll        > lower_mass && fMT2tree->Znunu.GenZnunu_e_mll    < upper_mass)  || 
-					 	(fMT2tree->Znunu.GenZnunu_mu_mll       > lower_mass && fMT2tree->Znunu.GenZnunu_mu_mll   < upper_mass)  ||  
-					        (fMT2tree->Znunu.GenZnunu_tau_mll      > lower_mass && fMT2tree->Znunu.GenZnunu_tau_mll  < upper_mass));	
-				ZllGood     =  ((fMT2tree->Znunu.GenZnunu_e_mll_acc    > lower_mass && fMT2tree->Znunu.GenZnunu_e_mll_acc    < upper_mass)  || 
-					 	(fMT2tree->Znunu.GenZnunu_mu_mll_acc   > lower_mass && fMT2tree->Znunu.GenZnunu_mu_mll_acc   < upper_mass)  ||  
-					        (fMT2tree->Znunu.GenZnunu_tau_mll_acc  > lower_mass && fMT2tree->Znunu.GenZnunu_tau_mll_acc  < upper_mass));	
-			}else {cout << "choose appropriate lepton" << endl; return;}
+			Double_t weight = fMT2tree->pileUp.Weight;
 
-		}
-
-		Double_t weight =(pileUp_reweight)? fMT2tree->pileUp.Weight:1;
+			// all events
+			if(eventgood)   counters[all].fill("all events", weight);
+			if(acceptance)  counters[all].fill("acceptance", weight);
+			if(leptfound)   counters[all].fill(to_measure, weight);
 			
-		// all events
-		if(ZllSelect)   counters[all].fill("all events", weight);
-		if(ZllGood    ) counters[all].fill(to_measure  , weight);
-		
-		// presel
-		if(pid == 11 || pid == 13){
-			if(fMT2tree->Znunu.HTmatched              <300    )  continue;
-			if(fMT2tree->Znunu.caloHT50ID_matched     <600    )  continue;
-			if(fMT2tree->Znunu.Jet0Pass_matched       ==0     )  continue;
-			if(fMT2tree->Znunu.Jet1Pass_matched       ==0     )  continue;
-			if(fMT2tree->Znunu.SecondJPt_matched      <100     )  continue;
-			if(fMT2tree->Znunu.NJetsIDLoose_matched   <3      )  continue;
-		} else if(lept == "neutrinos"){
-			if(fMT2tree->misc.HT                      <300    )  continue;
-			//if(fMT2tree->misc.caloHT50_ID             <600    )  continue;
+			// presel
+			if(fMT2tree->misc.MET                     < 30    )  continue;
+			if(fMT2tree->misc.HT                      < 300   )  continue;
+			//if(fMT2tree->misc.caloHT50_ID             < 600   )  continue;
 			if(fMT2tree->misc.Jet0Pass                ==0     )  continue;
 			if(fMT2tree->misc.Jet1Pass                ==0     )  continue;
-			if(fMT2tree->misc.SecondJPt               <100     )  continue;
-			if(fMT2tree->NJetsIDLoose                  <3     )  continue;
-		}
-		if(ZllSelect)   counters[presel].fill("presel"  , weight);
-		if(ZllGood    ) counters[presel].fill(to_measure, weight);
-		
-		// ECAL HCAL Noise
-		if(fMT2tree->misc.HBHENoiseFlag                   ==0     )  continue;
-		if(fMT2tree->misc.CrazyHCAL                       ==1     )  continue;
-		if(ZllSelect  ) counters[HCAL_ECAL_noise].fill("Cal_Noise",weight);
-		if(ZllGood    ) counters[HCAL_ECAL_noise].fill(to_measure ,weight);
-		
-		// VectorSumPt
-		if(pid == 11 || pid == 13){
-			if(fMT2tree->Znunu.Vectorsumpt_matched    >70     )  continue;
-		} else if(lept == "neutrinos"){
-			if(fMT2tree->misc.Vectorsumpt             >70     )  continue;
-		}
-		if(ZllSelect)   counters[VectorSumPt].fill("VectorSumPt", weight);
-		if(ZllGood    ) counters[VectorSumPt].fill(to_measure,    weight);
-		
-		// PassJetID
-		if(pid ==11 || pid == 13){
-			if(fMT2tree->Znunu.PassJetID_matched      ==0     ) continue;
-		}else if (lept == "neutrinos"){
+	//		if(fMT2tree->misc.LeadingJPt              < 150   )  continue;
+			if(fMT2tree->misc.SecondJPt               < 100   )  continue;
+	//		if(fMT2tree->NBJets                       < 1     )  continue;
+			if(fMT2tree->misc.HBHENoiseFlag           ==0     )  continue;
+			if(fMT2tree->misc.CrazyHCAL               ==1     )  continue;
+			if(eventgood)   counters[presel].fill("presel", weight);
+			if(acceptance)  counters[presel].fill("acceptance", weight);
+			if(leptfound)   counters[presel].fill(to_measure, weight);
+			
+			
+			// NJetsIDLoose
+			if(fMT2tree->NJetsIDLoose                 <3     ) continue;  
+			if(eventgood)   counters[NJetsIDLoose].fill("NJetsIDLoose", weight);
+			if(acceptance)  counters[NJetsIDLoose].fill("acceptance", weight);
+			if(leptfound)   counters[NJetsIDLoose].fill(to_measure, weight);
+
+			// PassJetID
 			if(fMT2tree->misc.PassJetID               ==0     ) continue;
+			if(eventgood)   counters[PassJetID].fill("PassJetID", weight);
+			if(acceptance)  counters[PassJetID].fill("acceptance", weight);
+			if(leptfound)   counters[PassJetID].fill(to_measure, weight);
+			
+			// MinMetJetDPhi
+			if(fMT2tree->misc.MinMetJetDPhi <0.3 )       continue;
+			if(eventgood)   counters[MinMetJetDPhi].fill("MinMetJetDPhi", weight);
+			if(acceptance)  counters[MinMetJetDPhi].fill("acceptance", weight);
+			if(leptfound)   counters[MinMetJetDPhi].fill(to_measure, weight);
+			
+			// VectorSumPt
+			if(fMT2tree->misc.Vectorsumpt             >70     )  continue;
+			if(eventgood)   counters[VectorSumPt].fill("VectorSumPt", weight);
+			if(acceptance)  counters[VectorSumPt].fill("acceptance", weight);
+			if(leptfound)   counters[VectorSumPt].fill(to_measure, weight);
+			
+			// MT2
+	//		if(fMT2tree->misc.MT2             <400     )  continue;
+	//		if(fMT2tree->misc.MT2             <150     )  continue;
+			if(fMT2tree->misc.MT2 <200 || fMT2tree->misc.MT2>400 )  continue;
+	//		if(fMT2tree->misc.MT2 <150 || fMT2tree->misc.MT2>300 )  continue;
+	//		if(fMT2tree->misc.MT2 <100 || fMT2tree->misc.MT2>150  )  continue;
+			if(eventgood)   counters[MT2].fill("MT2", weight);
+			if(acceptance)  counters[MT2].fill("acceptance", weight);
+			if(leptfound)   counters[MT2].fill(to_measure, weight);
+			
 		}
-		if(ZllSelect)   counters[PassJetID].fill("PassJetID"   ,weight);
-		if(ZllGood    ) counters[PassJetID].fill(to_measure    ,weight);
+
+		// print stats     
+		std::cout << setfill('=') << std::setw(70) << "" << std::endl;
+		std::cout << "Statistics" << std::endl;
+		std::cout << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;
+		for ( counters_t iCount=count_begin; iCount<count_end; iCount = counters_t(iCount+1) ) {
+			counters[iCount].print();
+			std::cout << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;  
+		}
+		std::cout << setfill('=') << std::setw(70) << "" << std::endl;
+
+		// fill histo
+		TH1D* h_all = new TH1D("h_all", "", count_end, 0., (double) count_end );
+		TH1D* h_acc = new TH1D("h_acc", "", count_end, 0., (double) count_end );
+		TH1D* h_rec = new TH1D("h_rec", "", count_end, 0., (double) count_end );
+		TH1D* h_1   = new TH1D("h_1"  , "", count_end, 0., (double) count_end );
+		TH1D* h_2   = new TH1D("h_2"  , "", count_end, 0., (double) count_end );
+		TH1D* h_3   = new TH1D("h_3"  , "", count_end, 0., (double) count_end );
+		for(int i=0; i<count_end; ++i){
+			h_1    ->GetXaxis()->SetBinLabel(i+1, lablx[i]);
+			h_2    ->GetXaxis()->SetBinLabel(i+1, lablx[i]);
+			h_3    ->GetXaxis()->SetBinLabel(i+1, lablx[i]);
+			h_all->SetBinContent(i+1,counters[i].counts((string) lablx[i]));
+			h_acc->SetBinContent(i+1,counters[i].counts("acceptance"));
+			h_rec->SetBinContent(i+1,counters[i].counts(to_measure));
+		}
+		h_1    ->Sumw2();
+		h_2    ->Sumw2();
+		h_3    ->Sumw2();
+		h_1    ->Divide(h_acc,h_all);	
+		h_2    ->Divide(h_rec,h_acc);	
+		h_3    ->Divide(h_rec,h_all);	
+		TCanvas *col  = new TCanvas("Wevents", "", 0, 0, 900, 700);
+		col -> cd();
+		h_1    ->SetLineColor(kBlue);
+		h_1    ->SetMarkerStyle(20);
+		h_1    ->SetMinimum(0);
+		h_1    ->SetMaximum(1);
+		h_1    ->SetDrawOption("E");
+		h_1    ->Draw();
+		string name  ="Wevents_"+lept+"_acceptance_"+(string) Sample.name; 
+		h_2    ->SetLineColor(kBlue);
+		h_2    ->SetMinimum(0);
+		h_2    ->SetMaximum(1);
+		h_2    ->SetMarkerStyle(20);
+		h_2    ->SetDrawOption("E");
+		h_2    ->Draw();
+		name  ="Wevents_"+lept+"_reco_"+(string) Sample.name; 
+		h_3    ->SetLineColor(kBlue);
+		h_3    ->SetMinimum(0);
+		h_3    ->SetMaximum(1);
+		h_3    ->SetMarkerStyle(20);
+		h_3    ->SetDrawOption("E");
+		h_3    ->Draw();
+		name  ="Wevents_"+lept+"_prob_"+(string) Sample.name; 
+
+		cout << "lept " << lept << " process " << process << endl;	
+		//__________________________________
+		if        (lept=="ele" && process=="W") {
+			fWpred.Wenu_acc        =h_1->GetBinContent(count_end);
+			fWpred.Wenu_acc_err    =h_1->GetBinError(count_end); 
+			fWpred.Wenu_rec        =h_2->GetBinContent(count_end);
+			fWpred.Wenu_rec_err    =h_2->GetBinError(count_end);  
+			fWpred.Wenu_prob       =h_3->GetBinContent(count_end);
+			fWpred.Wenu_prob_err   =h_3->GetBinError(count_end);  
+		}else if  (lept=="ele" && process=="Top"){
+			fWpred.TopWenu_acc     =h_1->GetBinContent(count_end);
+			fWpred.TopWenu_acc_err =h_1->GetBinError(count_end); 
+			fWpred.TopWenu_rec     =h_2->GetBinContent(count_end);
+			fWpred.TopWenu_rec_err =h_2->GetBinError(count_end);  
+			fWpred.TopWenu_prob    =h_3->GetBinContent(count_end);
+			fWpred.TopWenu_prob_err=h_3->GetBinError(count_end);  
+		}else if  (lept=="muo" && process=="W") {
+			fWpred.Wmunu_acc       =h_1->GetBinContent(count_end);
+			fWpred.Wmunu_acc_err   =h_1->GetBinError(count_end); 
+			fWpred.Wmunu_rec       =h_2->GetBinContent(count_end);
+			fWpred.Wmunu_rec_err   =h_2->GetBinError(count_end); 
+			fWpred.Wmunu_prob      =h_3->GetBinContent(count_end);
+			fWpred.Wmunu_prob_err  =h_3->GetBinError(count_end);  
+		}else if  (lept=="muo" && process=="Top") {
+			fWpred.TopWmunu_acc    =h_1->GetBinContent(count_end);
+			fWpred.TopWmunu_acc_err=h_1->GetBinError(count_end); 
+			fWpred.TopWmunu_rec    =h_2->GetBinContent(count_end);
+			fWpred.TopWmunu_rec_err=h_2->GetBinError(count_end); 
+			fWpred.TopWmunu_prob    =h_3->GetBinContent(count_end);
+			fWpred.TopWmunu_prob_err=h_3->GetBinError(count_end);  
+		}
+
+		//_________________________________
+		delete h_1;
+		delete h_2;
+		delete h_3;
+		delete h_all;
+		delete h_acc;
+		delete h_rec;
+		delete col;
+	}
+
+	// ________________________________________________________________________
+	void MassPlotter::PrintZllEfficiency(int sample_index , bool data, std::string lept, Long64_t nevents, double lower_mass, double upper_mass, bool pileUp_reweight){
+	//void MassPlotter::PrintZllEfficiency(int sample_index , bool data, std::string lept, Long64_t nevents, double lower_mass, double upper_mass){
+		sample Sample = fSamples[sample_index];
+
+		std::cout << setfill('=') << std::setw(70) << "" << std::endl;
+		cout << "printing kinetic & geom. acceptance for Z->ll for sample: \n"
+		     << Sample.name << endl;	
+		std::cout << setfill('-') << std::setw(70) << "" << std::endl;
+
+		enum counters_t { count_begin, all=count_begin, presel,  HCAL_ECAL_noise, VectorSumPt ,PassJetID, MinMetJetDPhi, MET, count_end };
+		Monitor counters[count_end];
+		TString lablx[count_end] = {"all events", "presel", "Cal_Noise", "VectorSumPt", "PassJetID", "MinMetJetDPhi", "MET"};
+
+		int pid=-1, flavour=-1; 
+		string to_measure;
+		if(lept == "ele" )            {pid = 11; flavour = 1; to_measure = "Zee recoed";} 
+		else if(lept == "muo" )       {pid = 13; flavour = 2; to_measure = "Zmumu recoed";} 
+		else if(lept == "neutrinos")  {pid = 12; flavour = 0; to_measure = "Znunu within acceptance";}
+
+		fMT2tree = new MT2tree();
+		Sample.tree->SetBranchAddress("MT2tree", &fMT2tree);
+		Long64_t nentries =  Sample.tree->GetEntries();
+		Long64_t nbytes = 0, nb = 0;
+		for (Long64_t jentry=0; jentry<min(nentries, nevents);jentry++) {
+			nb = Sample.tree->GetEntry(jentry);   nbytes += nb;
+			Sample.tree->SetBranchAddress("MT2tree", &fMT2tree);
+	      
+			if ( fVerbose>2 && jentry % 50000 == 0 )  cout << "+++ Proccessing event " << jentry << endl;
+
+			// check if event has Z->e+e- within acceptance	
+			
+			bool Zll(false);         
+			bool ZllSelect(false); 
+			bool ZllGood(false); 
+			if(  data) Zll              = (fMT2tree->GetDiLeptonInvMass(0,1,flavour,5,1) > 71 && fMT2tree->GetDiLeptonInvMass(0,1,flavour,5,1) < 111);
+			if(! data){ 
+				if     (pid ==11) {
+					ZllSelect =   (fMT2tree->Znunu.GenZee_mll_acc   > lower_mass && fMT2tree->Znunu.GenZee_mll_acc   < upper_mass  );
+					ZllGood     = (fMT2tree->Znunu.RecoOSee_mll     > lower_mass && fMT2tree->Znunu.RecoOSee_mll     < upper_mass  && ZllSelect );
+				}else if(pid ==13) {
+					ZllSelect =   (fMT2tree->Znunu.GenZmumu_mll_acc > lower_mass && fMT2tree->Znunu.GenZmumu_mll_acc < upper_mass  );
+					ZllGood     = (fMT2tree->Znunu.RecoOSmumu_mll   > lower_mass && fMT2tree->Znunu.RecoOSmumu_mll   < upper_mass  && ZllSelect  );
+				}else if(lept=="neutrinos"){
+					ZllSelect   =  ((fMT2tree->Znunu.GenZnunu_e_mll        > lower_mass && fMT2tree->Znunu.GenZnunu_e_mll    < upper_mass)  || 
+							(fMT2tree->Znunu.GenZnunu_mu_mll       > lower_mass && fMT2tree->Znunu.GenZnunu_mu_mll   < upper_mass)  ||  
+							(fMT2tree->Znunu.GenZnunu_tau_mll      > lower_mass && fMT2tree->Znunu.GenZnunu_tau_mll  < upper_mass));	
+					ZllGood     =  ((fMT2tree->Znunu.GenZnunu_e_mll_acc    > lower_mass && fMT2tree->Znunu.GenZnunu_e_mll_acc    < upper_mass)  || 
+							(fMT2tree->Znunu.GenZnunu_mu_mll_acc   > lower_mass && fMT2tree->Znunu.GenZnunu_mu_mll_acc   < upper_mass)  ||  
+							(fMT2tree->Znunu.GenZnunu_tau_mll_acc  > lower_mass && fMT2tree->Znunu.GenZnunu_tau_mll_acc  < upper_mass));	
+				}else {cout << "choose appropriate lepton" << endl; return;}
+
+			}
+
+			Double_t weight =(pileUp_reweight)? fMT2tree->pileUp.Weight:1;
+				
+			// all events
+			if(ZllSelect)   counters[all].fill("all events", weight);
+			if(ZllGood    ) counters[all].fill(to_measure  , weight);
+			
+			// presel
+			if(pid == 11 || pid == 13){
+				if(fMT2tree->Znunu.HTmatched              <300    )  continue;
+				if(fMT2tree->Znunu.caloHT50ID_matched     <600    )  continue;
+				if(fMT2tree->Znunu.Jet0Pass_matched       ==0     )  continue;
+				if(fMT2tree->Znunu.Jet1Pass_matched       ==0     )  continue;
+				if(fMT2tree->Znunu.SecondJPt_matched      <100     )  continue;
+				if(fMT2tree->Znunu.NJetsIDLoose_matched   <3      )  continue;
+			} else if(lept == "neutrinos"){
+				if(fMT2tree->misc.HT                      <300    )  continue;
+				//if(fMT2tree->misc.caloHT50_ID             <600    )  continue;
+				if(fMT2tree->misc.Jet0Pass                ==0     )  continue;
+				if(fMT2tree->misc.Jet1Pass                ==0     )  continue;
+				if(fMT2tree->misc.SecondJPt               <100     )  continue;
+				if(fMT2tree->NJetsIDLoose                  <3     )  continue;
+			}
+			if(ZllSelect)   counters[presel].fill("presel"  , weight);
+			if(ZllGood    ) counters[presel].fill(to_measure, weight);
+			
+			// ECAL HCAL Noise
+			if(fMT2tree->misc.HBHENoiseFlag                   ==0     )  continue;
+			if(fMT2tree->misc.CrazyHCAL                       ==1     )  continue;
+			if(ZllSelect  ) counters[HCAL_ECAL_noise].fill("Cal_Noise",weight);
+			if(ZllGood    ) counters[HCAL_ECAL_noise].fill(to_measure ,weight);
+			
+			// VectorSumPt
+			if(pid == 11 || pid == 13){
+				if(fMT2tree->Znunu.Vectorsumpt_matched    >70     )  continue;
+			} else if(lept == "neutrinos"){
+				if(fMT2tree->misc.Vectorsumpt             >70     )  continue;
+			}
+			if(ZllSelect)   counters[VectorSumPt].fill("VectorSumPt", weight);
+			if(ZllGood    ) counters[VectorSumPt].fill(to_measure,    weight);
+			
+			// PassJetID
+			if(pid ==11 || pid == 13){
+				if(fMT2tree->Znunu.PassJetID_matched      ==0     ) continue;
+			}else if (lept == "neutrinos"){
+				if(fMT2tree->misc.PassJetID               ==0     ) continue;
+			}
+			if(ZllSelect)   counters[PassJetID].fill("PassJetID"   ,weight);
+			if(ZllGood    ) counters[PassJetID].fill(to_measure    ,weight);
+			
+			// MinMetJetDPhi
+			if(pid ==11 || pid == 13){
+				if(fMT2tree->Znunu.MinMetplusLeptJetDPhi  <0.3    )  continue;
+			}else if (lept == "neutrinos"){
+				if(fMT2tree->misc.MinMetJetDPhi           <0.3    )  continue;
+			}
+			if(ZllSelect)   counters[MinMetJetDPhi].fill("MinMetJetDPhi",weight);
+			if(ZllGood    ) counters[MinMetJetDPhi].fill(to_measure     ,weight);
+			
+			// MET
+			if(pid ==11 || pid == 13){
+				if(fMT2tree->Znunu.METplusLeptsPt         < 30    ) continue;
+			}else if (lept == "neutrinos"){
+				if(fMT2tree->misc.MET                     < 30    )  continue;
+			}
+			if(ZllSelect)   counters[MET].fill("MET"       ,weight);
+			if(ZllGood    ) counters[MET].fill(to_measure  ,weight);
+		}
+
+		// print stats     
+		std::cout << setfill('=') << std::setw(70) << "" << std::endl;
+		std::cout << "Statistics" << std::endl;
+		std::cout << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;
+		for ( counters_t iCount=count_begin; iCount<count_end; iCount = counters_t(iCount+1) ) {
+			counters[iCount].print();
+			std::cout << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;  
+		}
+		std::cout << setfill('=') << std::setw(70) << "" << std::endl;
+
+		if(data) return;
+
+		// fill histo
+		TH1D* h_Z_num = new TH1D("h_Z_num", "", count_end, 0., (double) count_end );
+		TH1D* h_Z_den = new TH1D("h_Z_den", "", count_end, 0., (double) count_end );
+		TH1D* h_Z     = new TH1D("h_Z"    , "", count_end, 0., (double) count_end );
+		for(int i=0; i<count_end; ++i){
+			h_Z    ->GetXaxis()->SetBinLabel(i+1, lablx[i]);
+			h_Z_num->SetBinContent(i+1,counters[i].counts(to_measure));
+			h_Z_den->SetBinContent(i+1,counters[i].counts((string) lablx[i]));
+		}
+		h_Z    ->Sumw2();
+		h_Z    ->Divide(h_Z_num,h_Z_den);	
+		TCanvas *col  = new TCanvas("GenDYToLL", "", 0, 0, 900, 700);
+		col -> cd();
+		h_Z    ->SetLineColor(kBlue);
+		h_Z    ->SetMarkerStyle(20);
+		h_Z    ->SetDrawOption("E");
+		h_Z    ->Draw();
+		string name  ="GenDYToLL_"+lept+"_"+(string) Sample.name; 
+		if(fSave) Util::PrintEPS(col, name, fOutputDir);
 		
-		// MinMetJetDPhi
-		if(pid ==11 || pid == 13){
-			if(fMT2tree->Znunu.MinMetplusLeptJetDPhi  <0.3    )  continue;
-		}else if (lept == "neutrinos"){
-			if(fMT2tree->misc.MinMetJetDPhi           <0.3    )  continue;
+
+		//__________________________________
+		if(lept=="ele") {
+			fZpred.ele_reco     =h_Z  ->GetBinContent(count_end); 
+			fZpred.ele_reco_err =h_Z  ->GetBinError  (count_end);
 		}
-		if(ZllSelect)   counters[MinMetJetDPhi].fill("MinMetJetDPhi",weight);
-		if(ZllGood    ) counters[MinMetJetDPhi].fill(to_measure     ,weight);
-		
-		// MET
-		if(pid ==11 || pid == 13){
-			if(fMT2tree->Znunu.METplusLeptsPt         < 30    ) continue;
-		}else if (lept == "neutrinos"){
-			if(fMT2tree->misc.MET                     < 30    )  continue;
+		if(lept=="muo") {
+			fZpred.muo_reco     =h_Z  ->GetBinContent(count_end); 
+			fZpred.muo_reco_err =h_Z  ->GetBinError  (count_end); 
 		}
-		if(ZllSelect)   counters[MET].fill("MET"       ,weight);
-		if(ZllGood    ) counters[MET].fill(to_measure  ,weight);
-      	}
-
-	// print stats     
-      	std::cout << setfill('=') << std::setw(70) << "" << std::endl;
-       	std::cout << "Statistics" << std::endl;
-       	std::cout << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;
-       	for ( counters_t iCount=count_begin; iCount<count_end; iCount = counters_t(iCount+1) ) {
-         	counters[iCount].print();
-         	std::cout << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;  
-       	}
-  	std::cout << setfill('=') << std::setw(70) << "" << std::endl;
-
-	if(data) return;
-
-	// fill histo
-	TH1D* h_Z_num = new TH1D("h_Z_num", "", count_end, 0., (double) count_end );
-	TH1D* h_Z_den = new TH1D("h_Z_den", "", count_end, 0., (double) count_end );
-	TH1D* h_Z     = new TH1D("h_Z"    , "", count_end, 0., (double) count_end );
-	for(int i=0; i<count_end; ++i){
-		h_Z    ->GetXaxis()->SetBinLabel(i+1, lablx[i]);
-		h_Z_num->SetBinContent(i+1,counters[i].counts(to_measure));
-		h_Z_den->SetBinContent(i+1,counters[i].counts((string) lablx[i]));
+		if(lept=="neutrinos") {
+			fZpred.nu_acc       =h_Z  ->GetBinContent(count_end);
+			fZpred.nu_acc_err   =h_Z  ->GetBinError  (count_end);
+		}
+		//_________________________________
+		delete h_Z;
+		delete h_Z_den;
+		delete h_Z_num;
+		delete col;
 	}
-	h_Z    ->Sumw2();
-	h_Z    ->Divide(h_Z_num,h_Z_den);	
-	TCanvas *col  = new TCanvas("GenDYToLL", "", 0, 0, 900, 700);
-	col -> cd();
-	h_Z    ->SetLineColor(kBlue);
-	h_Z    ->SetMarkerStyle(20);
-	h_Z    ->SetDrawOption("E");
-	h_Z    ->Draw();
-	string name  ="GenDYToLL_"+lept+"_"+(string) Sample.name; 
-	if(fSave) Util::PrintEPS(col, name, fOutputDir);
-	
 
-	//__________________________________
-	if(lept=="ele") {
-		fZpred.ele_reco     =h_Z  ->GetBinContent(count_end); 
-		fZpred.ele_reco_err =h_Z  ->GetBinError  (count_end);
+	//________________________________________________________________________
+
+	void MassPlotter::PrintCutFlow(int njets, int nleps, TString trigger, TString cuts){
+	  
+	  Monitor counters[fSamples.size()];
+
+	  const int   nProc      = 17;  
+	  TString  cnames[nProc] = {"QCD", "W+jets", "Z+jets", "Top","Other", "Total Bkg.", "data", "LM1", "LM2", "LM3", "LM4", "LM5", "LM8", "LM9", "LM11", "LM12", "LM13"};
+	  Monitor  ccount[nProc], ccount_100[nProc];
+
+	  for(size_t i = 0; i < fSamples.size(); ++i){
+
+	    Double_t sample_weight =0;
+	    if(fPUReweight) sample_weight= fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents * fSamples[i].PU_avg_weight );
+	    else            sample_weight= fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents );
+	    if(fVerbose>2) cout << "PrintCutFlow: looping over " << fSamples[i].name << endl;
+	    if(fVerbose>2) cout << "              sample has weight " << sample_weight << " and " << fSamples[i].tree->GetEntries() << " entries" << endl; 
+	    if(fVerbose>2) cout << "              Average PU weight: " << fSamples[i].PU_avg_weight << endl;
+	    if(fVerbose>2) cout << "              PU reweightung:    " << fPUReweight << endl;
+	    if(fVerbose>2) cout << "              Original Entries: " << fSamples[i].nevents << endl;
+	    
+	    fMT2tree = new MT2tree();
+	    fSamples[i].tree->SetBranchAddress("MT2tree", &fMT2tree);
+	    Long64_t nentries =  fSamples[i].tree->GetEntries();
+	    Long64_t nbytes = 0, nb = 0;
+	    int nev =0;
+
+	    //leo tweak - filtering out the TTree
+	    TString myCuts = cuts;
+
+	    if( fSamples[i].type=="data") myCuts += " && " + trigger; //cuts to be aplied only on data
+	    cout << "Cuts for Flow: " << myCuts << endl;
+	    fSamples[i].tree->Draw(">>selList", myCuts);
+
+
+	    TEventList *myEvtList = (TEventList*)gDirectory->Get("selList");
+	    fSamples[i].tree->SetEventList(myEvtList);
+	    int counter=0;
+	    cout << "Filtering done, size=" <<myEvtList->GetN()  << endl;
+	    
+	    if(myEvtList->GetSize()==0) continue;
+	    
+	    while(myEvtList->GetEntry(counter++) !=-1){
+	      
+	      int jentry = myEvtList->GetEntry(counter-1);
+	      
+	      //for (Long64_t jentry=0; jentry<nentries;jentry++) {
+	      nb =  fSamples[i].tree->GetEntry(jentry);   nbytes += nb;
+	      fSamples[i].tree->SetBranchAddress("MT2tree", &fMT2tree);
+	      
+	      if ( fVerbose>2 && jentry % 50000 == 0 )  cout << "+++ Proccessing event " << jentry << endl;
+	      
+	      Double_t weight = sample_weight;
+	      if (!fMT2tree->misc.isData ) weight = weight * fMT2tree->pileUp.Weight; // pile-up reweighting for MC 
+
+	       bool isMT2gt100 = fMT2tree->misc.MT2 > 100.;
+
+	      if( fMT2tree->NJetsIDLoose < 1 || !fMT2tree->misc.Jet0Pass                                      )  continue;
+	      if( fMT2tree->NJetsIDLoose < 2 || !fMT2tree->misc.Jet1Pass    || fMT2tree->misc.SecondJPt < 100 )  continue;
+	      if( !(!fMT2tree->misc.isData   || (fMT2tree->misc.Run <162803 || fMT2tree->misc.Run >162909  )) )  continue;
+	      if(trigger=="HT"){
+		      if( fMT2tree->misc.isData ==1 
+			  && fMT2tree->trigger.HLT_PFHT650_v5 ==0 
+			  && fMT2tree->trigger.HLT_PFHT650_v6 ==0 
+			  && fMT2tree->trigger.HLT_PFHT650_v7 ==0 ) continue;
+		      //if( fMT2tree->misc.caloHT50_ID< 550)        continue;
+		      if( fMT2tree->misc.MET     < 30)  continue;
+	      }else if(trigger=="MHT_HT"){
+		      if( fMT2tree->misc.isData ==1 
+			  && fMT2tree->trigger.HLT_PFHT350_PFMET100_v3 ==0 
+			  && fMT2tree->trigger.HLT_PFHT350_PFMET100_v4 ==0 
+			  && fMT2tree->trigger.HLT_PFHT350_PFMET100_v5 ==0 ) continue;
+		      if( fMT2tree->misc.caloHT50  <= 320) continue;
+		      if( fMT2tree->misc.caloMHT30 <  130) continue;
+		      if( fMT2tree->misc.MET       <   30) continue;
+		      if( fMT2tree->misc.HT        <  450) continue;
+	      }
+
+	      if     (njets>1) {
+		if(fMT2tree->NJetsIDLoose != njets) continue;
+		TString text = TString::Format("All events (jets == %d)",njets);
+		counters[i].fill(text.Data(),weight);
+		FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, text, weight);
+		if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, text, weight);
+	      }
+	      else if(njets <-1) {
+		if(fMT2tree->NJetsIDLoose < abs(njets)) continue;
+		TString text = TString::Format("All events(jets >= %d)",abs(njets));
+		counters[i].fill(text.Data(),weight);
+		FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, text, weight);
+		if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, text, weight);
+	      }
+
+	      if(fMT2tree->PassMinMetJetDPhi03() ==0)      continue;      
+	      counters[i].fill("Minimum DPhi(MET,jet) > 0.3",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "Minimum DPhi(MET,jet) > 0.3", weight);
+	      if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, "Minimum DPhi(MET,jet) > 0.3", weight);
+
+	      if( fMT2tree->misc.HBHENoiseFlag != 1 )  continue;
+	      if( fMT2tree->misc.CrazyHCAL     != 0 )  continue;
+	      counters[i].fill("HBHE noise veto",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "HBHE noise veto", weight);
+	      if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, "HBHE noise veto", weight);
+
+	//      if( fMT2tree->misc.EcalDeadCellBEFlag != 1 )  continue;
+	//      counters[i].fill("Boundary energy veto (dead ecal)",weight);
+	//      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "Boundary energy veto (dead ecal)", weight);
+	//      if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, "Boundary energy veto (dead ecal)", weight);
+
+	      if( fMT2tree->misc.Vectorsumpt > 70. )  continue;
+	      counters[i].fill("VectorSumPt < 70",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "VectorSumPt < 70", weight);
+	      if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, "VectorSumPt < 70", weight);
+
+	      if( !fMT2tree->misc.PassJetID )  continue;
+	      counters[i].fill("jets > 50GeV failing PFID event veto",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "jets > 50GeV failing PFID event veto", weight);
+	      if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, "jets > 50GeV failing PFID event veto", weight);
+
+	      // Only considering (so far): no lepton requirement (<0);  1 lepton (==1), lepton veto (otherwise)
+	      string nLeps = (std::string) TString::Format("%d",abs(nleps));
+	      if(nleps !=-10){ 
+		      if(nleps>0){ // exactly nleps lepton
+			string cut_name = "NLeps == "+nLeps;
+			if( (fMT2tree->NEles + fMT2tree->NMuons) != abs(nleps))  continue;
+			counters[i].fill(cut_name,weight);
+			FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, cut_name, weight);
+			if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, cut_name, weight);
+		      }
+		      else if( nleps==0 ) { // lepton veto
+			string cut_name = "Lepton veto";
+			if( (fMT2tree->NEles + fMT2tree->NMuons) != 0 )  continue;
+			counters[i].fill(cut_name,weight);
+			FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, cut_name, weight);
+			if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, cut_name, weight);
+		      }
+		      else if(nleps<0){ // at least nleps lepton
+			string cut_name = "NLeps >= "+nLeps;
+			if( (fMT2tree->NEles + fMT2tree->NMuons) < abs(nleps))  continue;
+			counters[i].fill(cut_name ,weight);
+			FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, cut_name, weight);
+			if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, cut_name, weight);
+		      }
+	      }
+	      
+	//      if( !(fMT2tree->GetNBtags(2,1.74) >= 1) ) continue;
+	//      TString text = "b-tags >=1";
+	//      counters[i].fill(text.Data(),weight);
+	//      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, text, weight);
+	//      if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, text, weight);
+	      
+	      if( fMT2tree->misc.MT2 < 80. )  continue;
+	      counters[i].fill("MT2 > 80 GeV" ,weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 80 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 100. )  continue;
+	      counters[i].fill("MT2 > 100 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 100 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 120. )  continue;
+	      counters[i].fill("MT2 > 120 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 120 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 135. )  continue;
+	      counters[i].fill("MT2 > 135 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 135 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 150. )  continue;
+	      counters[i].fill("MT2 > 150 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 150 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 165. )  continue;
+	      counters[i].fill("MT2 > 165 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 165 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 180. )  continue;
+	      counters[i].fill("MT2 > 180 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 180 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 200. )  continue;
+	      counters[i].fill("MT2 > 200 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 200 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 225. )  continue;
+	      counters[i].fill("MT2 > 225 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 225 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 250. )  continue;
+	      counters[i].fill("MT2 > 250 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 250 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 275. )  continue;
+	      counters[i].fill("MT2 > 275 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 275 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 300. )  continue;
+	      counters[i].fill("MT2 > 300 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 300 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 325. )  continue;
+	      counters[i].fill("MT2 > 325 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 325 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 350. )  continue;
+	      counters[i].fill("MT2 > 350 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 350 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 375. )  continue;
+	      counters[i].fill("MT2 > 375 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 375 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 400. )  continue;
+	      counters[i].fill("MT2 > 400 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 400 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 425. )  continue;
+	      counters[i].fill("MT2 > 425 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 425 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 450. )  continue;
+	      counters[i].fill("MT2 > 450 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 450 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 475. )  continue;
+	      counters[i].fill("MT2 > 475 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 475 GeV", weight);
+	      if( fMT2tree->misc.MT2 < 500. )  continue;
+	      counters[i].fill("MT2 > 500 GeV",weight);
+	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 500 GeV", weight);
+	      
+	    }
+	    delete fMT2tree;
+	  }
+
+	  std::cout << setfill('=') << std::setw(70) << "" << std::endl;
+	  std::cout << "Statistics - by sample" << std::endl;
+	  std::cout << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;
+	  for ( size_t i = 0; i < fSamples.size(); ++i){
+	    std::cout << "++++  " << fSamples[i].name << std::endl;  
+	    std::cout << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;    
+	    counters[i].print();
+	    std::cout << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;    
+	  }  
+
+	  std::cout << setfill('=') << std::setw(70) << "" << std::endl;
+	  std::cout << "Statistics - by process" << std::endl;
+	  std::cout << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;
+	  for ( size_t i = 0; i < nProc; ++i){
+	    std::cout << "++++  " << cnames[i] << std::endl;  
+	    std::cout << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;    
+	    ccount[i].print();
+	    std::cout << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;    
+	  }  
+
+	  std::cout << setfill('=') << std::setw(70) << "" << std::endl;
+	  std::cout << "Statistics - by process (MT2 > 100GeV)" << std::endl;
+	  std::cout << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;
+	  for ( size_t i = 0; i < nProc; ++i){
+	    std::cout << "++++  " << cnames[i] << std::endl;  
+	    std::cout << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;    
+	    ccount_100[i].print();
+	    std::cout << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;    
+	  }  
+
 	}
-	if(lept=="muo") {
-		fZpred.muo_reco     =h_Z  ->GetBinContent(count_end); 
-		fZpred.muo_reco_err =h_Z  ->GetBinError  (count_end); 
-	}
-	if(lept=="neutrinos") {
-		fZpred.nu_acc       =h_Z  ->GetBinContent(count_end);
-		fZpred.nu_acc_err   =h_Z  ->GetBinError  (count_end);
-	}
-	//_________________________________
-	delete h_Z;
-	delete h_Z_den;
-	delete h_Z_num;
-	delete col;
-}
 
-//________________________________________________________________________
+	// MT2 vs HT cutflot  --------------------------------------------------------------------
+	void MassPlotter::PrintCutFlowMT2vsHT(TString trigger, TString cuts){
+	  
+	  // define here the HT & MT2 sampling to be used
+	  int   numHTbins   =  15;
+	  float minHT       = 400;
+	  float HTgridsize  =  50;
+	  float minMT2cut   = 100;
+	  float maxMT2cut   = 700;
+	  float MT2gridsize =  25;
+	  
+	  const int   nProc      = 17;  
+	  TString  cnames[nProc] = {"QCD", "W+jets", "Z+jets", "Top", "Other", "Total Bkg.", "data", "LM1", "LM2", "LM3", "LM4", "LM5", "LM8", "LM9", "LM11", "LM12", "LM13"};
+	  Monitor Monitors[numHTbins][nProc];
+	  Monitor counters[fSamples.size()];
 
-void MassPlotter::PrintCutFlow(int njets, int nleps, TString trigger, TString cuts){
-  
-  Monitor counters[fSamples.size()];
+	  // Loop over samples
+	  for(size_t i = 0; i < fSamples.size(); ++i){
 
-  const int   nProc      = 17;  
-  TString  cnames[nProc] = {"QCD", "W+jets", "Z+jets", "Top","Other", "Total Bkg.", "data", "LM1", "LM2", "LM3", "LM4", "LM5", "LM8", "LM9", "LM11", "LM12", "LM13"};
-  Monitor  ccount[nProc], ccount_100[nProc];
-
-  for(size_t i = 0; i < fSamples.size(); ++i){
-
-    Double_t sample_weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents * fSamples[i].PU_avg_weight );
+    Double_t sample_weight =0;
+    if(fPUReweight) sample_weight= fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents * fSamples[i].PU_avg_weight );
+    else            sample_weight= fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents );
     if(fVerbose>2) cout << "PrintCutFlow: looping over " << fSamples[i].name << endl;
     if(fVerbose>2) cout << "              sample has weight " << sample_weight << " and " << fSamples[i].tree->GetEntries() << " entries" << endl; 
     if(fVerbose>2) cout << "              Average PU weight: " << fSamples[i].PU_avg_weight << endl;
-    if(fVerbose>2) cout << "              Original Entries: " << fSamples[i].nevents << endl;
-    
-    fMT2tree = new MT2tree();
-    fSamples[i].tree->SetBranchAddress("MT2tree", &fMT2tree);
-    Long64_t nentries =  fSamples[i].tree->GetEntries();
-    Long64_t nbytes = 0, nb = 0;
-    int nev =0;
-
-    //leo tweak - filtering out the TTree
-    TString myCuts = cuts;
-
-    if( fSamples[i].type=="data") myCuts += " && " + trigger; //cuts to be aplied only on data
-    cout << "Cuts for Flow: " << myCuts << endl;
-    fSamples[i].tree->Draw(">>selList", myCuts);
-
-
-    TEventList *myEvtList = (TEventList*)gDirectory->Get("selList");
-    fSamples[i].tree->SetEventList(myEvtList);
-    int counter=0;
-    cout << "Filtering done, size=" <<myEvtList->GetN()  << endl;
-    
-    if(myEvtList->GetSize()==0) continue;
-    
-    while(myEvtList->GetEntry(counter++) !=-1){
-      
-      int jentry = myEvtList->GetEntry(counter-1);
-      
-      //for (Long64_t jentry=0; jentry<nentries;jentry++) {
-      nb =  fSamples[i].tree->GetEntry(jentry);   nbytes += nb;
-      fSamples[i].tree->SetBranchAddress("MT2tree", &fMT2tree);
-      
-      if ( fVerbose>2 && jentry % 50000 == 0 )  cout << "+++ Proccessing event " << jentry << endl;
-      
-      Double_t weight = sample_weight;
-      if (!fMT2tree->misc.isData ) weight = weight * fMT2tree->pileUp.Weight; // pile-up reweighting for MC 
-
-       bool isMT2gt100 = fMT2tree->misc.MT2 > 100.;
-
-      if( fMT2tree->NJetsIDLoose < 1 || !fMT2tree->misc.Jet0Pass                                      )  continue;
-      if( fMT2tree->NJetsIDLoose < 2 || !fMT2tree->misc.Jet1Pass    || fMT2tree->misc.SecondJPt < 100 )  continue;
-      if( !(!fMT2tree->misc.isData   || (fMT2tree->misc.Run <162803 || fMT2tree->misc.Run >162909  )) )  continue;
-      if(trigger=="HT"){
-	      if( fMT2tree->misc.isData ==1 
-		  && fMT2tree->trigger.HLT_PFHT650_v5 ==0 
-		  && fMT2tree->trigger.HLT_PFHT650_v6 ==0 
-		  && fMT2tree->trigger.HLT_PFHT650_v7 ==0 ) continue;
-              //if( fMT2tree->misc.caloHT50_ID< 550)        continue;
-              if( fMT2tree->misc.MET     < 30)  continue;
-      }else if(trigger=="MHT_HT"){
-      	      if( fMT2tree->misc.isData ==1 
-		  && fMT2tree->trigger.HLT_PFHT350_PFMET100_v3 ==0 
-		  && fMT2tree->trigger.HLT_PFHT350_PFMET100_v4 ==0 
-		  && fMT2tree->trigger.HLT_PFHT350_PFMET100_v5 ==0 ) continue;
-              if( fMT2tree->misc.caloHT50  <= 320) continue;
-              if( fMT2tree->misc.caloMHT30 <  130) continue;
-              if( fMT2tree->misc.MET       <   30) continue;
-	      if( fMT2tree->misc.HT        <  450) continue;
-      }
-
-      if     (njets>1) {
-	if(fMT2tree->NJetsIDLoose != njets) continue;
-	TString text = TString::Format("All events (jets == %d)",njets);
-	counters[i].fill(text.Data(),weight);
-	FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, text, weight);
-	if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, text, weight);
-      }
-      else if(njets <-1) {
-	if(fMT2tree->NJetsIDLoose < abs(njets)) continue;
-	TString text = TString::Format("All events(jets >= %d)",abs(njets));
-	counters[i].fill(text.Data(),weight);
-	FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, text, weight);
-	if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, text, weight);
-      }
-
-      if(fMT2tree->PassMinMetJetDPhi03() ==0)      continue;      
-      counters[i].fill("Minimum DPhi(MET,jet) > 0.3",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "Minimum DPhi(MET,jet) > 0.3", weight);
-      if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, "Minimum DPhi(MET,jet) > 0.3", weight);
-
-      if( fMT2tree->misc.HBHENoiseFlag != 1 )  continue;
-      if( fMT2tree->misc.CrazyHCAL     != 0 )  continue;
-      counters[i].fill("HBHE noise veto",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "HBHE noise veto", weight);
-      if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, "HBHE noise veto", weight);
-
-//      if( fMT2tree->misc.EcalDeadCellBEFlag != 1 )  continue;
-//      counters[i].fill("Boundary energy veto (dead ecal)",weight);
-//      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "Boundary energy veto (dead ecal)", weight);
-//      if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, "Boundary energy veto (dead ecal)", weight);
-
-      if( fMT2tree->misc.Vectorsumpt > 70. )  continue;
-      counters[i].fill("VectorSumPt < 70",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "VectorSumPt < 70", weight);
-      if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, "VectorSumPt < 70", weight);
-
-      if( !fMT2tree->misc.PassJetID )  continue;
-      counters[i].fill("jets > 50GeV failing PFID event veto",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "jets > 50GeV failing PFID event veto", weight);
-      if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, "jets > 50GeV failing PFID event veto", weight);
-
-      // Only considering (so far): no lepton requirement (<0);  1 lepton (==1), lepton veto (otherwise)
-      string nLeps = (std::string) TString::Format("%d",abs(nleps));
-      if(nleps !=-10){ 
-	      if(nleps>0){ // exactly nleps lepton
-		string cut_name = "NLeps == "+nLeps;
-		if( (fMT2tree->NEles + fMT2tree->NMuons) != abs(nleps))  continue;
-		counters[i].fill(cut_name,weight);
-		FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, cut_name, weight);
-		if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, cut_name, weight);
-	      }
-	      else if( nleps==0 ) { // lepton veto
-		string cut_name = "Lepton veto";
-		if( (fMT2tree->NEles + fMT2tree->NMuons) != 0 )  continue;
-		counters[i].fill(cut_name,weight);
-		FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, cut_name, weight);
-		if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, cut_name, weight);
-	      }
-	      else if(nleps<0){ // at least nleps lepton
-		string cut_name = "NLeps >= "+nLeps;
-		if( (fMT2tree->NEles + fMT2tree->NMuons) < abs(nleps))  continue;
-		counters[i].fill(cut_name ,weight);
-		FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, cut_name, weight);
-		if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, cut_name, weight);
-	      }
-      }
-      
-//      if( !(fMT2tree->GetNBtags(2,1.74) >= 1) ) continue;
-//      TString text = "b-tags >=1";
-//      counters[i].fill(text.Data(),weight);
-//      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, text, weight);
-//      if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, text, weight);
-      
-      if( fMT2tree->misc.MT2 < 80. )  continue;
-      counters[i].fill("MT2 > 80 GeV" ,weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 80 GeV", weight);
-      if( fMT2tree->misc.MT2 < 100. )  continue;
-      counters[i].fill("MT2 > 100 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 100 GeV", weight);
-      if( fMT2tree->misc.MT2 < 120. )  continue;
-      counters[i].fill("MT2 > 120 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 120 GeV", weight);
-      if( fMT2tree->misc.MT2 < 135. )  continue;
-      counters[i].fill("MT2 > 135 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 135 GeV", weight);
-      if( fMT2tree->misc.MT2 < 150. )  continue;
-      counters[i].fill("MT2 > 150 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 150 GeV", weight);
-      if( fMT2tree->misc.MT2 < 165. )  continue;
-      counters[i].fill("MT2 > 165 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 165 GeV", weight);
-      if( fMT2tree->misc.MT2 < 180. )  continue;
-      counters[i].fill("MT2 > 180 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 180 GeV", weight);
-      if( fMT2tree->misc.MT2 < 200. )  continue;
-      counters[i].fill("MT2 > 200 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 200 GeV", weight);
-      if( fMT2tree->misc.MT2 < 225. )  continue;
-      counters[i].fill("MT2 > 225 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 225 GeV", weight);
-      if( fMT2tree->misc.MT2 < 250. )  continue;
-      counters[i].fill("MT2 > 250 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 250 GeV", weight);
-      if( fMT2tree->misc.MT2 < 275. )  continue;
-      counters[i].fill("MT2 > 275 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 275 GeV", weight);
-      if( fMT2tree->misc.MT2 < 300. )  continue;
-      counters[i].fill("MT2 > 300 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 300 GeV", weight);
-      if( fMT2tree->misc.MT2 < 325. )  continue;
-      counters[i].fill("MT2 > 325 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 325 GeV", weight);
-      if( fMT2tree->misc.MT2 < 350. )  continue;
-      counters[i].fill("MT2 > 350 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 350 GeV", weight);
-      if( fMT2tree->misc.MT2 < 375. )  continue;
-      counters[i].fill("MT2 > 375 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 375 GeV", weight);
-      if( fMT2tree->misc.MT2 < 400. )  continue;
-      counters[i].fill("MT2 > 400 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 400 GeV", weight);
-      if( fMT2tree->misc.MT2 < 425. )  continue;
-      counters[i].fill("MT2 > 425 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 425 GeV", weight);
-      if( fMT2tree->misc.MT2 < 450. )  continue;
-      counters[i].fill("MT2 > 450 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 450 GeV", weight);
-      if( fMT2tree->misc.MT2 < 475. )  continue;
-      counters[i].fill("MT2 > 475 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 475 GeV", weight);
-      if( fMT2tree->misc.MT2 < 500. )  continue;
-      counters[i].fill("MT2 > 500 GeV",weight);
-      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "MT2 > 500 GeV", weight);
-      
-    }
-    delete fMT2tree;
-  }
-
-  std::cout << setfill('=') << std::setw(70) << "" << std::endl;
-  std::cout << "Statistics - by sample" << std::endl;
-  std::cout << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;
-  for ( size_t i = 0; i < fSamples.size(); ++i){
-    std::cout << "++++  " << fSamples[i].name << std::endl;  
-    std::cout << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;    
-    counters[i].print();
-    std::cout << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;    
-  }  
-
-  std::cout << setfill('=') << std::setw(70) << "" << std::endl;
-  std::cout << "Statistics - by process" << std::endl;
-  std::cout << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;
-  for ( size_t i = 0; i < nProc; ++i){
-    std::cout << "++++  " << cnames[i] << std::endl;  
-    std::cout << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;    
-    ccount[i].print();
-    std::cout << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;    
-  }  
-
-  std::cout << setfill('=') << std::setw(70) << "" << std::endl;
-  std::cout << "Statistics - by process (MT2 > 100GeV)" << std::endl;
-  std::cout << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;
-  for ( size_t i = 0; i < nProc; ++i){
-    std::cout << "++++  " << cnames[i] << std::endl;  
-    std::cout << setfill('-') << std::setw(70) << "" << setfill(' ') << std::endl;    
-    ccount_100[i].print();
-    std::cout << setfill('_') << std::setw(70) << "" << setfill(' ') << std::endl;    
-  }  
-
-}
-
-// MT2 vs HT cutflot  --------------------------------------------------------------------
-void MassPlotter::PrintCutFlowMT2vsHT(TString trigger, TString cuts){
-  
-  // define here the HT & MT2 sampling to be used
-  int   numHTbins   =  15;
-  float minHT       = 400;
-  float HTgridsize  =  50;
-  float minMT2cut   = 100;
-  float maxMT2cut   = 700;
-  float MT2gridsize =  25;
-  
-  const int   nProc      = 17;  
-  TString  cnames[nProc] = {"QCD", "W+jets", "Z+jets", "Top", "Other", "Total Bkg.", "data", "LM1", "LM2", "LM3", "LM4", "LM5", "LM8", "LM9", "LM11", "LM12", "LM13"};
-  Monitor Monitors[numHTbins][nProc];
-  Monitor counters[fSamples.size()];
-
-  // Loop over samples
-  for(size_t i = 0; i < fSamples.size(); ++i){
-
-    Double_t sample_weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents * fSamples[i].PU_avg_weight );
-    if(fVerbose>2) cout << "PrintCutFlow: looping over " << fSamples[i].name << endl;
-    if(fVerbose>2) cout << "              sample has weight " << sample_weight << " and input tree has " << fSamples[i].tree->GetEntries() << " entries" << endl; 
-    if(fVerbose>2) cout << "              Average PU weight: " << fSamples[i].PU_avg_weight << endl;
+    if(fVerbose>2) cout << "              PU reweightung:    " << fPUReweight << endl;
     if(fVerbose>2) cout << "              Original Entries: " << fSamples[i].nevents << endl;
 
     
@@ -1104,11 +1113,11 @@ void MassPlotter::CompSamples(std::vector<sample> Samples, TString var, TString 
 		}
 		if(optcut!="_" && Samples[i].sname == "DYToLL"){
 			TString newcuts = cuts + "&&" + optcut;  
-			if(Samples[i].type!="data") selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,newcuts.Data());
-			else                        selection      = TString::Format("(%.15f) * (%s)"              ,weight,newcuts.Data()); 
+			if(Samples[i].type!="data" && fPUReweight==true ) selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,newcuts.Data());
+			else                                              selection      = TString::Format("(%.15f) * (%s)"              ,weight,newcuts.Data()); 
 		} else {
-			if(Samples[i].type!="data") selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,cuts.Data());
-			else                        selection      = TString::Format("(%.15f) * (%s)"              ,weight,cuts.Data()); 
+			if(Samples[i].type!="data" && fPUReweight==true ) selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,cuts.Data());
+			else                                              selection      = TString::Format("(%.15f) * (%s)"              ,weight,cuts.Data()); 
 		}
 
 		variable          = TString::Format("%s>>%s",variable.Data(),histos[i]->GetName());
@@ -1213,7 +1222,7 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 	//TString  cnames[5] = {"QCD", "W/Z/#gamma production", "Top production", "susy", "data"};
 	//int      ccolor[5] = {401, 418, 602, 0, 632};
 	TString  cnames[7] = {"QCD", "W+jets", "Z+jets", "Top", "Other", "susy", "data"};
-	int      ccolor[7] = { 401,   417,       419,      600,    603,     0,     632};
+	int      ccolor[7] = { 401,   417,       419,      855,    603,     0,     632};
 	for (int i=0; i<7; i++){
 	  h_composited[i] = new TH1D(varname+"_"+cnames[i], "", nbins, bins);
 	  h_composited[i] -> Sumw2();
@@ -1252,10 +1261,14 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 			h_composited[5] -> SetLineStyle(kDotted);
 		}
 	
-		Double_t weight = Samples[i].xsection * Samples[i].kfact * Samples[i].lumi / (Samples[i].nevents*Samples[i].PU_avg_weight);
+		Double_t weight=0;
+		if(fPUReweight) weight = Samples[i].xsection * Samples[i].kfact * Samples[i].lumi / (Samples[i].nevents*Samples[i].PU_avg_weight);
+		else            weight = Samples[i].xsection * Samples[i].kfact * Samples[i].lumi / (Samples[i].nevents);
+
 		if(fVerbose>2) cout << "MakePlot: looping over " << Samples[i].sname << "-----------------------------------" <<  endl;
 		if(fVerbose>2) cout << "  +++++++ xsection:    "    << Samples[i].xsection << " k-fact " << Samples[i].kfact << endl;
 		if(fVerbose>2) cout << "  +++++++ tot events:  "  << Samples[i].nevents  << " avg pu weight " << Samples[i].PU_avg_weight << endl;
+		if(fVerbose>2) cout << "  +++++++ PU reweight: "  << fPUReweight << endl;
 		if(fVerbose>2) cout << "  +++++++ weight:      " << weight << " and " << Samples[i].tree->GetEntries() << " entries" << endl; 
 	
 		TString variable  = TString::Format("%s>>%s",var.Data(),h_samples[i]->GetName());
@@ -1263,8 +1276,8 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 		if(Samples[i].type=="data" && HLT!="") theCuts += " &&("+HLT+")"; // triggers for data
 
 		TString selection;
-		if(Samples[i].type!="data") selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,theCuts.Data());
-		else                        selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
+		if(Samples[i].type!="data" && fPUReweight) selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,theCuts.Data());
+		else                                       selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
 		  
 		if(fVerbose>2) cout << "  +++++++ Drawing      " << variable  << endl
 				    << "  +++++++ with cuts:   " << setw(40)  << selection << endl;
@@ -1361,7 +1374,7 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString cut
 	  }
 	  h_data->Add(h_composited[6]);
 	  if(h_data->Integral()>0 && stacked){
-	    Legend1     ->AddEntry(h_data, "data", "l");
+	    Legend1     ->AddEntry(h_data, "data", "p");
 	  }
 	  if(fVerbose > 2 && composited) {
 		           cout << "------------------------------------"                << endl

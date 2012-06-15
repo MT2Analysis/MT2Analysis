@@ -1127,14 +1127,14 @@ void MT2Analysis::GetLeptonJetIndices(){
 
 	// Warning: taus are also contained in the jet-collection.
 	vector<float> taus;
-	for(int i=0; i< fTR->TauNObjs; ++i){
-		if(std::isnan(fTR->TauPt[i])) { fIsNANObj = true; continue;} //protection against objects with NAN-Pt
-//// 		if(fTR->PfTau3Pt[i]   < 20    ) continue; // note: taus go up to 2.5 in Eta
-		if(!(IsGoodTau(i)))
-		  continue;
-		fTaus.push_back(i);
-		taus.push_back(fTR->TauPt[i]);
-	}
+//	for(int i=0; i< fTR->TauNObjs; ++i){
+//		if(std::isnan(fTR->TauPt[i])) { fIsNANObj = true; continue;} //protection against objects with NAN-Pt
+////// 		if(fTR->PfTau3Pt[i]   < 20    ) continue; // note: taus go up to 2.5 in Eta
+//		if(!(IsGoodTau(i)))
+//		  continue;
+//		fTaus.push_back(i);
+//		taus.push_back(fTR->TauPt[i]);
+//	}
 	fTaus          = Util::VSort(fTaus     , taus);
 
 	// Photons ---------------------------------------------------------------------------------

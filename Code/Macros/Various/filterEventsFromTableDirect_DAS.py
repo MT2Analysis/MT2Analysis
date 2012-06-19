@@ -8,7 +8,7 @@ START_FILE=0
 
 
 #### Filter on allowed datasets
-ALLOWED_DATASETS="/*/Run2012A-PromptReco-v1/RECO"
+ALLOWED_DATASETS=""
 
 usage = argv[0]+"""[options] tableFile.txt 
 
@@ -16,7 +16,7 @@ This tool reads a generic run/lumi table and run a filter on files.
 The table must be in the format:
 
 **************************************************************************************************
-*   Run  * LumiS *      Event   *   HT   *  MET  *  MT2  *  NJets * NJets40 * minDphi * hemiDphi *
+*   Run  * Lumi *      Event   *   HT   *  MET  *  MT2  *  NJets * NJets40 * minDphi * hemiDphi *
 **************************************************************************************************
 * 163332 *   778 *    519897214 * 965.83 * 787.0 * 618.8 *      5 *       5 *   1.195 *    0.870 *
 
@@ -56,6 +56,10 @@ if len(args)<1:
 if options.datasets!="":
     ALLOWED_DATASETS = options.datasets
 
+if ALLOWED_DATASETS=="":
+    print "No dataset is given as input, please use --dataset DATASETNAME"
+    exit(1)
+
 PWD=os.getenv("PWD")
 if not os.path.isfile(PWD+"/cli"):
     print "DAS Command Line utility not here, downloading"
@@ -70,7 +74,6 @@ print "----------------- \n"
 TABLE=args[0]
 OUTPUT=TABLE.replace(".txt",".root")
 CFG=TABLE.replace(".txt",".py")
-
 
 RUN_LUMI=[]
 FILES = []
@@ -92,8 +95,12 @@ for line in tfile:
             if sline[i].find("Run")!=-1: run_i=i
             elif sline[i].find("Lumi")!=-1: lumi_i=i
             elif sline[i].find("Event")!=-1: event_i=i
-    else:
+    elif len(sline[run_i]) !=0:
         RUN_LUMI.append( [sline[run_i], sline[lumi_i], sline[event_i] ])
+
+if len(RUN_LUMI)==0:
+    print "No Run, Lumi information found, please check your input file"
+    exit(1)
 
 
 ### preparing the dbs query
@@ -107,9 +114,7 @@ for rl in RUN_LUMI:
     if N_FILE< START_FILE: continue
     N_FILE +=1
     cmd="./cli --limit=0 --query='file dataset="+DST+" run="+str(rl[0])+" lumi="+str(rl[1])+"'"
-    print cmd
     out = os.popen(cmd)
-    minSize=-1
     found=False
     
     for l in out:

@@ -71,6 +71,14 @@ if options.datasets!="":
     ALLOWED_DATASETS = []
     for i in options.datasets.split(","): ALLOWED_DATASETS.append( i )
 
+
+out = os.popen("which dbssql")
+for o in out:
+    if o.find("/usr/bin/which")!=-1:
+        print "Getting dbssql"
+        os.system("wget ")
+
+    
 print "\n----------------- "
 print "I will search in the following datasets:"
 print ALLOWED_DATASETS

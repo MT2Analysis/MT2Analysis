@@ -75,8 +75,8 @@ if options.datasets!="":
 out = os.popen("which dbssql")
 for o in out:
     if o.find("/usr/bin/which")!=-1:
-        print "Getting dbssql"
-        os.system("wget ")
+        print "Get dbssql in your PATH!"
+        exit(1)
 
     
 print "\n----------------- "

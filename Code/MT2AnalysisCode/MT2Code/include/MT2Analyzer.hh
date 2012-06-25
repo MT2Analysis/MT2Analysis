@@ -21,10 +21,14 @@ public:
 	void SetProcessID(int ID){fID=ID;};
 	void SetBTagEfficiency(string btagFileName){ fbtagFileName = btagFileName;};
 	void SetPUReweighting(string puScenario){fPu = puScenario;};
+	void SetType1MET(bool type1MET){fType1MET = type1MET;};
+	void SetCHSJets(bool CHSJets){fCHSJets = CHSJets;};
 	bool removePhoton;
         bool doPDF;
         bool isScan;
 	string fPu;
+	bool fType1MET;
+	bool fCHSJets;
 private:
 	MT2Analysis             *fMT2Analysis;
   	int fMaxEvents;   

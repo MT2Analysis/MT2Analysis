@@ -13,6 +13,8 @@ MT2Analyzer::MT2Analyzer(std::vector<std::string>& fileList)
 	removePhoton =false;
 	fID          =-1;  //default process ID
 	fbtagFileName="";
+	fType1MET    =false;
+	fCHSJets     =false;
 }
 
 MT2Analyzer::~MT2Analyzer(){
@@ -83,6 +85,8 @@ void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, str
 	fMT2Analysis                    ->SetBTagEfficiency(fbtagFileName);
 	fMT2Analysis             	->doPDF        = doPDF;
         fMT2Analysis             	->isScan        = isScan;
+	fMT2Analysis                    ->SetType1MET(fType1MET);
+	fMT2Analysis                    ->SetCHSJets(fCHSJets);
 
 
 	fMT2Analysis                    ->Begin(filename);

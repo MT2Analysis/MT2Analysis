@@ -35,6 +35,8 @@ void MT2Misc::Reset() {
   CrazyHCAL               =  0;
   NegativeJEC             =  0;
   isData                  =  0;
+  isType1MET              =  0;
+  isCHSJets               =  0;
   Run                     = -1;	  
   Event		  	  = -1;	  
   LumiSection		  = -1;	  
@@ -51,14 +53,10 @@ void MT2Misc::Reset() {
   Vectorsumpt		  = -99999.99;
   HT			  = -99999.99;
   QCDPartonicHT		  = -99999.99;
-  caloHT40       	  = -99999.99;
-  caloHT50       	  = -99999.99;
   pfHT30                  = -99999.99;
   pfHT35                  = -99999.99;
   pfHT40                  = -99999.99;
   pfHT45                  = -99999.99;
-  caloMHT30       	  = -99999.99;
-  caloMHT40       	  = -99999.99;
   MinMetJetDPhi           = -99999.99;
   MinMetJetDPhi4          = -99999.99;
   MinMetJetDPhiIndex      = -1;
@@ -261,50 +259,6 @@ void MT2Trigger::Reset(){
 }
 
 
-// MT2Znunu ------------------------------------
-MT2Znunu::MT2Znunu(){
-	Reset();
-}
-
-MT2Znunu::~MT2Znunu(){
-}
-
-void MT2Znunu::Reset(){
-	NJetsIDLoose_matched      = -999;
-	PassJetID_matched         = -999;
-	Jet1Pass_matched          = -999;
-	Jet0Pass_matched          = -999;
-	LeadingJPt_matched        = -99999.99;
-	SecondJPt_matched         = -99999.99;
-	HTmatched                 = -99999.99;
-	caloMHT30_matched         = -99999.99;
-	caloMHT30ID_matched       = -99999.99;
-	caloMHT30_matchedReco     = -99999.99;
-	caloMHT30ID_matchedReco   = -99999.99;
-	caloHT50_matched          = -99999.99;
-	caloHT50ID_matched        = -99999.99;
-	caloHT50_matchedReco      = -99999.99;
-	caloHT50ID_matchedReco    = -99999.99;
-	GenZmumu_mll              = -99999.99;
-	GenZmumu_mll_acc          = -99999.99;
-	GenZee_mll                = -99999.99;
-	GenZee_mll_acc            = -99999.99;
-	GenZnunu_e_mll            = -99999.99;
-	GenZnunu_e_mll_acc        = -99999.99;
-	GenZnunu_mu_mll           = -99999.99;
-	GenZnunu_mu_mll_acc       = -99999.99;
-	GenZnunu_tau_mll          = -99999.99;
-	GenZnunu_tau_mll_acc      = -99999.99;
-	RecoOSee_mll              = -99999.99;
-	RecoOSmumu_mll            = -99999.99;
-	METplusLeptsPt            = -99999.99;
-	METplusLeptsPtReco        = -99999.99;
-	MinMetplusLeptJetDPhi     = -99999.99;
-	MinMetplusLeptJetDPhiReco = -99999.99;
-	Vectorsumpt_matched       = -99999.99;
-}
-
-
 // MT2Jet -----------------------------------
 MT2Jet::MT2Jet(){
   Reset();
@@ -360,13 +314,22 @@ Bool_t MT2Jet::IsGoodPFJet(float minJPt, float maxJEta, int PFJID) {
   
   switch (PFJID) {
   case 3:               // TIGHT
-    if ( ! isPFIDTight     )    return false; // tight PF-jet ID 
+    if ( ! (NeuHadFrac < 0.90)  ) return false;
+    if ( ! (NeuEmFrac  < 0.90)  ) return false;
     // break;   // No break: medium contains tight
   case 2:               // MEDIUM
-    if ( ! isPFIDMedium     )   return false; // medium PF-jet ID
+    if ( ! (NeuHadFrac < 0.95)  ) return false;
+    if ( ! (NeuEmFrac  < 0.95)  ) return false;
     // break;   // No break: loose contains medium 
   case 1:               // LOOSE
-    if ( ! isPFIDLoose     )    return false; // loose PF-jet ID f
+    if(!(NeuHadFrac    < 0.99)  ) return false;
+    if(!(NeuEmFrac     < 0.99)  ) return false;
+    if(!(NConstituents > 1)     ) return false;
+    if( fabs(eta) < 2.4){
+    	if(! (ChHadFrac > 0)    ) return false;
+    	if(! (ChMult    > 0)    ) return false; // Charged multiplicity
+    	if(! (ChEmFrac  < 0.99) ) return false;
+    }
     break;
   default:
     // None of the above. Do we want any default cut?
@@ -573,13 +536,16 @@ void MT2tree::Reset() {
   NGenLepts        = 0;
   NGenJets         = 0;
   NPdfs            = 0;
+  NBJets           = 0;
+  NBJetsHE         = 0;
+  NBJetsCSVM       = 0;
+  NBJetsCSVT       = 0;
   
   for(int i=0; i<100; i++){
     pdfW[i] = -1;
   }
 
   misc.Reset();
-  Znunu.Reset();
   pileUp.Reset();
   trigger.Reset();
 
@@ -607,6 +573,7 @@ void MT2tree::Reset() {
   rawpfmet  [0].SetPxPyPzE(0., 0., 0., 0.);
   pfmet     [0].SetPxPyPzE(0., 0., 0., 0.);
   genmet    [0].SetPxPyPzE(0., 0., 0., 0.);
+  type1pfmet[0].SetPxPyPzE(0., 0., 0., 0.);
   MHT       [0].SetPxPyPzE(0., 0., 0., 0.);
   GenZ      [0].SetPxPyPzE(0., 0., 0., 0.);
   GenPhoton [0].SetPxPyPzE(0., 0., 0., 0.);
@@ -630,6 +597,14 @@ void MT2tree::SetNBJets(int n) {
 
 void MT2tree::SetNBJetsHE(int n) {
   NBJetsHE = n;
+}
+
+void MT2tree::SetNBJetsCSVM(int n) {
+  NBJetsCSVM = n;
+}
+
+void MT2tree::SetNBJetsCSVT(int n) {
+  NBJetsCSVT = n;
 }
 
 void MT2tree::SetNEles(int n) {
@@ -659,7 +634,7 @@ Int_t MT2tree::GetNjets(float minJPt, float maxJEta, int PFJID){
   return njets;
 }
 
-Int_t MT2tree::GetNBtags (int algo, float value, float minJPt, float maxJEta, int PFJID){  // algo - 0:TCHE, 1:TCHP, 2:SSVHE, 3:SSVHP
+Int_t MT2tree::GetNBtags (int algo, float value, float minJPt, float maxJEta, int PFJID){  // algo - 0:TCHE, 1:TCHP, 2:SSVHE, 3:SSVHP, 4:CSV
   int nbjets=0;
   for(int i=0; i<NJets; ++i){
     if(jet[i].IsGoodPFJet(minJPt,maxJEta,PFJID)==false ) continue; 
@@ -675,6 +650,9 @@ Int_t MT2tree::GetNBtags (int algo, float value, float minJPt, float maxJEta, in
       break;
     case 3: 
       if( jet[i].bTagProbSSVHP < value ) continue;
+      break;
+    case 4: 
+      if( jet[i].bTagProbCSV   < value ) continue;
       break;
     default:
       continue;
@@ -2251,7 +2229,6 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	logStream << "  NJetsIDLoose (pT > 20, |eta| < 2.4, Pf-JID) " << NJetsIDLoose                                 << endl;
 	logStream << "  NEles " << NEles  << ", NMuons "<< NMuons << ", NTaus "<<NTaus                                << endl;
 	logStream << "  NVertices " << pileUp.NVertices                                                               << endl;
-        //logStream << "  pf-HT " << misc.HT << ", caloHT50_ID " << misc.caloHT50_ID                                    << endl;
 	logStream << "  pf-MET Pt:" << misc.MET << " Phi " << pfmet[0].Phi() << " Px " << pfmet[0].Px() << " Py " << pfmet[0].Py() << endl;
 	logStream << "     MHT Pt:" << MHT[0].Pt() << " Phi " << MHT[0].Phi() << " Px " << MHT[0].Px() << " Py " << MHT[0].Py() << endl;
 
@@ -2555,7 +2532,6 @@ Float_t MT2tree::MinGenBosonJetsDR(){
 // ----------------------------------------------------------------------------------------------------------
 ClassImp(MT2Susy)
 ClassImp(MT2Misc)
-ClassImp(MT2Znunu)
 ClassImp(MT2PileUp)
 ClassImp(MT2Trigger)
 ClassImp(MT2Jet)

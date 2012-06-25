@@ -19,6 +19,8 @@ public:
   void Reset();
   
   Bool_t   isData;
+  Bool_t   isCHSJets;
+  Bool_t   isType1MET;
   Bool_t   BadEcalTP;             // store bad events as "true" 
   Bool_t   BadEcalBE;             // store bad events as "true"
   Bool_t   CSCTightHaloID;        // store bad events as "true"
@@ -50,21 +52,17 @@ public:
   Float_t  MinMetBJetDPhi;
   Float_t  HT;
   Float_t  QCDPartonicHT;
-  Float_t  caloHT40;    
-  Float_t  caloHT50;  
   Float_t  pfHT30;
   Float_t  pfHT35;
   Float_t  pfHT40;
   Float_t  pfHT45;
-  Float_t  caloMHT30;  
-  Float_t  caloMHT40;  
   Float_t  TrackingFailure;
   Float_t  TrackingFailurePVtx;
   Int_t    WDecayMode;
   Int_t    TopDecayMode;
   Float_t  BTagWeight;
   
-  ClassDef(MT2Misc, 30)
+  ClassDef(MT2Misc, 32)
 };
 
 
@@ -257,50 +255,6 @@ public:
 	Bool_t HLT_EMu;
 
 	ClassDef(MT2Trigger, 17);
-};
-
-// MT2Znunu --------------------------------
-class MT2Znunu : public TObject {
-
-public:
-	MT2Znunu();
-	virtual ~MT2Znunu();
-	void Reset();
-
-	Int_t    NJetsIDLoose_matched;
-	Float_t GenZee_mll;
-	Float_t GenZee_mll_acc; 
-	Float_t GenZmumu_mll;
-	Float_t GenZmumu_mll_acc;
-	Float_t GenZnunu_e_mll;
-	Float_t GenZnunu_e_mll_acc;
-	Float_t GenZnunu_mu_mll;
-	Float_t GenZnunu_mu_mll_acc;
-	Float_t GenZnunu_tau_mll;
-	Float_t GenZnunu_tau_mll_acc;
-	Float_t RecoOSee_mll;
-	Float_t RecoOSmumu_mll;
-	Float_t caloMHT30_matched;
-	Float_t caloMHT30ID_matched;
-	Float_t caloMHT30_matchedReco;
-	Float_t caloMHT30ID_matchedReco;
-	Float_t caloHT50_matched;
-	Float_t caloHT50ID_matched;
-	Float_t caloHT50_matchedReco;
-	Float_t caloHT50ID_matchedReco;
-	Float_t HTmatched;
-	Float_t METplusLeptsPt;
-	Float_t METplusLeptsPtReco;
-	Float_t MinMetplusLeptJetDPhi;
-	Float_t MinMetplusLeptJetDPhiReco;
-	Float_t PassJetID_matched;
-	Float_t Jet1Pass_matched;
-	Float_t Jet0Pass_matched;
-	Float_t LeadingJPt_matched;
-	Float_t SecondJPt_matched;
-	Float_t Vectorsumpt_matched;
-
-	ClassDef(MT2Znunu, 8);
 };
 
 // MT2Jet ----------------------------------
@@ -528,6 +482,8 @@ public:
   void SetNJetsIDLoose  (int n);
   void SetNBJets        (int n);
   void SetNBJetsHE      (int n);
+  void SetNBJetsCSVM    (int n);
+  void SetNBJetsCSVT    (int n);
   void SetNEles         (int n);
   void SetNMuons        (int n);
   void SetNPhotons      (int n);
@@ -645,18 +601,19 @@ public:
   Int_t   NJetsIDLoose50;
   Int_t   NBJets;
   Int_t   NBJetsHE;
+  Int_t   NBJetsCSVM;
+  Int_t   NBJetsCSVT;
   Int_t   NEles;
   Int_t   NMuons;
   Int_t   NPhotons;
   Int_t   NTaus;
   Int_t   NGenLepts;
-  Int_t     NPdfs;
+  Int_t   NPdfs;
   Int_t GenProcessID;
   Double_t GenWeight;
 
   MT2Susy        Susy;
   MT2Misc        misc;
-  MT2Znunu       Znunu;
   MT2PileUp      pileUp;
   MT2Trigger     trigger;
   MT2Jet         jet[m_jetSize];
@@ -672,11 +629,12 @@ public:
   TLorentzVector MHT[2];
   TLorentzVector GenPhoton[2];
   TLorentzVector GenZ[2];
+  TLorentzVector type1pfmet[2]; // type1 corrected PFMET
   TLorentzVector rawpfmet[2]; // this is raw, uncorrected and not scaled pf-met. 
                               // identical to pfmet unless met is JEScales or modified in data-driven estimates
   double pdfW[100];
   
-  ClassDef(MT2tree, 24)
+  ClassDef(MT2tree, 27)
 };
 
 #endif

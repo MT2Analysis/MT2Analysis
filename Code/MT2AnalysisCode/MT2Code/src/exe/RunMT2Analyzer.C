@@ -24,6 +24,7 @@ void usage( int status = 0 ) {
         cout << "                      [-s noPU,MC2012] [-C JEC]                                       " << endl;
 	cout << "                      [-w pdf] [-b btag]                                             " << endl;
 	cout << "                      [-r photon ] [-i ID ]                                          " << endl;
+	cout << "                      [-e type1MET ] [-E CHS ]                                       " << endl;
 	cout << "                      [-l] file1 [... filen]"                                          << endl;
 	cout << "  where:"                                                                              << endl;
 	cout << "     dir           is the output directory                                           " << endl;
@@ -45,6 +46,8 @@ void usage( int status = 0 ) {
 	cout << "     JEC           redo JEC: dir of JEC to be used                                   " << endl;
 	cout << "                   /shome/pnef/MT2Analysis/Code/JetEnergyCorrection/[JEC]            " << endl;
 	cout << "                   ak5 pf-jets will be corrected with L1FastL2L3 (+RES if type=data) " << endl;
+	cout << "     type1MET      use type1 corrected pf-MET (default = false)                      " << endl;
+	cout << "     CHS           use CHS - PFjets (default = false)                                " << endl;
 	cout << "     filen         are the input files (by default: ROOT files)                      " << endl;
 	cout << "                   with option -l, these are read as text files                      " << endl;
 	cout << "                   with one ROOT file name per line                                  " << endl;
@@ -69,6 +72,8 @@ int main(int argc, char* argv[]) {
 	string  JEC  ="";
 	string  btagFileName = "";
 	bool isData  = false;
+	bool isCHSJets = false;
+	bool isType1MET = false;
 	bool isScan = false;
 	int verbose  = 0;
 	int maxEvents=-1;
@@ -79,7 +84,7 @@ int main(int argc, char* argv[]) {
 
 // Parse options
 	char ch;
-	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:r:b:i:C:w:lh?")) != -1 ) {
+	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:r:b:i:C:w:eElh?")) != -1 ) {
 	  switch (ch) {
 	  case 'd': outputdir       = TString(optarg);break;
 	  case 'o': filename        = TString(optarg);break;
@@ -96,6 +101,8 @@ int main(int argc, char* argv[]) {
 	  case 'i': ID              = atoi(optarg);   break;
 	  case 's': puScenario      = string(optarg); break;
           case 'C': JEC             = string(optarg); break;
+	  case 'e': isType1MET      = true; break;
+	  case 'E': isCHSJets       = true; break; 
 	  case 'l': isList          = true; break;
 	    //case 'noPU': noPU = true; break;  
 	  case '?':
@@ -154,6 +161,8 @@ int main(int argc, char* argv[]) {
   	cout << "MC_PileUp file:                 " << (mc_PileUp.length()>0?mc_PileUp:"empty") << endl;
   	cout << "Data_PileUp file:               " << (data_PileUp.length()>0?data_PileUp:"empty") << endl;
 	cout << "PileUp Scenario:                " << puScenario << endl;
+	cout << "ak5-PF have CHS                 " << (isCHSJets? "ENABLED":"DISABLED") << endl;
+	cout << "pfMET is:                       " << (isType1MET? "Type1 corrected":"raw") << endl;
   	if(btagFileName.length() !=0){
 	cout << "btag file is:                   " << (btagFileName.length()>0?btagFileName:"empty") << endl;
 	}
@@ -175,6 +184,8 @@ int main(int argc, char* argv[]) {
 	tA->SetProcessID(ID);
 	tA->SetBTagEfficiency(btagFileName);
 	tA->SetPUReweighting(puScenario);
+	tA->SetType1MET(isType1MET);
+	tA->SetCHSJets(isCHSJets);
 	tA->isScan = isScan;
 	tA->removePhoton = removePhoton;
 	if(pdf=="pdf") tA->doPDF=true;

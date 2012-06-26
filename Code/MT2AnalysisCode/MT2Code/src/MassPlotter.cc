@@ -268,7 +268,7 @@ void MassPlotter::MakePlot(TString var, TString cuts, int njets, int nleps, TStr
 	//		if(fMT2tree->misc.LeadingJPt              < 150   )  continue;
 			if(fMT2tree->misc.SecondJPt               < 100   )  continue;
 	//		if(fMT2tree->NBJets                       < 1     )  continue;
-			if(fMT2tree->misc.HBHENoiseFlag           ==0     )  continue;
+//			if(fMT2tree->misc.HBHENoiseFlag           ==0     )  continue;
 			if(fMT2tree->misc.CrazyHCAL               ==1     )  continue;
 			if(eventgood)   counters[presel].fill("presel", weight);
 			if(acceptance)  counters[presel].fill("acceptance", weight);
@@ -503,7 +503,7 @@ void MassPlotter::MakePlot(TString var, TString cuts, int njets, int nleps, TStr
 	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "Minimum DPhi(MET,jet) > 0.3", weight);
 	      if(isMT2gt100)     FillMonitor(ccount_100, fSamples[i].sname, fSamples[i].type, "Minimum DPhi(MET,jet) > 0.3", weight);
 
-	      if( fMT2tree->misc.HBHENoiseFlag != 1 )  continue;
+//	      if( fMT2tree->misc.HBHENoiseFlag != 1 )  continue;
 	      if( fMT2tree->misc.CrazyHCAL     != 0 )  continue;
 	      counters[i].fill("HBHE noise veto",weight);
 	      FillMonitor(ccount, fSamples[i].sname, fSamples[i].type, "HBHE noise veto", weight);
@@ -2715,8 +2715,8 @@ void MassPlotter::TauContamination(int sample_index, Long64_t nevents, int flag)
 	    fMT2tree->misc.SecondJPt       >  100                                  &&
 	    fMT2tree->misc.PassJetID       == 1                                    &&
 	    fMT2tree->misc.Vectorsumpt     <  70                                   &&
-            fMT2tree->misc.HBHENoiseFlagIso == 0                                   &&
-	    fMT2tree->misc.CSCTightHaloID   == 0                                   &&
+//            fMT2tree->misc.HBHENoiseFlagIso == 0                                   &&
+//	    fMT2tree->misc.CSCTightHaloID   == 0                                   &&
             fMT2tree->misc.CrazyHCAL        == 0))
 	  continue;
 

@@ -26,14 +26,6 @@ MT2Misc::~MT2Misc(){
 }
 
 void MT2Misc::Reset() {
-  HBHENoiseFlag           =  0;
-  HBHENoiseFlagIso        =  0;
-  RecovRecHitFilterFlag   =  0;
-  BadEcalTP               =  0;
-  BadEcalBE               =  0;
-  CSCTightHaloID          =  0;
-  CrazyHCAL               =  0;
-  NegativeJEC             =  0;
   isData                  =  0;
   isType1MET              =  0;
   isCHSJets               =  0;
@@ -57,15 +49,24 @@ void MT2Misc::Reset() {
   pfHT35                  = -99999.99;
   pfHT40                  = -99999.99;
   pfHT45                  = -99999.99;
+  pfHT50                  = -99999.99;
   MinMetJetDPhi           = -99999.99;
   MinMetJetDPhi4          = -99999.99;
   MinMetJetDPhiIndex      = -1;
   MinMetBJetDPhi          = -99999.99;
-  TrackingFailure         = -99999.99;
-  TrackingFailurePVtx     = -99999.99;
   WDecayMode              = -1;
   TopDecayMode            = -1;
   BTagWeight              = -99999.99;
+
+  // Noise Filters
+  CrazyHCAL                        =  0;
+  NegativeJEC                      =  0;
+  CSCTightHaloIDFlag               =  0;
+  HBHENoiseFlag                    =  0;
+  hcalLaserEventFlag               =  0;
+  trackingFailureFlag              =  0;
+  eeBadScFlag                      =  0;
+  EcalDeadCellTriggerPrimitiveFlag =  0;
 
 }
 
@@ -2236,10 +2237,9 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	logStream << "  gen-met : " << genmet[0].Pt() << " phi " << genmet[0].Phi()                                   << endl;
 	}
 	logStream << " Data quality ------------------------------------------------------------------------------- "  << endl;
-	logStream << "  HBHENoiseFlag " << misc.HBHENoiseFlag << " (0=good, 1=bad),  CrazyHCAL " << misc.CrazyHCAL 
-	     << ", BadEcalTP " << misc.BadEcalTP         << ", BadEcalBE " << misc.BadEcalBE 
-	     << ", CSCTightHaloID " << misc.CSCTightHaloID                                                             << endl;
-        logStream << "  RecovRecHitFilterFlag " << misc.RecovRecHitFilterFlag << ", TrackingFailurePV " << Bool_t(misc.TrackingFailurePVtx<0.1) << " (value TrackingFailurePVtx " << misc.TrackingFailurePVtx << ")"                                                       << endl;
+//	logStream << "  HBHENoiseFlag " << misc.HBHENoiseFlag << " (0=good, 1=bad),  CrazyHCAL " << misc.CrazyHCAL 
+//	     << ", BadEcalTP " << misc.BadEcalTP         << ", BadEcalBE " << misc.BadEcalBE 
+//	     << ", CSCTightHaloID " << misc.CSCTightHaloID                                                             << endl;
         logStream << "  Jet0Pass " << misc.Jet0Pass <<" Jet1Pass " << misc.Jet1Pass << " PassJetID " << misc.PassJetID << endl;	
 	logStream << "  MinMetJetDPhi " << misc.MinMetJetDPhi                                                          << endl;
 	logStream << "  Vectorsumpt " << misc.Vectorsumpt                                                              << endl;

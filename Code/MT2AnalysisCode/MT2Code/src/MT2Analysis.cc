@@ -313,7 +313,7 @@ void MT2Analysis::FillTree(){
 
 bool MT2Analysis::FillMT2TreeBasics(){
 	// check size of jets electrons muons and genleptons
-	if(Jets.size()     > 25) {cout << "ERROR: Jets.size()   > 25: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(Jets.size()      > 25) {cout << "ERROR: Jets.size()   > 25: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
 	if(fTaus.size()     > 20) {cout << "ERROR: fTaus.size()   > 20: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
 	if(fElecs.size()    > 5 ) {cout << "ERROR: fElecs.size()  >  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
 	if(fMuons.size()    > 5 ) {cout << "ERROR: fMuons.size()  >  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
@@ -325,6 +325,21 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	for(int i=0; i<Jets.size(); ++i) {
 		fMT2tree->jet[i] = (MT2Jet) Jets[i];
 	}
+	// ---------------------------------------------------------------
+	// Set NJets, NElecs, NMuons
+	fMT2tree->SetNJets         (Jets.size());
+	fMT2tree->NJetsIDLoose40 = fMT2tree->GetNjets(40, 2.4, 1);
+	fMT2tree->NJetsIDLoose50 = fMT2tree->GetNjets(50, 2.4, 1);
+	fMT2tree->SetNGenJets      (fTR->NGenJets > gNGenJets ? gNGenJets: fTR->NGenJets);
+	fMT2tree->SetNJetsIDLoose  (fMT2tree->GetNjets(20, 2.4, 1));
+	fMT2tree->SetNBJets        (fMT2tree->GetNBtags(3,2.0  ,20,2.4,1));
+	fMT2tree->SetNBJetsHE      (fMT2tree->GetNBtags(2,1.74 ,20,2.4,1));
+	fMT2tree->SetNBJetsCSVM    (fMT2tree->GetNBtags(4,0.679,20,2.4,1));
+	fMT2tree->SetNBJetsCSVT    (fMT2tree->GetNBtags(4,0.898,20,2.4,1));
+	fMT2tree->SetNEles         ((Int_t)fElecs.size());
+	fMT2tree->SetNMuons        ((Int_t)fMuons.size());
+	fMT2tree->SetNTaus         ((Int_t)fTaus.size());
+	fMT2tree->SetNPhotons      ((Int_t)fPhotons.size());
 
 	// --------------------------------------------------------------
 	// match taus to jets
@@ -491,21 +506,6 @@ bool MT2Analysis::FillMT2TreeBasics(){
 			fMT2tree->genlept[NGenLepts-1].MT = fMT2tree->GetMT(fMT2tree->genlept[NGenLepts-1].lv, fMT2tree->genlept[NGenLepts-1].lv.M(), fMT2tree->genmet[0], 0.);
 		}
 	}
-	// ---------------------------------------------------------------
-	// Set NJets, NElecs, NMuons
-	fMT2tree->SetNJets         (Jets.size());
-	fMT2tree->SetNGenJets      (fTR->NGenJets > gNGenJets ? gNGenJets: fTR->NGenJets);
-	fMT2tree->SetNJetsIDLoose  (fMT2tree->GetNjets(20, 2.4, 1));
-	fMT2tree->SetNBJets        (fMT2tree->GetNBtags(3,2.0  ,20,2.4,1));
-	fMT2tree->SetNBJetsHE      (fMT2tree->GetNBtags(2,1.74 ,20,2.4,1));
-	fMT2tree->SetNBJetsCSVM    (fMT2tree->GetNBtags(4,0.679,20,2.4,1));
-	fMT2tree->SetNBJetsCSVT    (fMT2tree->GetNBtags(4,0.898,20,2.4,1));
-	fMT2tree->SetNEles         ((Int_t)fElecs.size());
-	fMT2tree->SetNMuons        ((Int_t)fMuons.size());
-	fMT2tree->SetNTaus         ((Int_t)fTaus.size());
-	fMT2tree->SetNPhotons      ((Int_t)fPhotons.size());
-	fMT2tree->NJetsIDLoose40 = fMT2tree->GetNjets(40, 2.4, 1);
-	fMT2tree->NJetsIDLoose50 = fMT2tree->GetNjets(50, 2.4, 1);
 	fMT2tree->NGenLepts      = NGenLepts;
 
 
@@ -663,15 +663,16 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	fMT2tree->misc.LeadingJPt          = (fMT2tree->NJets > 0) ? fMT2tree->jet[0].lv.Pt() : 0;
 	fMT2tree->misc.SecondJPt           = (fMT2tree->NJets > 1) ? fMT2tree->jet[1].lv.Pt() : 0;
 	
-	// RA2 tracking failure
-//	fMT2tree->misc.TrackingFailure       = fTR->TrkPtSum/fHT;
-//	fMT2tree->misc.TrackingFailurePVtx   = fTR->PrimVtxPtSum/fHT;
-//	fMT2tree->misc.CSCTightHaloID        = fTR->CSCTightHaloID;                  // Branch added in ntuple V02-04-00
-//	fMT2tree->misc.RecovRecHitFilterFlag = fTR->RecovRecHitFilterFlag==1? 0:1;   // Branch added in ntuple V02-04-06	
-//	fMT2tree->misc.HBHENoiseFlagIso      = fTR->HBHENoiseFlagIso==1     ? 0:1;   // Branch added in ntuple V02-04-06 
-//	fMT2tree->misc.HBHENoiseFlag	     = (fTR->HBHENoiseFlag==1) ? 0:1;  // store bad events as "true"
-	fMT2tree->misc.CrazyHCAL             = fCrazyHCAL;                     // store bad events as "true"
-	fMT2tree->misc.NegativeJEC           = fNegativeJEC;
+	// noise filters    // store bad events as "true"
+	
+	fMT2tree->misc.CSCTightHaloIDFlag                  = fTR->CSCTightHaloID                    ? 0:1;                  
+	fMT2tree->misc.HBHENoiseFlag                       = fTR->HBHENoiseFilterResult             ? 0:1;
+	fMT2tree->misc.hcalLaserEventFlag                  = fTR->hcalLaserEventFilter              ? 0:1;
+	fMT2tree->misc.trackingFailureFlag                 = fTR->trackingFailureFilter             ? 0:1;
+	fMT2tree->misc.eeBadScFlag                         = fTR->eeBadScFilter                     ? 0:1;
+	fMT2tree->misc.EcalDeadCellTriggerPrimitiveFlag    = fTR->EcalDeadCellTriggerPrimitiveFilter? 0:1;
+	fMT2tree->misc.CrazyHCAL                           = fCrazyHCAL;                 
+	fMT2tree->misc.NegativeJEC                         = fNegativeJEC;
 	
 	// add gen photon
 	if(!fisData){
@@ -742,17 +743,20 @@ void MT2Analysis::FillMT2treeCalculations(){
 	
 
 	// pf HT and MHT
-	float pfHT30=0,pfHT35=0,pfHT40=0,pfHT45=0;
-	for(int j=0; j<Jets.size(); ++j){
-	  if(Jets[j].Pt() > 30 && fabs(Jets[j].Eta())<3.0)   pfHT30 += Jets[j].Pt();	  
-	  if(Jets[j].Pt() > 35 && fabs(Jets[j].Eta())<3.0)   pfHT35 += Jets[j].Pt();	  
-	  if(Jets[j].Pt() > 40 && fabs(Jets[j].Eta())<3.0)   pfHT40 += Jets[j].Pt();	  
-	  if(Jets[j].Pt() > 45 && fabs(Jets[j].Eta())<3.0)   pfHT45 += Jets[j].Pt();	  
+	float pfHT30=0,pfHT35=0,pfHT40=0,pfHT45=0,pfHT50=0;
+	for(int j=0; j<fTR->NJets; ++j){ // pfHT from Jets without CHS 
+	  if(fTR->JEcorr[j] <0) continue;
+	  if(fTR->JPt[j] > 30 && fabs(fTR->JEta[j])<3.0)   pfHT30 += fTR->JPt[j];	  
+	  if(fTR->JPt[j] > 35 && fabs(fTR->JEta[j])<3.0)   pfHT35 += fTR->JPt[j];	  
+	  if(fTR->JPt[j] > 40 && fabs(fTR->JEta[j])<3.0)   pfHT40 += fTR->JPt[j];	  
+	  if(fTR->JPt[j] > 45 && fabs(fTR->JEta[j])<3.0)   pfHT45 += fTR->JPt[j];	  
+	  if(fTR->JPt[j] > 50 && fabs(fTR->JEta[j])<3.0)   pfHT50 += fTR->JPt[j];	  
 	}
 	fMT2tree->misc.pfHT30       = pfHT30;
 	fMT2tree->misc.pfHT35       = pfHT35;
 	fMT2tree->misc.pfHT40       = pfHT40;
 	fMT2tree->misc.pfHT45       = pfHT45;
+	fMT2tree->misc.pfHT50       = pfHT50;
 
 	// W and Top decay modes
 	fMT2tree->misc.WDecayMode   = fMT2tree->WDecayMode  ();

@@ -21,14 +21,6 @@ public:
   Bool_t   isData;
   Bool_t   isCHSJets;
   Bool_t   isType1MET;
-  Bool_t   BadEcalTP;             // store bad events as "true" 
-  Bool_t   BadEcalBE;             // store bad events as "true"
-  Bool_t   CSCTightHaloID;        // store bad events as "true"
-  Bool_t   RecovRecHitFilterFlag; // store bad events as "true"
-  Bool_t   HBHENoiseFlag;         // store bad events as "true"
-  Bool_t   HBHENoiseFlagIso;      // store bad events as "true"
-  Bool_t   CrazyHCAL;             // store bad events as "true"
-  Bool_t   NegativeJEC;           
   Int_t    Run;
   Int_t    Event;
   Int_t    LumiSection;
@@ -50,19 +42,28 @@ public:
   Float_t  MinMetJetDPhi4;      // use first 4 jets
   Int_t    MinMetJetDPhiIndex;
   Float_t  MinMetBJetDPhi;
-  Float_t  HT;
   Float_t  QCDPartonicHT;
+  Float_t  HT;
   Float_t  pfHT30;
   Float_t  pfHT35;
   Float_t  pfHT40;
   Float_t  pfHT45;
-  Float_t  TrackingFailure;
-  Float_t  TrackingFailurePVtx;
+  Float_t  pfHT50;
   Int_t    WDecayMode;
   Int_t    TopDecayMode;
   Float_t  BTagWeight;
+
+  //Noise Filters
+  Bool_t   CrazyHCAL;             // store bad events as "true"
+  Bool_t   NegativeJEC;           
+  Bool_t   CSCTightHaloIDFlag;    
+  Bool_t   HBHENoiseFlag;
+  Bool_t   hcalLaserEventFlag;
+  Bool_t   trackingFailureFlag;
+  Bool_t   eeBadScFlag;
+  Bool_t   EcalDeadCellTriggerPrimitiveFlag;
   
-  ClassDef(MT2Misc, 32)
+  ClassDef(MT2Misc, 34)
 };
 
 

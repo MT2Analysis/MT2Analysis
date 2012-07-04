@@ -31,6 +31,7 @@ void MT2Analyzer::Loop(){
 		nentries=min((Long64_t)fMaxEvents, fTR->GetEntries());
 		cout << " only running on first " << nentries << " events" << endl;
 	}
+	if(nentries ==0) return; // fix in order to prevent assertion error if nentries==0
 
 	// loop over all ntuple entries
     	Long64_t jentry=0;

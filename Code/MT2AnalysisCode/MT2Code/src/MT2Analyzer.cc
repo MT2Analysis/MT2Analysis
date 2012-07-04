@@ -66,7 +66,7 @@ void MT2Analyzer::Loop(){
 			if(isScan){
 			  fMT2Analysis->fH2_mSugraEvents->Fill(fTR->M0, fTR->M12);
 			  fMT2Analysis->fH2_SMSEvents->Fill(fTR->MassGlu, fTR->MassLSP);
-			  fMT2Analysis->fH_mSugraSubProcEvents[fTR->process]->Fill(fTR->M0, fTR->M12);
+			  if(fTR->process>0) fMT2Analysis->fH_mSugraSubProcEvents[fTR->process]->Fill(fTR->M0, fTR->M12);
 			}
 
 		}

@@ -570,6 +570,9 @@ void MT2tree::Reset() {
   for (int i = 0; i< m_genjetSize; ++i){
     genjet[i].Reset();
   }
+  for (int i=0; i<m_tauSize; ++i){
+    tau[i].Reset();
+  }
   for (int i = 0; i < m_eleSize; ++i) {
     ele[i].Reset();
   }

@@ -327,11 +327,11 @@ void MT2Analysis::FillTree(){
 
 bool MT2Analysis::FillMT2TreeBasics(){
 	// check size of jets electrons muons and genleptons
-	if(Jets.size()      > 25) {cout << "ERROR: Jets.size()   > 25: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
-	if(fTaus.size()     > 20) {cout << "ERROR: fTaus.size()   > 20: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
-	if(fElecs.size()    > 5 ) {cout << "ERROR: fElecs.size()  >  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
-	if(fMuons.size()    > 5 ) {cout << "ERROR: fMuons.size()  >  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
-	if(fPhotons.size()  > 5 ) {cout << "ERROR: fPhotons.size()>  5: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(Jets.size()      > 25) {cout << "ERROR: Jets.size()    > 25: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(fTaus.size()     > 8 ) {cout << "ERROR: fTaus.size()   >  8: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(fElecs.size()    > 8 ) {cout << "ERROR: fElecs.size()  >  8: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(fMuons.size()    > 8 ) {cout << "ERROR: fMuons.size()  >  8: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(fPhotons.size()  > 8 ) {cout << "ERROR: fPhotons.size()>  8: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
 
 
 	// ---------------------------------------------------------------
@@ -870,6 +870,17 @@ void MT2Analysis::GetLeptonJetIndices(){
 	fPhotons.clear();
 	fPhotonJetOverlapRemoved.clear();
 	Jets.clear();
+	
+	// Photons -----------------
+	vector<float> photon_pts;
+	for(int i=0; i<fTR->NPhotons; ++i){
+		if(! IsGoodPhoton(i))                             continue; 
+		if(! IsGoodPhotonEGMLooseRelISO(i))               continue;   // preselection: use only photons passing the loose RelIso
+		fPhotons.push_back(i);
+		photon_pts.push_back(fTR->PhoPt[i]);
+		fPhotonJetOverlapRemoved.push_back(false);
+	}
+	fPhotons     = Util::VSort(fPhotons, photon_pts);
 
   	// #--- muon loop
 	vector<float> muloose;
@@ -889,7 +900,18 @@ void MT2Analysis::GetLeptonJetIndices(){
 	}
 	fElecs      = Util::VSort(fElecs     , eltight);
 	
-	vector<float> pt1; 
+	// Warning: taus are also contained in the jet-collection.: overlap is not removed! 
+	vector<float> taus;
+	for(int i=0; i< fTR->TauNObjs; ++i){
+		if(std::isnan(fTR->TauPt[i])) { fIsNANObj = true; continue;} //protection against objects with NAN-Pt
+		if(!(IsGoodTau(i))          ) continue;
+		fTaus.push_back(i);
+		taus.push_back(fTR->TauPt[i]);
+	}
+	fTaus          = Util::VSort(fTaus     , taus);
+	
+
+	// Jets loop ------------------------------------------------------------------
 	for(int ij=0; ij < (fisCHSJets?fTR->PFCHSNJets:fTR->NJets); ++ij){
 		MT2AnalysisJet* jet = new MT2AnalysisJet(ij, "PF", this);
 		if( jet->Pt()    < 20)  continue; 
@@ -907,86 +929,16 @@ void MT2Analysis::GetLeptonJetIndices(){
 			mu.SetPtEtaPhiE(fTR->MuPt[fMuons[muIndex]], fTR->MuEta[fMuons[muIndex]], fTR->MuPhi[fMuons[muIndex]], fTR->MuE[fMuons[muIndex]]);
 			if(jet->lv.DeltaR(mu)<0.4) {jGood=false;}
 		}
+		for (int iphoton=0; iphoton<fPhotons.size(); ++iphoton){
+			TLorentzVector phot(0,0,0,0);
+			phot.SetPtEtaPhiM(fTR->PhoPt[fPhotons[iphoton]], fTR->PhoEta[fPhotons[iphoton]], fTR->PhoPhi[fPhotons[iphoton]], 0.);
+			if(jet->lv.DeltaR(phot)<0.2 && fRemovePhoton ) {jGood=false; fPhotonJetOverlapRemoved[iphoton]=true; }
+		}
 		if (! jGood) continue; 
 
 		Jets.push_back(*jet); delete jet;
 	}
-
-	// Warning: taus are also contained in the jet-collection.
-	vector<float> taus;
-//	for(int i=0; i< fTR->TauNObjs; ++i){
-//		if(std::isnan(fTR->TauPt[i])) { fIsNANObj = true; continue;} //protection against objects with NAN-Pt
-////// 		if(fTR->PfTau3Pt[i]   < 20    ) continue; // note: taus go up to 2.5 in Eta
-//		if(!(IsGoodTau(i)))
-//		  continue;
-//		fTaus.push_back(i);
-//		taus.push_back(fTR->TauPt[i]);
-//	}
-	fTaus          = Util::VSort(fTaus     , taus);
-
-	// Photons ---------------------------------------------------------------------------------
-	vector<float> photon_pts;
-	for(int i=0; i<fTR->NPhotons; ++i){
-		if(! IsGoodPhoton(i))                             continue; 
-		if(! IsGoodPhotonEGMLooseRelISO(i))               continue;   // preselection: use only photons passing the loose RelIso
-		fPhotons.push_back(i);
-		photon_pts.push_back(fTR->PhoPt[i]);
-		fPhotonJetOverlapRemoved.push_back(false);
-	}
-	fPhotons     = Util::VSort(fPhotons, photon_pts);
-
-	// remove jet or ele matched to photon ----------------------------------------------------
-/*      FIXME ---------------------------------
-	if(! fRemovePhoton)   return;
-
-	vector<int> removeEleIndices;
-	vector<int> removeJetIndices;
-	
-	if(fRemovePhoton){
-		// find jet or ele index to be removed
-		for(int iphoton=0; iphoton<fPhotons.size(); ++iphoton){
-			float minDR=10; int index=-1; bool jetmatch(false);
-			TLorentzVector phot(0,0,0,0);
-			phot.SetPtEtaPhiM(fTR->PhoPt[fPhotons[iphoton]], fTR->PhoEta[fPhotons[iphoton]], fTR->PhoPhi[fPhotons[iphoton]], 0.);
-			for(int el=0; el<fElecs.size(); ++el){
-				TLorentzVector ele(0,0,0,0);
-				ele.SetPtEtaPhiM(fTR->ElPt[fElecs[el]], fTR->ElEta[fElecs[el]], fTR->ElPhi[fElecs[el]], 0.);
-				float dR = phot.DeltaR(ele);
-				if (dR< minDR) {minDR= dR; index =fElecs[el];} 
-			}
-			for(int ijet=0; ijet<fJets.size(); ++ijet){
-				TLorentzVector jet(0,0,0,0);
-				jet.SetPtEtaPhiE(fTR->JPt[fJets[ijet]], fTR->JEta[fJets[ijet]], fTR->JPhi[fJets[ijet]], fTR->JE[fJets[ijet]]);
-				float dR = phot.DeltaR(jet);
-				if (dR< minDR) {minDR= dR; index =fJets[ijet]; jetmatch=true;} 
-			}
-			if(minDR<0.2){ // require match within dR=0.2
-				if(jetmatch){removeJetIndices.push_back(index);}
-				else        {removeEleIndices.push_back(index);}
-				fPhotonJetOverlapRemoved[iphoton]=true; // set mark that for photon "iphoton", the corresponding jet was found (will be) removed 
-			}	
-		}
-	}
-	if(fRemovePhoton && fPhotons.size()>0){	
-		for(int i=0; i<removeEleIndices.size(); ++i){
-			for(int j=0; j<fElecs.size(); ++j){
-				if(fElecs[j]==removeEleIndices[i]) {
-					fElecs    .erase(fElecs.begin()   +j);
-					eltight   .erase(eltight.begin()  +j);
-				}
-			}
-		}
-		for(int i=0; i<removeJetIndices.size(); ++i){
-			for(int j=0; j<fJets.size(); ++j){
-				if(fJets[j]==removeJetIndices[i]) {
-					fJets .erase(fJets.begin()   +j);
-					pt1   .erase(pt1.begin()     +j);
-				}
-			}
-		}
-	}
 	// -----------
-	*/ 
 }
 
 // *****************************************************************************
@@ -1347,12 +1299,12 @@ bool MT2Analysis::IsGoodPhoton(int i){
 }
 
 bool MT2Analysis::IsGoodTau(int i){
-
-//       if(fTR->PfTau3Pt[i]                       < 15.0         ) return false;    
-//       if(fabs(fTR->PfTau3Eta[i])                > 2.3          ) return false;
-//       if(fTR->PfTau3DecayModeFinding[i]         < 0.5          ) return false;  
-       //if(fTR->PfTau3LooseElectronRejection[i]   < 0.5          ) return false;  
-       //if(fTR->PfTau3LooseMuonRejection[i]       < 0.5          ) return false;  
+       if(fTR->TauPt[i]                          < 15.0         ) return false;    
+       if(fabs(fTR->TauEta[i])                   > 2.3          ) return false;
+       if(fTR->TauDecayModeFinding[i]            < 0.5          ) return false;  
+       if(fTR->TauLooseElectronRejection[i]      < 0.5          ) return false;  
+       if(fTR->TauLooseMuonRejection[i]          < 0.5          ) return false;  
+       if(fTR->TauVLooseCombinedIsoDBSumPtCorr[i]< 0.5          ) return false;
        return true;
 }
 

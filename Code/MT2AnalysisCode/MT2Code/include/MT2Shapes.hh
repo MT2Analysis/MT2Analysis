@@ -41,6 +41,7 @@ public:
 	void SetDraw(bool draw){fDraw=draw;};
 	void SetWrite(bool write){fWrite=write;};
 	void SetLogStream(std::ostringstream* stream){fLogStream=stream;};
+	void SetPUReweight(bool PUreweight){fPUReweight = PUreweight;};
 	void Print();
 
 	struct sample{
@@ -68,6 +69,10 @@ public:
 			         TString xtitle, const int nbins, const double *bins);
 	void GetShapes(TString var, TString cuts, int njets, int nleps, TString selection_name, TString HLT,
 			         TString xtitle, const int nbins, const double min, const double max);
+	void GetShapes(TString var, TString cuts, TString selection_name, TString HLT,
+			         TString xtitle, const int nbins, const double *bins);
+	void GetShapes(TString var, TString cuts, TString selection_name, TString HLT,
+			         TString xtitle, const int nbins, const double min, const double max);
 	int test;
 
 private:
@@ -80,6 +85,7 @@ private:
 	bool fPrintSummary;
 	bool fDraw;
 	bool fWrite;
+	bool fPUReweight;
 	bool fCout;
 	std::ostringstream* fLogStream;
 

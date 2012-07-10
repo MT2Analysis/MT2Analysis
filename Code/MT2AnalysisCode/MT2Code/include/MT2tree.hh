@@ -539,6 +539,7 @@ public:
   Float_t PseudoJetPtRatio(Bool_t inclMET, Bool_t vsHT);
   Float_t GetBJetDR(int algo, float value, float minJPt, float maxJEta, int PFJID);
   Float_t BJetMETdPhi(int algo, float value, float minJPt, float maxJEta, int PFJID);
+  Float_t MHTMETDPhi();
 
   // MT2 & friends
   Float_t GetMT2            (Float_t testmass=0, bool massive=false,       Int_t PFJID=1, Float_t minJPt=20, Float_t maxJEta=2.4, 

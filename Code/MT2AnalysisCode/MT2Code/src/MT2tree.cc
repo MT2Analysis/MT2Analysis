@@ -2253,10 +2253,12 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	if(!misc.isData){
 	logStream << "  gen-met : " << genmet[0].Pt() << " phi " << genmet[0].Phi()                                   << endl;
 	}
-	logStream << " Data quality ------------------------------------------------------------------------------- "  << endl;
-//	logStream << "  HBHENoiseFlag " << misc.HBHENoiseFlag << " (0=good, 1=bad),  CrazyHCAL " << misc.CrazyHCAL 
-//	     << ", BadEcalTP " << misc.BadEcalTP         << ", BadEcalBE " << misc.BadEcalBE 
-//	     << ", CSCTightHaloID " << misc.CSCTightHaloID                                                             << endl;
+	logStream << " Data quality -- bad events are stored as 'true=1'    --------------------------------------- "  << endl;
+	logStream << "  CrazyHCAL " << misc.CrazyHCAL << ", NegativeJEC "<< misc.NegativeJEC                           << endl
+		  << "  CSCTightHaloIDFlag "  << misc.CSCTightHaloIDFlag << ", HBHENoiseFlag " << misc.HBHENoiseFlag   << endl
+		  << "  hcalLaserEventFlag "  << misc.hcalLaserEventFlag << ", trackingFailureFlag " << misc.trackingFailureFlag << endl
+		  << "  EE BadSupercrystal "  << misc.eeBadScFlag        << ", EcalDeadCellTriggerPrimitiveFlag " << misc.EcalDeadCellTriggerPrimitiveFlag  << endl;
+	logStream << " Other Quality Flag ------------------------------------------------------------------------- "  << endl;
         logStream << "  Jet0Pass " << misc.Jet0Pass <<" Jet1Pass " << misc.Jet1Pass << " PassJetID " << misc.PassJetID << endl;	
 	logStream << "  MinMetJetDPhi " << misc.MinMetJetDPhi                                                          << endl;
 	logStream << "  Vectorsumpt " << misc.Vectorsumpt                                                              << endl;
@@ -2265,14 +2267,11 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	logStream << "  jet " << i << ":\n"
 	     << "   pt " << jet[i].lv.Pt() << ", eta " << jet[i].lv.Eta() << ", phi " <<   jet[i].lv.Phi() << ", E " << jet[i].lv.E() << ", Mass " << jet[i].lv.M() << "\n"	
 	     << "   px " << jet[i].lv.Px() << ", py "  << jet[i].lv.Py()  << ", pz "  <<   jet[i].lv.Pz() << "\n"
-//	     << "   JID " << jet[i].isPFIDLoose << ", isTau " << jet[i].isTauMatch    << " Flavour " << jet[i].Flavour <<"\n"
-	  << "   JID " << jet[i].isPFIDLoose <<endl;
-	if(jet[i].isTauMatch < 0)
-	  logStream <<", is not a Tau "<<endl;
-	else
-	  logStream <<", is Matched to Tau Number "<<  jet[i].isTauMatch <<endl;   
+	     << "   JID " << jet[i].isPFIDLoose <<endl;
+	if(jet[i].isTauMatch < 0) logStream <<"   is not a Tau "<<endl;
+	else                      logStream <<"   is Matched to Tau Number "<<  jet[i].isTauMatch <<endl;   
          
-	logStream << " Flavour " << jet[i].Flavour <<"\n"
+	logStream << "   Flavour " << jet[i].Flavour <<"\n"
 	     << "   CHF " << jet[i].ChHadFrac << ", NHF " << jet[i].NeuHadFrac << ", CEF " << jet[i].ChEmFrac 
 	                  << ", NEF " << jet[i].NeuEmFrac << ", ChMuFrac " << jet[i].ChMuFrac << ", NConstituents " << jet[i].NConstituents  
 	                  << ", Ch Mult " << jet[i].ChMult << ", Neu Mul " << jet[i].NeuMult << "\n"
@@ -2543,6 +2542,9 @@ Float_t MT2tree::MinGenBosonJetsDR(){
 	}else{
 		return -999;
 	}
+}
+Float_t MT2tree::MHTMETDPhi(){
+	return MHT[0].DeltaPhi(pfmet[0]);
 }
 
 

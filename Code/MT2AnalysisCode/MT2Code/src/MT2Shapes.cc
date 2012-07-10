@@ -60,6 +60,7 @@ MT2Shapes::MT2Shapes(){
 	fDraw        =false;
 	fWrite       =true;
 	fCout        =true;
+	fPUReweight  =true;
 	fLogStream   =new std::ostringstream();
 // Default constructor, no samples are set
 }
@@ -72,6 +73,7 @@ MT2Shapes::MT2Shapes(TString outputdir){
 	fDraw        =false;
 	fWrite       =true;
 	fCout        =true;
+	fPUReweight  =true;
 	fLogStream   =new std::ostringstream();
 }
 
@@ -83,6 +85,7 @@ MT2Shapes::MT2Shapes(TString outputdir, TString outputfile){
 	fPrintSummary=false;
 	fDraw        =false;
 	fWrite       =true;
+	fPUReweight  =true;
 	fCout        =true;
 	fLogStream   =new std::ostringstream();
 }
@@ -100,6 +103,7 @@ MT2Shapes::MT2Shapes(TString outputdir, TString outputfile, std::ostringstream* 
 	fPrintSummary=false;
 	fDraw        =false;
 	fWrite       =true;
+	fPUReweight  =true;
 }
 
 
@@ -134,7 +138,25 @@ void MT2Shapes::GetShapes( TString var, TString cuts, int njets, int nleps, TStr
 	GetShapes(var, cuts, njets, nleps, selection_name, HLT, xtitle, nbins, bins);
 }
 
+void MT2Shapes::GetShapes( TString var, TString cuts, TString selection_name, TString HLT,
+		          TString xtitle, const int nbins, const double min, const double max){
+	
+	double bins[nbins];
+	bins[0] = min;
+	for(int i=1; i<=nbins; i++) bins[i] = min+i*(max-min)/nbins;
+	int nleps = -10; // no requirement
+	int njets = -10; // no requirement
+	GetShapes(var, cuts, njets, nleps, selection_name, HLT, xtitle, nbins, bins);
+}
+
 //________________________________________________________________________
+void MT2Shapes::GetShapes(TString var, TString cuts, TString selection_name, TString HLT,
+			  TString xtitle, const int nbins, const double *bins){
+
+	int nleps = -10; // no requirement
+	int njets = -10; // no requirement
+	GetShapes(var, cuts, njets, nleps, selection_name, HLT, xtitle, nbins, bins);
+}
 
 void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TString selection_name, TString HLT,
 			  TString xtitle, const int nbins, const double *bins){
@@ -144,18 +166,24 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 	}
 
 	// parsiong cuts
-	TString nJets = "NJetsIDLoose";
-	nJets += njets < 0 ? ">=" : "==";
-	nJets += TString::Format("%d",abs(njets));
-	TString  nLeps;
-	if     (nleps < 0 )  nLeps = " && (NEles + NMuons) >=";
-	else if(nleps >=0  ) nLeps = " && (NEles + NMuons) ==";
+	TString nJets = "";
+	if(njets!=-10){
+		nJets = "NJetsIDLoose";
+		nJets += njets < 0 ? ">=" : "==";
+		nJets += TString::Format("%d",abs(njets));
+	}
+	TString nLeps = "";
+	if     (nleps < 0 )  nLeps = " (NEles + NMuons) >=";
+	else if(nleps >=0  ) nLeps = " (NEles + NMuons) ==";
 	nLeps += TString::Format("%d",abs(nleps));
-	if     (nleps ==-10) nLeps = " "; 
-	if     (nleps ==-11) nLeps = " && NEles ==1 && NMuons ==0"; 
-	if     (nleps ==-13) nLeps = " && NEles ==0 && NMuons ==1";
+	if     (nleps ==-10) nLeps = ""; 
+	if     (nleps ==-11) nLeps = " NEles ==1 && NMuons ==0"; 
+	if     (nleps ==-13) nLeps = " NEles ==0 && NMuons ==1";
 
-	TString basecuts = nJets + nLeps + "&&" + cuts;
+	TString basecuts = "";
+	basecuts+= (nJets.Length()>0) ?(nJets + "&&"):"";
+       	basecuts+= (nLeps.Length()>0) ?(nLeps + "&&"):"";
+       	basecuts+= cuts;
 	if(fVerbose > 1){
 		*fLogStream << "\n---> applied cuts:     " << basecuts           << endl;
 		*fLogStream << "\n---> trigger for data: " << HLT        << "\n" << endl;
@@ -186,20 +214,27 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 		hcurr      ->SetStats(0);
 		hcurr      ->Sumw2();
 		
-		// calculate weight and print some info
-		Double_t weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents *fSamples[i].PU_avg_weight );
-		if(fVerbose>2) *fLogStream << "---> looping over " << fSamples[i].sname << "--------------------------------------------"<< endl;
-		if(fVerbose>2) *fLogStream << "          sample belongs to shape " << fSamples[i].shapename << endl;
-		if(fVerbose>2) *fLogStream << "          sample has weight " << weight << " and " << fSamples[i].tree->GetEntries() << " entries" << endl; 
+		Double_t weight=0;
+		if(fPUReweight) weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents*fSamples[i].PU_avg_weight);
+		else            weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents);
+		if(fVerbose>2) *fLogStream << "GetShapes: looping over "<< fSamples[i].sname << "-----------------------------------" <<  endl;
+		if(fVerbose>2) *fLogStream << "  +++++++ xsection:    " << fSamples[i].xsection << " k-fact " << fSamples[i].kfact << endl;
+		if(fVerbose>2) *fLogStream << "  +++++++ tot events:  " << fSamples[i].nevents  << " avg pu weight " << fSamples[i].PU_avg_weight << endl;
+		if(fVerbose>2) *fLogStream << "  +++++++ PU reweight: " << fPUReweight << endl;
+		if(fVerbose>2) *fLogStream << "  +++++++ weight:      " << weight << " and " << fSamples[i].tree->GetEntries() << " entries" << endl; 
+		if(fVerbose>2) *fLogStream << "  +++++++ shape name   " << fSamples[i].shapename << endl;
 	
 		TString variable  = TString::Format("%s>>%s",var.Data(),hcurr->GetName());
 		TString theCuts = basecuts;
 		if(fSamples[i].type=="data" && HLT!="") theCuts += " &&("+HLT+")"; // triggers for data
-
+		
 		TString selection;
-		if(fSamples[i].type!="data") selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,theCuts.Data());
-		else                         selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
+		if(fSamples[i].type!="data" && fPUReweight) selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,theCuts.Data());
+		else                                        selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
 		  
+		if(fVerbose>2) cout << "  +++++++ Drawing      " << variable  << endl
+				    << "  +++++++ with cuts:   " << setw(40)  << selection << endl;
+
 		int nev = fSamples[i].tree->Draw(variable.Data(),selection.Data(),"goff");
 
 		// fix over and underflow bins
@@ -254,7 +289,7 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 //____________________________________________________________________________
 void MT2Shapes::loadSamples(const char* filename){
 	fSamples.clear();
-	char buffer[200];
+	char buffer[400];
 	ifstream IN(filename);
 
 	char ParName[100], StringValue[1000];
@@ -264,13 +299,13 @@ void MT2Shapes::loadSamples(const char* filename){
 	if(fVerbose > 3) *fLogStream << "Sample File  " << filename << endl;
 	int counter(0);
 	
-	while( IN.getline(buffer, 200, '\n') ){
+	while( IN.getline(buffer, 400, '\n') ){
 		// ok = false;
 		if (buffer[0] == '#') {
 			continue; // Skip lines commented with '#'
 		}
 		if( !strcmp(buffer, "GENERAL") ){
-			IN.getline(buffer, 200, '\n');
+			IN.getline(buffer, 400, '\n');
 			sscanf(buffer, "Path\t%s", StringValue);
 			fPath = StringValue;	
 			*fLogStream << fPath << endl;
@@ -284,42 +319,42 @@ void MT2Shapes::loadSamples(const char* filename){
 		if( !strcmp(buffer, "SAMPLE")){
 
 			sample s;
-			IN.getline(buffer, 200, '\n');
+			IN.getline(buffer, 400, '\n');
 			sscanf(buffer, "Name\t%s", StringValue);
 			s.name = TString(StringValue);
 
-			IN.getline(buffer, 200, '\n');
+			IN.getline(buffer, 400, '\n');
 			sscanf(buffer, "SName\t%s", StringValue);
 			s.sname = TString(StringValue);
 			
-			IN.getline(buffer, 200, '\n');
+			IN.getline(buffer, 400, '\n');
 			sscanf(buffer, "ShapeName\t%s", StringValue);
 			s.shapename = TString(StringValue);
 
-			IN.getline(buffer, 200, '\n');
+			IN.getline(buffer, 400, '\n');
 			sscanf(buffer, "File\t%s", StringValue);
 			TString file =fPath+StringValue;
 			TFile *f = TFile::Open(file);
 			s.file = f;
 			s.tree = (TTree*)f->Get("MassTree");
 			
-			IN.getline(buffer, 200, '\n');
+			IN.getline(buffer, 400, '\n');
 			sscanf(buffer, "Xsection\t%f", &ParValue);
 			s.xsection = ParValue;
 			
-			IN.getline(buffer, 200, '\n');
+			IN.getline(buffer, 400, '\n');
 			sscanf(buffer, "Kfact\t%f", &ParValue);
 			s.kfact = ParValue;
 			
-			IN.getline(buffer, 200, '\n');
+			IN.getline(buffer, 400, '\n');
 			sscanf(buffer, "Lumi\t%f", &ParValue);
 			s.lumi = ParValue;
 
-			IN.getline(buffer, 200, '\n');
+			IN.getline(buffer, 400, '\n');
 			sscanf(buffer, "Type\t%s", StringValue);
 			s.type = StringValue;
 			
-			IN.getline(buffer, 200, '\n');
+			IN.getline(buffer, 400, '\n');
 			sscanf(buffer, "Color\t%f", &ParValue);
 			s.color = ParValue;
 

@@ -11,7 +11,7 @@
 
 class MT2Analyzer : public TreeAnalyzerBase {
 public:
-	MT2Analyzer(std::vector<std::string>& fileList);
+	MT2Analyzer(TTree *tree = 0);
 	virtual ~MT2Analyzer();
 	void BeginJob(TString filename="MassTree.root" , TString setofcuts="default",
 	              bool isData=false, string data_PileUp="", string mc_PileUp="", string JEC="");
@@ -20,15 +20,11 @@ public:
 	void SetMaxEvents(int a){fMaxEvents=a;};
 	void SetProcessID(int ID){fID=ID;};
 	void SetBTagEfficiency(string btagFileName){ fbtagFileName = btagFileName;};
-	void SetPUReweighting(string puScenario){fPu = puScenario;};
-	void SetType1MET(bool type1MET){fType1MET = type1MET;};
-	void SetCHSJets(bool CHSJets){fCHSJets = CHSJets;};
+  	bool isS3;
+  	bool noPU;  
 	bool removePhoton;
         bool doPDF;
         bool isScan;
-	string fPu;
-	bool fType1MET;
-	bool fCHSJets;
 private:
 	MT2Analysis             *fMT2Analysis;
   	int fMaxEvents;   

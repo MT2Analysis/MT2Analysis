@@ -22,23 +22,17 @@
 #include "FactorizedJetCorrector.h" 
 
 #include "TH2F.h"
-#include "TTree.h"
 
-// #include </shome/leo/Installations/LHAPDF/lhapdf-5.8.4/include/LHAPDF/LHAPDF.h>
+#include </shome/leo/Installations/LHAPDF/lhapdf-5.8.4/include/LHAPDF/LHAPDF.h>
 
 
 static const int gNHemispheres = 4;
 static const int gNGenJets     = 20;
 
-class MT2AnalysisJet;
-
-
-// MT2Analysis Class --------------------------------------------------------------
 class MT2Analysis: public UserAnalysisBase{
 public:
 	MT2Analysis(TreeReader *tr = NULL);
 	virtual ~MT2Analysis();
-	friend class MT2AnalysisJet;
 
 	void Begin(const char* filename = "Mass_histos.root");
 	void Analyze();
@@ -46,8 +40,6 @@ public:
 	void SetType(bool isData=false){fisData=isData;};
 	void SetProcessID(int ID){fID=ID;};
 	void SetBTagEfficiency(string btagFileName){ fbtagFileName = btagFileName;};
-	void SetType1MET(bool type1MET){fisType1MET = type1MET;};
-	void SetCHSJets(bool CHSJets){fisCHSJets = CHSJets;};
 
 
 	// redo JEC
@@ -55,34 +47,24 @@ public:
 	// parser
 	void ReadCuts(const char* SetofCuts);
 
-	// PU
-  	enum PUScenario {noPU, MC2012};
-	PUScenario fPUScenario;
-	void SetPUReweighting(string PU, string data_PileUp, string mc_PileUp){
-		if      (PU =="MC2012") {fPUScenario=MC2012;   SetPileUpSrc  (data_PileUp, mc_PileUp);}
-		else                     fPUScenario=noPU;
-	};
+  	//  reweight::LumiReWeighting *LumiReW;
+  	bool isS3;
+  	bool noPU;
 
- 	 //create pdf weights
+  //create pdf weights
         bool doPDF;
 
-  	//is a susy scan?
-  	bool isScan;
+  //is a susy scan?
+  bool isScan;
 
-  	// remove Photon
-  	bool fRemovePhoton;
-
-	// CHSjets
-	bool fisType1MET;
-
-	// Type1 MET
-	bool fisCHSJets;
+  // remove Photon
+  bool fRemovePhoton;
   
-  	//Control histos
-  	TH1F *fH_PUWeights, *fH_Events ;
-  	TH2F *fH2_SMSEvents, *fH2_mSugraEvents;
-  	//SUSY subprocess histos
-  	TH2F *fH_mSugraSubProcEvents[11];
+  //Control histos
+  TH1F *fH_PUWeights, *fH_Events ;
+  TH2F *fH2_SMSEvents, *fH2_mSugraEvents;
+  //SUSY subprocess histos
+  TH2F *fH_mSugraSubProcEvents[11];
 
 
 private:
@@ -95,7 +77,7 @@ private:
         TTree* fATree;
 
         //Control Histograms
-  	//  TH1F *fH_PUWeights ;
+  //  TH1F *fH_PUWeights ;
 
 	//btagging histograms and files
 	TFile *btagfile;
@@ -117,17 +99,16 @@ private:
 	vector<int> fPhotons;
 	vector<int> fTaus;
 	vector<int> fMuons;
+	vector<int> fJets;
 	vector<bool>fPhotonJetOverlapRemoved;
-	// Jets
-	vector<MT2AnalysisJet> Jets;
 	
 	// MT2 and hemisphere
 	Davismt2 *fMT2;
 	TMctLib  *fMCT;
 	Hemisphere *fHemisphere;
 
-  	//PDFs
-  	int nPDFs;
+  //PDFs
+  int nPDFs;
 
 	// cut variables
 	float fHT;
@@ -155,16 +136,37 @@ private:
 	int   fCut_Run_max;
 	bool  fDoJESUncertainty;
 	int   fJESUpDown;
-  	int   fCut_NJets40_min;
+  int   fCut_NJets40_min;
 
 
 	// ---- required and vetoed triggers ----
 	std::vector<std::string> fRequiredHLT; 
 	std::vector<std::string> fVetoedHLT;
 	
+	// ---- file for EcalDeadCell veto
+	std::vector<std::string> fTPfiles;
+	std::vector<std::string> fBEfiles;
+	
 	typedef std::map <string, bool*> StringBoolMap;
 	StringBoolMap fTriggerMap;
 	
+	// structs
+	enum LeptConfig {
+	 	e, mu, OS_emu, OS_ee, OS_mumu, SS_emu, SS_ee, SS_mumu, multilept, null
+  	};
+	LeptConfig fLeptConfig;
+	
+	struct DeadCellFilter{
+		vector<int> run;
+		vector<int> lumi;
+		vector<int> event;
+		void Reset(){
+			run.clear();
+			lumi.clear();
+			event.clear();
+		}
+	} fDeadCellFilterBE, fDeadCellFilterTP;
+
 
 
 	// member functions -------------------------------------------------------------
@@ -173,9 +175,11 @@ private:
 	void ResetTree(); 
 	bool FillMT2TreeBasics();
 	void FillMT2treeCalculations();
+	void FindLeptonConfig();
 	void GetLeptonJetIndices();
 	bool IsSelectedEvent();
 	void InitializeEvent();
+	void DeadCellParser(DeadCellFilter &DeadCellFilter_, string file_);
 	// photons
 	bool IsGoodPhotonEGMLooseISO(int index);
 	bool IsGoodPhotonEGMLooseRelISO(int index);
@@ -183,26 +187,20 @@ private:
 	bool IsGoodPhotonEGMTightISO(int index);
 	bool IsGoodPhotonEGMTightID(int index);
 	bool IsGoodPhoton(int index);
-
-        //Taus
-        bool IsGoodTau(int index);
-
-	//Muons 
-	bool IsGoodMT2Muon(const int index);
-	float MuPFIso(const int index);
-	// Electrons
-	bool IsGoodMT2ElectronVetoID(const int index);
-	bool IsGoodMT2ElectronMediumID(const int index);
-	const float EffArea(float abseta);
-	float ElePFIso(const int index);
-
 	//pfJetID
-	bool IsGoodMT2PFJetIDLoose(int index, float ptcut, float absetacut);
-	bool IsGoodMT2PFJetIDMedium(int index, float ptcut, float absetacut);
-	bool IsGoodMT2PFJetIDTight(int index, float ptcut, float absetacut);
-	// jets + MET
+	bool IsGoodBasicPFJetPAT3(int index, float ptcut, float absetacut);
+	bool IsGoodPFJetMediumPAT3(int index, float ptcut, float absetacut);
+	bool IsGoodPFJetTightPAT3(int index, float ptcut, float absetacut);
+	// jets
+	TLorentzVector Jet(int index);
 	TLorentzVector CAJet(int index);
+	TLorentzVector PFJetScaled(TLorentzVector j, float old_scale, float area, float rho);
+	TLorentzVector CAJetScaled(TLorentzVector j, float old_scale);
 	TLorentzVector MET();
+	float GetJECUncertPF(float pt, float eta);
+	float GetJECUncertCalo(float pt, float eta);
+	float GetPFJEC  (float corrpt, float scale, float eta, float area, float rho, int level);
+	float GetCaloJEC(float corrpt, float scale, float eta, int level);
 	void Initialize_JetCorrectionUncertainty();
 	void Initialize_JetEnergyCorrection();
 	JetCorrectionUncertainty *fJecUncPF;   
@@ -220,29 +218,4 @@ private:
 	FactorizedJetCorrector* fJetCorrectorCalo;
 
 };
-
-// MyJet Helper Class -----------------------------------
-class MT2AnalysisJet: public MT2Jet {
-public:
-	MT2AnalysisJet(int index, TString type, MT2Analysis *ana);
-	virtual ~MT2AnalysisJet(){};
-	float Pt();
-	float Eta();
-	float Phi();
-	float E();
-	float M();
-
-	TString fType;
-private:
-	TLorentzVector PFJetScaled(TLorentzVector jraw, float area, float rho, int level);
-	TLorentzVector CAJetScaled(TLorentzVector jraw, int level);
-	float GetPFJEC(float rawpt, float eta, float area, float rho, int level);
-	float GetCaloJEC(float rawpt, float eta, int level);
-	float GetJECUncertPF(float pt, float eta);
-	float GetJECUncertCalo(float pt, float eta);
-
-	MT2Analysis* fAna;
-
-};
-
 #endif

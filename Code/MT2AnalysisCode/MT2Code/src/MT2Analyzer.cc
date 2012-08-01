@@ -6,19 +6,17 @@
 
 using namespace std;
 
-MT2Analyzer::MT2Analyzer(std::vector<std::string>& fileList) 
-	: TreeAnalyzerBase(fileList) {
+MT2Analyzer::MT2Analyzer(TTree *tree) : TreeAnalyzerBase(tree) {
 	fMT2Analysis             = new MT2Analysis(fTR);
 	Util::SetStyle();
 	removePhoton =false;
 	fID          =-1;  //default process ID
 	fbtagFileName="";
-	fType1MET    =false;
-	fCHSJets     =false;
 }
 
 MT2Analyzer::~MT2Analyzer(){
 	delete fMT2Analysis;
+	if(!fTR->fChain) cout << "MT2Analyzer ==> No chain!" << endl;
 }
 
 // Method for looping over the tree
@@ -31,12 +29,11 @@ void MT2Analyzer::Loop(){
 		nentries=min((Long64_t)fMaxEvents, fTR->GetEntries());
 		cout << " only running on first " << nentries << " events" << endl;
 	}
-	if(nentries ==0) return; // fix in order to prevent assertion error if nentries==0
 
 	// loop over all ntuple entries
-    	Long64_t jentry=0;
-    	for ( fTR->ToBegin(); !(fTR->AtEnd()) && (jentry<nentries || nentries<0); ++(*fTR) ) {
-		PrintProgress(jentry++);
+	for( Long64_t jentry = 0; jentry < nentries; jentry++ ){
+		PrintProgress(jentry);
+		fTR->GetEntry(jentry);
                 if ( fCurRun != fTR->Run ) {
         		fCurRun = fTR->Run;
 			fMT2Analysis        ->BeginRun(fCurRun);
@@ -54,11 +51,15 @@ void MT2Analyzer::Loop(){
 
 			double PUWeight = 0;
 			//PU mean weight
-			if (fPu=="MC2012"){
-			  	PUWeight  = fMT2Analysis->GetPUWeight(fTR->PUnumTrueInteractions);
-			} else {
-			  	PUWeight  = 1;
+			if(noPU && isS3){
+			  PUWeight = fMT2Analysis->GetPUWeight3D(fTR->PUOOTnumInteractionsEarly ,fTR->PUnumInteractions , fTR->PUOOTnumInteractionsLate);
 			}
+			else if(noPU)
+			  PUWeight            = 1;
+			else if(isS3)
+			  PUWeight            = (fTR->fChain->GetBranch("PUOOTnumInteractionsLate")==NULL) ? 1: fMT2Analysis->GetPUWeight(fTR->PUnumInteractions, fTR->PUOOTnumInteractionsLate); // branch added in V02-03-01 
+			else
+			  PUWeight            = fMT2Analysis->GetPUWeight(fTR->PUnumInteractions);
 			
 			fMT2Analysis->fH_PUWeights->Fill( PUWeight );
 			fMT2Analysis->fH_Events->Fill( 1. );
@@ -66,7 +67,7 @@ void MT2Analyzer::Loop(){
 			if(isScan){
 			  fMT2Analysis->fH2_mSugraEvents->Fill(fTR->M0, fTR->M12);
 			  fMT2Analysis->fH2_SMSEvents->Fill(fTR->MassGlu, fTR->MassLSP);
-			  if(fTR->process>0) fMT2Analysis->fH_mSugraSubProcEvents[fTR->process]->Fill(fTR->M0, fTR->M12);
+			  fMT2Analysis->fH_mSugraSubProcEvents[fTR->process]->Fill(fTR->M0, fTR->M12);
 			}
 
 		}
@@ -77,23 +78,24 @@ void MT2Analyzer::Loop(){
 void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, string data_PileUp, string mc_PileUp, string JEC){
 	fMT2Analysis                    ->ReadCuts(setofcuts);
 	fMT2Analysis                    ->SetType(isData);
-	fMT2Analysis                    ->SetPUReweighting(fPu, data_PileUp, mc_PileUp);
+	if(isS3 && noPU) fMT2Analysis   ->SetPileUp3DSrc(data_PileUp, mc_PileUp);
+	else             fMT2Analysis   ->SetPileUpSrc(data_PileUp, mc_PileUp);
 	fMT2Analysis                    ->SetOutputDir(fOutputDir);
 	fMT2Analysis                    ->fVerbose        = fVerbose;
 	fMT2Analysis                    ->SetJEC(JEC);
         fMT2Analysis                    ->fRemovePhoton = removePhoton;
 	fMT2Analysis                    ->SetProcessID(fID);
 	fMT2Analysis                    ->SetBTagEfficiency(fbtagFileName);
+        fMT2Analysis                    ->isS3         = isS3;
+	fMT2Analysis                    ->noPU         = noPU;
 	fMT2Analysis             	->doPDF        = doPDF;
         fMT2Analysis             	->isScan        = isScan;
-	fMT2Analysis                    ->SetType1MET(fType1MET);
-	fMT2Analysis                    ->SetCHSJets(fCHSJets);
 
 
 	fMT2Analysis                    ->Begin(filename);
 
 
-	fMT2Analysis->fH_PUWeights = new TH1F("h_PUWeights",";PU weights",400,0,20);
+	fMT2Analysis->fH_PUWeights = new TH1F("h_PUWeights",";PU weights",100,0,5);
 	fMT2Analysis->fH_Events = new TH1F("h_Events",";Events",10,0,10);
 	fMT2Analysis->fH2_mSugraEvents = new TH2F("h_mSugraEvents",";m_{0};m_{1/2}",600,0,3000, 200,0,1000);
 	fMT2Analysis->fH2_SMSEvents = new TH2F("h_SMSEvents",";m_{0};m_{1/2}",500,0,2500, 500,0,2500);

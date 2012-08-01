@@ -11,8 +11,6 @@
 
 #include "MT2Analyzer.hh"
 
-#include "FWCore/FWLite/interface/AutoLibraryLoader.h"
-
 using namespace std;
 
 //________________________________________________________________________________________
@@ -21,10 +19,9 @@ void usage( int status = 0 ) {
 	cout << "Usage: RunMT2Analyzer [-d dir] [-o filename] [-v verbose] [-j json]                  " << endl;
 	cout << "                      [-m set_of_cuts] [-n maxEvents] [-t type]                      " << endl;
 	cout << "                      [-p data_PileUp] [-P mc_PileUP]                                " << endl; 
-        cout << "                      [-s noPU,MC2012] [-C JEC]                                       " << endl;
+        cout << "                      [-s S3,noPU,3D] [-C JEC]                                          " << endl;
 	cout << "                      [-w pdf] [-b btag]                                             " << endl;
 	cout << "                      [-r photon ] [-i ID ]                                          " << endl;
-	cout << "                      [-e type1MET ] [-E CHS ]                                       " << endl;
 	cout << "                      [-l] file1 [... filen]"                                          << endl;
 	cout << "  where:"                                                                              << endl;
 	cout << "     dir           is the output directory                                           " << endl;
@@ -46,8 +43,6 @@ void usage( int status = 0 ) {
 	cout << "     JEC           redo JEC: dir of JEC to be used                                   " << endl;
 	cout << "                   /shome/pnef/MT2Analysis/Code/JetEnergyCorrection/[JEC]            " << endl;
 	cout << "                   ak5 pf-jets will be corrected with L1FastL2L3 (+RES if type=data) " << endl;
-	cout << "     type1MET      use type1 corrected pf-MET (default = false)                      " << endl;
-	cout << "     CHS           use CHS - PFjets (default = false)                                " << endl;
 	cout << "     filen         are the input files (by default: ROOT files)                      " << endl;
 	cout << "                   with option -l, these are read as text files                      " << endl;
 	cout << "                   with one ROOT file name per line                                  " << endl;
@@ -57,14 +52,12 @@ void usage( int status = 0 ) {
 
 //________________________________________________________________________________________
 int main(int argc, char* argv[]) {
-  	AutoLibraryLoader::enable();
-
 // Default options
 	bool isList = false;
 	TString outputdir = "TempOutput/";
 	TString filename  = "MassTree.root";
 	TString setofcuts = "default";
-	string  puScenario = "noPU";
+	string  puScenario = "";
   	string  jsonFileName = "";
 	string  data_PileUp = "";
 	string  mc_PileUp = "";
@@ -72,19 +65,19 @@ int main(int argc, char* argv[]) {
 	string  JEC  ="";
 	string  btagFileName = "";
 	bool isData  = false;
-	bool isCHSJets = false;
-	bool isType1MET = false;
 	bool isScan = false;
 	int verbose  = 0;
 	int maxEvents=-1;
 	int ID       =-1;
+	bool isS3    = false;
+	bool noPU    = false;
     	bool removePhoton = false;
 	string photon = "";
 	string pdf = "";
 
 // Parse options
 	char ch;
-	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:r:b:i:C:w:eElh?")) != -1 ) {
+	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:r:b:i:C:w:lh?")) != -1 ) {
 	  switch (ch) {
 	  case 'd': outputdir       = TString(optarg);break;
 	  case 'o': filename        = TString(optarg);break;
@@ -100,9 +93,7 @@ int main(int argc, char* argv[]) {
 	  case 'w': pdf             = string(optarg); break;
 	  case 'i': ID              = atoi(optarg);   break;
 	  case 's': puScenario      = string(optarg); break;
-          case 'C': JEC             = string(optarg); break;
-	  case 'e': isType1MET      = true; break;
-	  case 'E': isCHSJets       = true; break; 
+          case 'C': JEC             = "/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+string(optarg)+"/"; break;
 	  case 'l': isList          = true; break;
 	    //case 'noPU': noPU = true; break;  
 	  case '?':
@@ -125,31 +116,42 @@ int main(int argc, char* argv[]) {
 	else if (type=="scan"  ) isScan =true;
 	else    usage(-1);
 	if      (photon == "photon") removePhoton=true;
-	if      (type=="data" && puScenario!="noPU"){ cout << "ERROR: this is data. don't run PUreweighting" << endl; exit(-1);}
-	if      (type=="mc"   && (data_PileUp.length()==0 || mc_PileUp.length()==0) && puScenario!="noPU") {
-		cout << "ERROR: need puScenario" << puScenario << " required input files."  << endl; exit(-1);
+	if      (!isData && data_PileUp.length()==0  ) {
+		cout << "                        WARNING: need data_PileUp to run on MC " << endl;
+	}
+	if      ( isData && (data_PileUp.length() >0 || mc_PileUp.length() >0)  ) {
+		cout << "ERROR: you are running on data, no reweighting needed... " << endl; exit(-1);
 	}
 
 	setofcuts   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/MT2_cuts/"+setofcuts+".dat";
-	if(data_PileUp.length()!=0   ){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
-	if(mc_PileUp.length()  !=0   ){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
-	if(jsonFileName.length() !=0 ){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"            +jsonFileName;}
-	if(btagFileName.length() !=0 ){btagFileName="/shome/haweber/MT2Analysis/Code/Efficiencies/"                               + btagFileName;}
+	if(data_PileUp.length()!=0){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
+	//if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/haweber/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
+	if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
+	//setofcuts   ="/shome/leo/Analysis/MT2_cuts/"+setofcuts+".dat";
+	//if(data_PileUp.length()!=0){data_PileUp ="/shome/leo/Analysis/Certification/pileUp_data/"+data_PileUp;}
+//        if(mc_PileUp.length()  !=0){mc_PileUp   ="/shome/leo/Analysis/Certification/pileUp_mc/"  + mc_PileUp;}
 
-	std::vector<std::string> fileList;
+	if(jsonFileName.length() !=0){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"           +jsonFileName;}
+	if(btagFileName.length() !=0){btagFileName="/shome/haweber/MT2Analysis/Code/Efficiencies/" + btagFileName;}
+
+	if(puScenario=="3D"){ isS3=true; noPU=true; } // THIS IS A DIRTY TRICK TO TEST 3D REWEIGHT WITHOUT ADD A NEW VAR
+	if(puScenario=="S3") isS3=true;
+	else if(puScenario=="noPU") noPU=true;
+
+	TChain *theChain = new TChain("analyze/Analysis");
 	for(int i = 0; i < argc; i++){
 		if( !isList ){
-	    		fileList.push_back(argv[i]);
+			theChain->Add(argv[i]);
 			printf(" Adding file: %s\n",argv[i]);
 		} else {
 			TString rootFile;
 			ifstream is(argv[i]);
 			while(rootFile.ReadLine(is) && (!rootFile.IsNull())){
-	      			if(rootFile[0] == '#') continue;
-				fileList.push_back(rootFile.Data());
+				if(rootFile[0] == '#') continue;
+				theChain->Add(rootFile);
 				printf(" Adding file: %s\n", rootFile.Data());
-	    		}
-	  	}
+			}
+		}
 	}
 
 
@@ -160,15 +162,14 @@ int main(int argc, char* argv[]) {
   	cout << "JSON file is:                   " << (jsonFileName.length()>0?jsonFileName:"empty") << endl;
   	cout << "MC_PileUp file:                 " << (mc_PileUp.length()>0?mc_PileUp:"empty") << endl;
   	cout << "Data_PileUp file:               " << (data_PileUp.length()>0?data_PileUp:"empty") << endl;
-	cout << "PileUp Scenario:                " << puScenario << endl;
-	cout << "ak5-PF have CHS                 " << (isCHSJets? "ENABLED":"DISABLED") << endl;
-	cout << "pfMET is:                       " << (isType1MET? "Type1 corrected":"raw") << endl;
   	if(btagFileName.length() !=0){
 	cout << "btag file is:                   " << (btagFileName.length()>0?btagFileName:"empty") << endl;
 	}
+	if(noPU && !isS3) cout << "WARNING: NoPU option set, all the PU weights will be set to 1" << endl;
 	cout << "Set of Cuts is:                 " << setofcuts << endl;
+	cout << "Number of events:               " << theChain->GetEntries() << endl;
 	if(JEC.length()!=0){
-	cout << "Redo JEC with GlobalTag         " << JEC << endl;
+	cout << "Redo JEC with set               " << JEC << endl;
 	}
 	if(removePhoton){
 	cout << "WARNING: Photon is added to MET and jet/ele match to photon is removed!!" << endl;
@@ -177,15 +178,14 @@ int main(int argc, char* argv[]) {
 	}
 	cout << "--------------" << endl;
 
-	MT2Analyzer *tA = new MT2Analyzer(fileList);
+	MT2Analyzer *tA = new MT2Analyzer(theChain);
 	tA->SetOutputDir(outputdir);
 	tA->SetVerbose(verbose);
 	tA->SetMaxEvents(maxEvents);
 	tA->SetProcessID(ID);
 	tA->SetBTagEfficiency(btagFileName);
-	tA->SetPUReweighting(puScenario);
-	tA->SetType1MET(isType1MET);
-	tA->SetCHSJets(isCHSJets);
+	tA->isS3 = isS3;
+	tA->noPU = noPU;
 	tA->isScan = isScan;
 	tA->removePhoton = removePhoton;
 	if(pdf=="pdf") tA->doPDF=true;

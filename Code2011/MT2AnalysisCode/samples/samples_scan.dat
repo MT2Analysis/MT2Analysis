@@ -1,0 +1,29 @@
+############################################################################################
+GENERAL
+Path             /shome/../
+#__________________________________________________________________________________________
+# list of samples
+#
+
+SAMPLE
+Name		mSugraTanB10
+SName		mSugraTanB10
+ShapeName	mSugra
+File            /scratch/leo/MT2_V01-05-01/20120116_MC_HT600_data_nocuts_PU2/skimmed_HT750/mSUGRA_m0-220to3000_m12-100to1000_tanb-10andA0-0_7TeV-Pythia6Z_StoreResults_3.root
+Xsection  	1.
+Kfact           1.
+Lumi            1
+Type            mc
+Color		401
+
+
+SAMPLE
+Name            T1bbbb
+SName           T1bbbb
+ShapeName       SMS
+File            /shome/leo/MT2Analysis/MT2trees/MT2_V01-05-01/20120116_MC_HT600_data_nocuts_PU2_GR_R_42_V23_AK5PF/skimmed_HT750/SMS-T1bbbb_Mgluino-100to1200_mLSP-50to1150_7TeV-Pythia6Z.root
+Xsection        1.
+Kfact           1.
+Lumi            1
+Type            mc
+Color           401

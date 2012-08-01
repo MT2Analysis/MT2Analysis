@@ -1,0 +1,49 @@
+############################################################################################
+GENERAL
+Path             dcap://t3se01.psi.ch/pnfs/psi.ch/cms/trivcat/store/user/leo/SUSY/Skims/MT2_V01-05-01/dev_UP/skimmed_HT750/
+#__________________________________________________________________________________________
+# list of samples
+#
+SAMPLE
+Name            T1
+SName           T1
+ShapeName       SMS
+File            SMS-T1_Mgluino-100to1200_mLSP-50to1150_7TeV-Pythia6Z.root
+Xsection        1.
+Kfact           1.
+Lumi            1
+Type            mc
+Color           401
+
+SAMPLE
+Name            T5zzInc
+SName           T5zzInc
+ShapeName       SMS
+File            SMS-T5zzInc_Mgluino-150to1200_mLSP-50to1100_7TeV-Pythia6Z.root
+Xsection        1.
+Kfact           1.
+Lumi            1
+Type            mc
+Color           401
+
+SAMPLE
+Name            T1bbbb
+SName           T1bbbb
+ShapeName       SMS
+File            SMS-T1bbbb_Mgluino-100to1200_mLSP-50to1150_7TeV-Pythia6Z.root
+Xsection        1.
+Kfact           1.
+Lumi            1
+Type            mc
+Color           401
+
+SAMPLE
+Name            T1tttt
+SName           T1tttt
+ShapeName       SMS
+File            SMS-T1tttt_Mgluino-450to1200_mLSP-50to800_7TeV-Pythia6Z.root
+Xsection        1.
+Kfact           1.
+Lumi            1
+Type            mc
+Color           401

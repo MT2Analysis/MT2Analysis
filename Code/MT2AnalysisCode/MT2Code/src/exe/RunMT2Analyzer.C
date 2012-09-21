@@ -25,6 +25,7 @@ void usage( int status = 0 ) {
 	cout << "                      [-w pdf] [-b btag]                                             " << endl;
 	cout << "                      [-r photon ] [-i ID ]                                          " << endl;
 	cout << "                      [-e type1MET ] [-E CHS ]                                       " << endl;
+	cout << "                      [-f FastSim ]                                                  " << endl;
 	cout << "                      [-l] file1 [... filen]"                                          << endl;
 	cout << "  where:"                                                                              << endl;
 	cout << "     dir           is the output directory                                           " << endl;
@@ -39,7 +40,7 @@ void usage( int status = 0 ) {
 	cout << "     mc_PileUP     root file from which the generated # pile up                      " << endl;
 	cout << "                   interactions is read                                              " << endl;
 	cout << "     btag          file with btag efficiency histograms                              " << endl;
-	cout << "     type          data, scan or mc=default                                                " << endl;
+	cout << "     type          data, scan or mc=default                                          " << endl;
 	cout << "     photon        add Photon to MET and remove jets/ele matched to photon           " << endl;
 	cout << "     ID            ProcessID: 0=data, 1=Znunu, 2=Zll, 3=WJets, 4=Top,                " << endl;
 	cout << "                              5=Gamma+jets, 6=QCD ,[empty], 9=Other, 10=Signal       " << endl;
@@ -48,6 +49,7 @@ void usage( int status = 0 ) {
 	cout << "                   ak5 pf-jets will be corrected with L1FastL2L3 (+RES if type=data) " << endl;
 	cout << "     type1MET      use type1 corrected pf-MET (default = false)                      " << endl;
 	cout << "     CHS           use CHS - PFjets (default = false)                                " << endl;
+	cout << "     FastSim       sample is FastSim (default = false)                               " << endl;//has to be one flag, as scan can be full/fastsim
 	cout << "     filen         are the input files (by default: ROOT files)                      " << endl;
 	cout << "                   with option -l, these are read as text files                      " << endl;
 	cout << "                   with one ROOT file name per line                                  " << endl;
@@ -74,6 +76,7 @@ int main(int argc, char* argv[]) {
 	bool isData  = false;
 	bool isCHSJets = false;
 	bool isType1MET = false;
+	bool isFastSim = false;
 	bool isScan = false;
 	int verbose  = 0;
 	int maxEvents=-1;
@@ -84,7 +87,7 @@ int main(int argc, char* argv[]) {
 
 // Parse options
 	char ch;
-	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:r:b:i:C:w:eElh?")) != -1 ) {
+	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:r:b:i:C:w:eEflh?")) != -1 ) {
 	  switch (ch) {
 	  case 'd': outputdir       = TString(optarg);break;
 	  case 'o': filename        = TString(optarg);break;
@@ -103,6 +106,7 @@ int main(int argc, char* argv[]) {
           case 'C': JEC             = string(optarg); break;
 	  case 'e': isType1MET      = true; break;
 	  case 'E': isCHSJets       = true; break; 
+	  case 'f': isFastSim       = true; break; 
 	  case 'l': isList          = true; break;
 	    //case 'noPU': noPU = true; break;  
 	  case '?':
@@ -130,6 +134,10 @@ int main(int argc, char* argv[]) {
 		cout << "ERROR: need puScenario" << puScenario << " required input files."  << endl; exit(-1);
 	}
 
+//	setofcuts   ="/shome/haweber/MT2Analysis_8TeV/Code/CutsMT2/"+setofcuts+".dat";
+//	if(data_PileUp.length()!=0   ){data_PileUp ="/shome/haweber/MT2Analysis_8TeV/Code/Certification/pileUp_data/"+data_PileUp;}
+//	if(mc_PileUp.length()  !=0   ){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
+//	if(jsonFileName.length() !=0 ){jsonFileName="/shome/haweber/"            +jsonFileName;}
 	setofcuts   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/MT2_cuts/"+setofcuts+".dat";
 	if(data_PileUp.length()!=0   ){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
 	if(mc_PileUp.length()  !=0   ){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
@@ -186,6 +194,7 @@ int main(int argc, char* argv[]) {
 	tA->SetPUReweighting(puScenario);
 	tA->SetType1MET(isType1MET);
 	tA->SetCHSJets(isCHSJets);
+	tA->SetFastSim(isFastSim);
 	tA->isScan = isScan;
 	tA->removePhoton = removePhoton;
 	if(pdf=="pdf") tA->doPDF=true;

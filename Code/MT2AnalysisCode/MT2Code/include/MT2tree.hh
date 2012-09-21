@@ -21,6 +21,7 @@ public:
   Bool_t   isData;
   Bool_t   isCHSJets;
   Bool_t   isType1MET;
+  Bool_t   isFastSim;
   Int_t    Run;
   Int_t    Event;
   Int_t    LumiSection;
@@ -28,7 +29,10 @@ public:
   Int_t    Jet0Pass;
   Int_t    Jet1Pass;
   Int_t    PassJetID;
+  Int_t    PassJet40ID;
   Float_t  MT2;
+  Float_t  MT2jet40;
+  Float_t  MT2jet50;
   Float_t  MCT;
   Float_t  MET;
   Float_t  METPhi;
@@ -40,6 +44,11 @@ public:
   Float_t  Vectorsumpt;
   Float_t  MinMetJetDPhi;       // use all jets
   Float_t  MinMetJetDPhi4;      // use first 4 jets
+  Float_t  MinMetJetDPhiPt40;   // use jets that have pT>40GeV
+  Float_t  MinMetJetDPhiPt50;   // use jets that have pT>50GeV
+  Float_t  MinMetJetDPhi4Pt40;  // use first 4 jets that have pT>40GeV
+  Float_t  MinMetJetDPhi4Pt50;  // use first 4 jets that have pT>50GeV
+  Float_t  MinMetJetDPhiInCrack;// use only jets close to crack ( abs(eta) < 0.3, or 1.15<abs(eta)<1.85)
   Int_t    MinMetJetDPhiIndex;
   Float_t  MinMetBJetDPhi;
   Float_t  QCDPartonicHT;
@@ -63,7 +72,7 @@ public:
   Bool_t   eeBadScFlag;
   Bool_t   EcalDeadCellTriggerPrimitiveFlag;
   
-  ClassDef(MT2Misc, 34)
+  ClassDef(MT2Misc, 35)
 };
 
 
@@ -249,27 +258,20 @@ public:
 
 	// Photon
 	Bool_t HLT_SinglePhotons;
+	// Dileptons
 	Bool_t HLT_DiElectrons;
 	Bool_t HLT_DiMuons;
-	// MuHad/SingleMu
-	Bool_t HLT_MuHad;
-        Bool_t HLT_Mu40_FJHT200_v3;
-        Bool_t HLT_Mu40_FJHT200_v4;
-        Bool_t HLT_Mu40_HT200_v1;
-        Bool_t HLT_Mu40_HT200_v2;
-        Bool_t HLT_IsoMu20_eta2p1_CentralPFJet80_v3;
-        Bool_t HLT_IsoMu20_eta2p1_CentralPFJet80_v4;
-        Bool_t HLT_IsoMu20_eta2p1_CentralPFJet80_v5;
-        Bool_t HLT_IsoMu20_eta2p1_CentralPFJet80_v6;
-        Bool_t HLT_IsoMu20_eta2p1_CentralPFJet80_v7;
-        Bool_t HLT_IsoMu24_eta2p1_v11;
-        Bool_t HLT_IsoMu24_eta2p1_v12;
-        Bool_t HLT_IsoMu24_eta2p1_v13;
-        Bool_t HLT_IsoMu24_eta2p1_v14;
-	//EMu
 	Bool_t HLT_EMu;
+	// Single Leptons
+	// please look at exact triggers (some are pfnopu, others not)
+	Bool_t HLT_SingleMu;
+	Bool_t HLT_SingleMu_Jet;
+	Bool_t HLT_SingleMu_DiJet; // only from run 193834 on
+	Bool_t HLT_SingleMu_TriJet;
+	Bool_t HLT_SingleEle_DiJet_MET;
+	Bool_t HLT_SingleEle_MET_MT;
 
-	ClassDef(MT2Trigger, 18);
+	ClassDef(MT2Trigger, 19);
 };
 
 // MT2Jet ----------------------------------
@@ -282,7 +284,8 @@ public:
   void Reset();
   void SetLV(const TLorentzVector v);
   Bool_t IsGoodPFJet(float minJPt=20., float maxJEta=2.4, int PFJID=1); // PFJID: 1 - loose, 2 - medium, 3 - tight
-  Bool_t IsBJet(Int_t algo=3); // algo 3 = SSVHP, algo 2 = SSVHE
+  Bool_t IsBJet(Int_t algo=4); // algo 4 = CSV, algo 3 = SSVHP, algo 2 = SSVHE
+  Bool_t IsBJet(Int_t algo, Int_t WP);
   TLorentzVector lv;
 
   Float_t bTagProbTCHE;
@@ -317,7 +320,7 @@ public:
   Float_t TauDPt;
   Int_t   NTauMatch;
 
-  ClassDef(MT2Jet, 14)
+  ClassDef(MT2Jet, 15)
 };
 
 // MT2GenJet -------------------------
@@ -408,9 +411,10 @@ public:
   Float_t  Iso;
   Int_t    Charge;
   Int_t    IDMedium;
+  Int_t    IDLoose;
   Int_t    IDVeto;
 
-  ClassDef(MT2Elec, 10)
+  ClassDef(MT2Elec, 11)
 };
 
 // MT2Muon ----------------------------------
@@ -472,6 +476,8 @@ public:
   void Reset();
 
   TLorentzVector lv;
+  TLorentzVector Mlv;
+  TLorentzVector GMlv;
   Int_t          ID;
   Int_t          MID;
   Int_t          MStatus;
@@ -480,7 +486,7 @@ public:
   Float_t        MT;
 
 
-  ClassDef(MT2GenLept, 5)
+  ClassDef(MT2GenLept, 6)
 };
 
 // MT2tree ----------------------------------
@@ -499,6 +505,8 @@ public:
   void SetNBJetsHE      (int n);
   void SetNBJetsCSVM    (int n);
   void SetNBJetsCSVT    (int n);
+  void SetNBJets40CSVM  (int n);
+  void SetNBJets40CSVT  (int n);
   void SetNEles         (int n);
   void SetNMuons        (int n);
   void SetNPhotons      (int n);
@@ -525,8 +533,8 @@ public:
   Float_t MetJetDPhi(int ijet = 0, int PFJID=0, int met=1);
   Bool_t  PassMinMetJetDPhi03();
   Float_t GetMinR12R21      (int PFJID=0, float minJPt=20, float maxJEta=6., int met=1); // electrons and muons not considered for minDPhi
-  Float_t MinMetJetDPhi     (int PFJID=0, float minJPt=20, float maxJEta=6., int met=1, int njets=0); // electrons and muons not considered for minDPhi, njets=0->all jets
-  Int_t   MinMetJetDPhiIndex(int PFJID=0, float minJPt=20, float maxJEta=6., int met=1, int njets=0); // electrons and muons not considered for minDPhi, njets=0->all jets
+  Float_t MinMetJetDPhi     (int PFJID=0, float minJPt=20, float maxJEta=6., int met=1, int njets=0, bool onlyCrack=false); // electrons and muons not considered for minDPhi, njets=0->all jets
+  Int_t   MinMetJetDPhiIndex(int PFJID=0, float minJPt=20, float maxJEta=6., int met=1, int njets=0, bool onlyCrack=false); // electrons and muons not considered for minDPhi, njets=0->all jets
   Int_t   BiasedDPhiIndex   (int PFJID, float minJPt, float maxJEta);
   Float_t BiasedDPhi        (int PFJID, float minJPt, float maxJEta);
   Float_t MaxMetJetDPhi     (int PFJID=0, float minJPt=20, float maxJEta=6., int met=1); // electrons and muons not considered for minDPhi
@@ -619,6 +627,8 @@ public:
   Int_t   NBJetsHE;
   Int_t   NBJetsCSVM;
   Int_t   NBJetsCSVT;
+  Int_t   NBJets40CSVM;
+  Int_t   NBJets40CSVT;
   Int_t   NEles;
   Int_t   NMuons;
   Int_t   NPhotons;
@@ -650,7 +660,7 @@ public:
                               // identical to pfmet unless met is JEScales or modified in data-driven estimates
   double pdfW[100];
   
-  ClassDef(MT2tree, 27)
+  ClassDef(MT2tree, 28)
 };
 
 #endif

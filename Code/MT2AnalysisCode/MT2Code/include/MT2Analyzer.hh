@@ -23,9 +23,11 @@ public:
 	void SetPUReweighting(string puScenario){fPu = puScenario;};
 	void SetType1MET(bool type1MET){fType1MET = type1MET;};
 	void SetCHSJets(bool CHSJets){fCHSJets = CHSJets;};
+	void SetFastSim(bool FastSim){fisFastSim = FastSim;};
 	bool removePhoton;
         bool doPDF;
         bool isScan;
+        bool fisFastSim;
 	string fPu;
 	bool fType1MET;
 	bool fCHSJets;

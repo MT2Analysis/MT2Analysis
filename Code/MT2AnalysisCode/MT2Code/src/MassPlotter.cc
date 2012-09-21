@@ -2086,6 +2086,7 @@ void MassPlotter::plotRatioStack(THStack* hstack, TH1* h1_orig, TH1* h2_orig, TH
 	h_ratio_mc->GetXaxis()->SetTickLength(0.09);
 	h_ratio_mc	->GetYaxis()->SetTitleSize(0.18);
 	h_ratio_mc->GetYaxis()->SetTitleOffset(0.36);
+	h_ratio_mc->GetYaxis()->SetNdivisions(509);
 
 	
 	h_ratio_mc->SetFillStyle(3001);

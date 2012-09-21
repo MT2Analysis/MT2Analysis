@@ -28,15 +28,19 @@ MT2Misc::~MT2Misc(){
 void MT2Misc::Reset() {
   isData                  =  0;
   isType1MET              =  0;
+  isFastSim               =  0;
   isCHSJets               =  0;
   Run                     = -1;	  
   Event		  	  = -1;	  
   LumiSection		  = -1;	  
   ProcessID               = -1; 
   PassJetID               = -1;
+  PassJet40ID             = -1;
   Jet0Pass                = -1;
   Jet1Pass                = -1;
   MT2                     = -99999.99;
+  MT2jet40                = -99999.99;
+  MT2jet50                = -99999.99;
   MCT                     = -99999.99;
   MET                     = -99999.99;
   METPhi                  = -99999.99;
@@ -52,6 +56,11 @@ void MT2Misc::Reset() {
   pfHT50                  = -99999.99;
   MinMetJetDPhi           = -99999.99;
   MinMetJetDPhi4          = -99999.99;
+  MinMetJetDPhiPt40       = -99999.99;
+  MinMetJetDPhiPt50       = -99999.99;
+  MinMetJetDPhi4Pt40      = -99999.99;
+  MinMetJetDPhi4Pt50      = -99999.99;
+  MinMetJetDPhiInCrack    = -99999.99;
   MinMetJetDPhiIndex      = -1;
   MinMetBJetDPhi          = -99999.99;
   WDecayMode              = -1;
@@ -255,22 +264,14 @@ void MT2Trigger::Reset(){
 	HLT_DiElectrons                 = false;
 	HLT_DiMuons                     = false;
 	HLT_EMu                         = false;
-	//MuHad
-	HLT_MuHad                                = false;
-        HLT_Mu40_FJHT200_v3                      = false;
-        HLT_Mu40_FJHT200_v4                      = false;
-        HLT_Mu40_HT200_v1                        = false;
-        HLT_Mu40_HT200_v2                        = false;
-        HLT_IsoMu20_eta2p1_CentralPFJet80_v3     = false;
-        HLT_IsoMu20_eta2p1_CentralPFJet80_v4     = false;
-        HLT_IsoMu20_eta2p1_CentralPFJet80_v5     = false;
-        HLT_IsoMu20_eta2p1_CentralPFJet80_v6     = false;
-        HLT_IsoMu20_eta2p1_CentralPFJet80_v7     = false;
-        HLT_IsoMu24_eta2p1_v11                   = false;
-        HLT_IsoMu24_eta2p1_v12                   = false;
-        HLT_IsoMu24_eta2p1_v13                   = false;
-        HLT_IsoMu24_eta2p1_v14                   = false;
-
+	// Single Leptons
+	// please look at exact triggers (some are pfnopu, others not)
+	HLT_SingleMu                    = false;
+	HLT_SingleMu_Jet                = false;
+	HLT_SingleMu_DiJet              = false; // only from run 193834 on
+	HLT_SingleMu_TriJet             = false;
+	HLT_SingleEle_DiJet_MET         = false;
+	HLT_SingleEle_MET_MT            = false;
 }
 
 
@@ -354,12 +355,35 @@ Bool_t MT2Jet::IsGoodPFJet(float minJPt, float maxJEta, int PFJID) {
   return true;
 }
 
+// algo: 0: TCHE, 1: TCHP, 2: SSVHE, 3: SSVHP, 4: CSV, 5: JP
 Bool_t MT2Jet::IsBJet(Int_t algo) {
-  if     (algo==3 && bTagProbSSVHP >2.0 ) return true;
-  else if(algo==2 && bTagProbSSVHE >1.74) return true;
-  else if(algo==1 && bTagProbTCHE  >3.3 ) return true;
-  else if(algo==0 && bTagProbTCHP  >1.93) return true;
-  else                                    return false;
+  if     (algo==5 && bTagProbJProb >0.545) return true;
+  else if(algo==4 && bTagProbCSV   >0.679) return true;
+  else if(algo==3 && bTagProbSSVHP >2.0  ) return true;
+  else if(algo==2 && bTagProbSSVHE >1.74 ) return true;
+  else if(algo==1 && bTagProbTCHP  >1.93 ) return true;
+  else if(algo==0 && bTagProbTCHE  >3.3  ) return true;
+  else                                     return false;
+}
+
+// WP: 0: loose, 1: medium, 2: tight
+Bool_t MT2Jet::IsBJet(Int_t algo, Int_t WP) {
+  if     (algo==5 && WP==2 && bTagProbJProb >0.790) return true;
+  else if(algo==5 && WP==1 && bTagProbJProb >0.545) return true;
+  else if(algo==5 && WP==0 && bTagProbJProb >0.275) return true;
+  else if(algo==4 && WP==2 && bTagProbCSV   >0.898) return true;
+  else if(algo==4 && WP==1 && bTagProbCSV   >0.679) return true;
+  else if(algo==4 && WP==0 && bTagProbCSV   >0.244) return true;
+  else if(algo==3 && WP==2 && bTagProbSSVHP >2.00 ) return true;
+  else if(algo==2 && WP==2 && bTagProbSSVHE >3.05 ) return true;
+  else if(algo==2 && WP==1 && bTagProbSSVHE >1.74 ) return true;
+  else if(algo==1 && WP==2 && bTagProbTCHP  >3.41 ) return true;
+  else if(algo==1 && WP==1 && bTagProbTCHP  >1.93 ) return true;
+  else if(algo==1 && WP==0 && bTagProbTCHP  >1.19 ) return true;
+  else if(algo==0 && WP==2 && bTagProbTCHE  >10.2 ) return true;
+  else if(algo==0 && WP==1 && bTagProbTCHE  >3.3  ) return true;
+  else if(algo==0 && WP==0 && bTagProbTCHE  >1.7  ) return true;
+  else                                     return false;
 }
 
 
@@ -425,6 +449,8 @@ MT2GenLept::~MT2GenLept(){
 
 void MT2GenLept::Reset(){
   lv.  SetPxPyPzE(0, 0, 0, 0);
+  Mlv. SetPxPyPzE(0, 0, 0, 0);
+  GMlv.SetPxPyPzE(0, 0, 0, 0);
 
   ID          = -999;
   MID         = -999;
@@ -524,6 +550,7 @@ void MT2Elec::Reset() {
   Iso           = -9999.99;
   Charge        = -999;
   IDMedium      = -999;
+  IDLoose       = -999;
   IDVeto        = -999;
 }
 
@@ -555,6 +582,8 @@ void MT2tree::Reset() {
   NBJetsHE         = 0;
   NBJetsCSVM       = 0;
   NBJetsCSVT       = 0;
+  NBJets40CSVM     = 0;
+  NBJets40CSVT     = 0;
   
   for(int i=0; i<100; i++){
     pdfW[i] = -1;
@@ -625,6 +654,14 @@ void MT2tree::SetNBJetsCSVT(int n) {
   NBJetsCSVT = n;
 }
 
+void MT2tree::SetNBJets40CSVM(int n) {
+  NBJets40CSVM = n;
+}
+
+void MT2tree::SetNBJets40CSVT(int n) {
+  NBJets40CSVT = n;
+}
+
 void MT2tree::SetNEles(int n) {
   NEles = n;
 }
@@ -658,10 +695,10 @@ Int_t MT2tree::GetNBtags (int algo, float value, float minJPt, float maxJEta, in
     if(jet[i].IsGoodPFJet(minJPt,maxJEta,PFJID)==false ) continue; 
     switch(algo){
     case 0: 
-      if( jet[i].bTagProbTCHE < value ) continue;
+      if( jet[i].bTagProbTCHE  < value ) continue;
       break;
     case 1: 
-      if( jet[i].bTagProbTCHP < value ) continue;
+      if( jet[i].bTagProbTCHP  < value ) continue;
       break;
     case 2: 
       if( jet[i].bTagProbSSVHE < value ) continue;
@@ -671,6 +708,9 @@ Int_t MT2tree::GetNBtags (int algo, float value, float minJPt, float maxJEta, in
       break;
     case 4: 
       if( jet[i].bTagProbCSV   < value ) continue;
+      break;
+    case 5: 
+      if( jet[i].bTagProbJProb < value ) continue;
       break;
     default:
       continue;
@@ -777,7 +817,7 @@ Float_t MT2tree::MetJetDPhi(int ijet, int PFJID, int met) {
   return TMath::Abs(jet[indices[ijet]].lv.DeltaPhi(MET));
 }
 
-Float_t MT2tree::MinMetJetDPhi(int PFJID, float minJPt, float maxJEta, int met, int njets) {
+Float_t MT2tree::MinMetJetDPhi(int PFJID, float minJPt, float maxJEta, int met, int njets, bool onlyCrack) {
 // Attention: electrons and muons are not considered for minDPhi
   TLorentzVector MET(0., 0., 0., 0.);
   if(met==1)      MET = pfmet[0];
@@ -796,13 +836,13 @@ Float_t MT2tree::MinMetJetDPhi(int PFJID, float minJPt, float maxJEta, int met, 
 	}
   } else         return -999;
 
-  int index = MinMetJetDPhiIndex(PFJID, minJPt, maxJEta, met, njets);
+  int index = MinMetJetDPhiIndex(PFJID, minJPt, maxJEta, met, njets, onlyCrack);
   if(index >=0) {
 	  return TMath::Abs(jet[index].lv.DeltaPhi(MET));
   } else  return -999.99;
 }
 
-Int_t MT2tree::MinMetJetDPhiIndex(int PFJID, float minJPt, float maxJEta, int met, int njets) {
+Int_t MT2tree::MinMetJetDPhiIndex(int PFJID, float minJPt, float maxJEta, int met, int njets, bool onlyCrack) {
 // Attention: electrons and muons are not considered for minDPhi
   TLorentzVector MET(0., 0., 0., 0.);
   if(met==1)      MET = pfmet[0];
@@ -825,6 +865,7 @@ Int_t MT2tree::MinMetJetDPhiIndex(int PFJID, float minJPt, float maxJEta, int me
   if ( njets==0 || njets>NJets ) njets=NJets;  // option 0: all jets & protection against less than njets
   for(int i = 0; i<njets; ++i){
 	if(jet[i].IsGoodPFJet(minJPt,maxJEta,PFJID)==false) continue;
+	if(onlyCrack && ( (fabs(jet[i].lv.Eta())>0.3 && fabs(jet[i].lv.Eta())<1.15) || fabs(jet[i].lv.Eta())>1.85 ) ) continue;
 	indices.push_back(i);
   }
   if(indices.size()<1)  return -999;
@@ -1080,16 +1121,22 @@ Float_t MT2tree::GetBJetDR(int algo, float value, float minJPt, float maxJEta, i
 		if(jet[i].IsGoodPFJet(minJPt,maxJEta,PFJID)==false) continue; 
 		switch(algo){
 			case 0: 
-			if( jet[i].bTagProbTCHE < value ) continue;
+			if( jet[i].bTagProbTCHE  < value ) continue;
 			break;
 			case 1: 
-			if( jet[i].bTagProbTCHP < value ) continue;
+			if( jet[i].bTagProbTCHP  < value ) continue;
 			break;
 			case 2: 
 			if( jet[i].bTagProbSSVHE < value ) continue;
 			break;
 			case 3: 
 			if( jet[i].bTagProbSSVHP < value ) continue;
+			break;
+			case 4: 
+			if( jet[i].bTagProbCSV   < value ) continue;
+			break;
+			case 5: 
+			if( jet[i].bTagProbJProb < value ) continue;
 			break;
 			default:
 			continue;
@@ -1117,16 +1164,22 @@ Float_t MT2tree::BJetMETdPhi(int algo, float value, float minJPt, float maxJEta,
 		if(jet[i].IsGoodPFJet(minJPt,maxJEta,PFJID)==false) continue; 
 		switch(algo){
 			case 0: 
-			if( jet[i].bTagProbTCHE < value ) continue;
+			if( jet[i].bTagProbTCHE  < value ) continue;
 			break;
 			case 1: 
-			if( jet[i].bTagProbTCHP < value ) continue;
+			if( jet[i].bTagProbTCHP  < value ) continue;
 			break;
 			case 2: 
 			if( jet[i].bTagProbSSVHE < value ) continue;
 			break;
 			case 3: 
 			if( jet[i].bTagProbSSVHP < value ) continue;
+			break;
+			case 4: 
+			if( jet[i].bTagProbCSV   < value ) continue;
+			break;
+			case 5: 
+			if( jet[i].bTagProbJProb < value ) continue;
 			break;
 			default:
 			continue;
@@ -1247,6 +1300,10 @@ Float_t MT2tree::GetMT2(Float_t testmass, bool massive, Int_t PFJID, Float_t min
   TLorentzVector MET(0., 0., 0., 0.);
   if(met==1){
 	MET = pfmet[0];
+  } else if(met==2){ // use explicitly raw pfmet
+	MET = rawpfmet[0];
+  } else if(met==3){ // use explicitly type1-pfmet
+	MET = type1pfmet[0];
   } else if(met==1113) { // add leptons to MET
 	MET = pfmet[0]; 
 	for(int i=0; i<NEles; ++i){
@@ -2275,10 +2332,14 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	     << "   CHF " << jet[i].ChHadFrac << ", NHF " << jet[i].NeuHadFrac << ", CEF " << jet[i].ChEmFrac 
 	                  << ", NEF " << jet[i].NeuEmFrac << ", ChMuFrac " << jet[i].ChMuFrac << ", NConstituents " << jet[i].NConstituents  
 	                  << ", Ch Mult " << jet[i].ChMult << ", Neu Mul " << jet[i].NeuMult << "\n"
-	     << "   isBtag SSVHP: " << (jet[i].IsBJet(3)? "true (":"false (") << jet[i].bTagProbSSVHP 
-	     << "), isBtag SSVHE: " << (jet[i].IsBJet(2)? "true (":"false (") << jet[i].bTagProbSSVHE << ")\n"
-	     << "   isBtag TCHEM: " << (jet[i].IsBJet(0)? "true (":"false (") << jet[i].bTagProbTCHE 
-	     << "), isBtag TCHPM: " << (jet[i].IsBJet(1)? "true (":"false (") << jet[i].bTagProbTCHP << ")\n"
+	     << "   isBtag SSVHPT: " << (jet[i].IsBJet(3)  ? "true (":"false (") << jet[i].bTagProbSSVHP 
+	     << "), isBtag SSVHEM: " << (jet[i].IsBJet(2)  ? "true (":"false (") << jet[i].bTagProbSSVHE << ")\n"
+	     << "   isBtag TCHEM:  " << (jet[i].IsBJet(0)  ? "true (":"false (") << jet[i].bTagProbTCHE 
+	     << "), isBtag TCHPM:  " << (jet[i].IsBJet(1)  ? "true (":"false (") << jet[i].bTagProbTCHP  << ")\n"
+	     << "   isBtag CSVM:   " << (jet[i].IsBJet(4,1)? "true (":"false (") << jet[i].bTagProbCSV 
+	     << "), isBtag CSVT:   " << (jet[i].IsBJet(4,2)? "true (":"false (") << jet[i].bTagProbCSV   << ")\n"
+	     << "   isBtag JPM:    " << (jet[i].IsBJet(5,1)? "true (":"false (") << jet[i].bTagProbCSV 
+	     << "), isBtag JPT:    " << (jet[i].IsBJet(5,2)? "true (":"false (") << jet[i].bTagProbCSV   << ")\n"
 	     << "   L1FastL2L3 JE corr factor " << jet[i].Scale << ", L1Fast factor " << jet[i].L1FastJetScale << ", jet Area " <<  jet[i].Area << "\n"
 	     << "   jet-MET-dPhi " << MetJetDPhi(i, 0, 1)  
 	     << endl; 
@@ -2318,7 +2379,7 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 		  << " Eta " << pj.Eta() << " Phi " << pj.Phi() << " E " << pj.E() << " M " << pj.M() << endl;	
 	}
 	}
-	if(NMuons>1){
+	if(NEles>1){
 	logStream << "   Ele-Ele combinations --------------------------------------------------------------------------"   << endl;
 	for(int i=0; i<NEles; ++i){
 	for(int j=i+1; j<NEles; ++j){
@@ -2400,6 +2461,67 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	TLorentzVector pj = muo[i].lv + jet[j].lv + pfmet[0];
 	logStream << "    Muon " << i << " and jet " << j << " and pfmet: Pt " << pj.Pt() << " Px " << pj.Px() << " Py " << pj.Py() << " Pz " << pj.Pz()
 		  << " Eta " << pj.Eta() << " Phi " << pj.Phi() << " E " << pj.E() << " M " << pj.M() << endl;	
+	}
+	}
+	}
+	}
+	if((NMuons + NEles)>1){
+	logStream << " jet-lepton-lepton combination ---------------------------------------------------------------------" << endl;
+	if(NEles>1){
+	for(int i=0; i<NEles; ++i){
+	for(int j=i+1; j<NEles; ++j){
+	for(int k=0; k<NJets; ++k){
+	TLorentzVector pj = ele[i].lv + ele[j].lv + jet[k].lv;
+	logStream << "     Ele " << i << " and ele " << j << " and jet " << k << ": Pt " << pj.Pt() << " Px " << pj.Px() << " Py " << pj.Py() << " Pz " << pj.Pz()
+		  << " Eta " << pj.Eta() << " Phi " << pj.Phi() << " E " << pj.E() << " M " << pj.M() << endl;	
+	}
+	}
+	}
+	}
+	if(NEles>0 && NMuons>0){
+	for(int i=0; i<NEles; ++i){
+	for(int j=0; j<NMuons; ++j){
+	for(int k=0; k<NJets; ++k){
+	TLorentzVector pj = ele[i].lv + muo[j].lv + jet[k].lv;
+	logStream << "     Ele " << i << " and muo " << j << " and jet " << k << ": Pt " << pj.Pt() << " Px " << pj.Px() << " Py " << pj.Py() << " Pz " << pj.Pz()
+		  << " Eta " << pj.Eta() << " Phi " << pj.Phi() << " E " << pj.E() << " M " << pj.M() << endl;	
+	}
+	}
+	}
+	}
+	if(NMuons>1){
+	for(int i=0; i<NMuons; ++i){
+	for(int j=i+1; j<NMuons; ++j){
+	for(int k=0; k<NJets; ++k){
+	TLorentzVector pj = muo[i].lv + muo[j].lv + muo[k].lv;
+	logStream << "    Muon " << i << " and muo " << j << " and jet " << k << ": Pt " << pj.Pt() << " Px " << pj.Px() << " Py " << pj.Py() << " Pz " << pj.Pz()
+		  << " Eta " << pj.Eta() << " Phi " << pj.Phi() << " E " << pj.E() << " M " << pj.M() << endl;	
+	}
+	}
+	}
+	}
+	}
+	if((NMuons + NEles)>0 && NJets>1){
+	logStream << " jet-jet-lepton combination ---------------------------------------------------------------------" << endl;
+	if(NEles>0){
+	for(int i=0; i<NEles; ++i){
+	for(int j=0; j<NJets; ++j){
+	for(int k=j+1; k<NJets; ++k){
+	TLorentzVector pj = ele[i].lv + jet[j].lv + jet[k].lv;
+	logStream << "     Ele " << i << " and jet " << j << " and jet " << k << ": Pt " << pj.Pt() << " Px " << pj.Px() << " Py " << pj.Py() << " Pz " << pj.Pz()
+		  << " Eta " << pj.Eta() << " Phi " << pj.Phi() << " E " << pj.E() << " M " << pj.M() << endl;	
+	}
+	}
+	}
+	}
+	if(NMuons>0){
+	for(int i=0; i<NMuons; ++i){
+	for(int j=0; j<NJets; ++j){
+	for(int k=j+1; k<NJets; ++k){
+	TLorentzVector pj = muo[i].lv + jet[j].lv + muo[k].lv;
+	logStream << "    Muon " << i << " and jet " << j << " and jet " << k << ": Pt " << pj.Pt() << " Px " << pj.Px() << " Py " << pj.Py() << " Pz " << pj.Pz()
+		  << " Eta " << pj.Eta() << " Phi " << pj.Phi() << " E " << pj.E() << " M " << pj.M() << endl;	
+	}
 	}
 	}
 	}

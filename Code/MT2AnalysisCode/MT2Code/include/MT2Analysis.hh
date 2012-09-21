@@ -48,6 +48,7 @@ public:
 	void SetBTagEfficiency(string btagFileName){ fbtagFileName = btagFileName;};
 	void SetType1MET(bool type1MET){fisType1MET = type1MET;};
 	void SetCHSJets(bool CHSJets){fisCHSJets = CHSJets;};
+	void SetFastSim(bool FastSim){fisFastSim = FastSim;};
 
 
 	// redo JEC
@@ -68,6 +69,9 @@ public:
 
   	//is a susy scan?
   	bool isScan;
+
+  	//is a fastsim sample?
+  	bool fisFastSim;
 
   	// remove Photon
   	bool fRemovePhoton;
@@ -97,7 +101,7 @@ private:
         //Control Histograms
   	//  TH1F *fH_PUWeights ;
 
-	//btagging histograms and files
+	//btagging histograms and files: maybe make histogram for each sample
 	TFile *btagfile;
 	TH1D *hbeff;
 	TH1D *hceff;
@@ -156,6 +160,7 @@ private:
 	bool  fDoJESUncertainty;
 	int   fJESUpDown;
   	int   fCut_NJets40_min;
+	int   fCut_NLeptons_min;//only muons and electrons
 
 
 	// ---- required and vetoed triggers ----
@@ -192,6 +197,7 @@ private:
 	float MuPFIso(const int index);
 	// Electrons
 	bool IsGoodMT2ElectronVetoID(const int index);
+	bool IsGoodMT2ElectronLooseID(const int index);
 	bool IsGoodMT2ElectronMediumID(const int index);
 	const float EffArea(float abseta);
 	float ElePFIso(const int index);

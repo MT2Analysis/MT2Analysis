@@ -18,6 +18,8 @@ MT2Analysis::MT2Analysis(TreeReader *tr) : UserAnalysisBase(tr){
 	fCut_Run_max                        = 9999999;
 	fDoJESUncertainty                   = false;
 	fJESUpDown                          = 0;
+	fCut_NJets40_min                    = 0;
+	fCut_NLeptons_min                   = 0;
 
 	fRemovePhoton                       = 0;
 	fID                                 = -1;
@@ -25,6 +27,7 @@ MT2Analysis::MT2Analysis(TreeReader *tr) : UserAnalysisBase(tr){
 
 	fisType1MET                         = false;
 	fisCHSJets                          = false;
+	fisFastSim                          = false;
 
 	fRequiredHLT.clear();
 	fVetoedHLT.clear();
@@ -226,20 +229,6 @@ void MT2Analysis::Begin(const char* filename){
           fTriggerMap["HLT_DiPFJetAve40_v5"]                 = &fMT2tree->trigger.HLT_DiPFJetAve40_v5;
           fTriggerMap["HLT_DiPFJetAve40_v6"]                 = &fMT2tree->trigger.HLT_DiPFJetAve40_v6;
 	  
-	  //MuHad
-          fTriggerMap["HLT_Mu40_FJHT200_v3"]                      = &fMT2tree->trigger.HLT_Mu40_FJHT200_v3;
-          fTriggerMap["HLT_Mu40_FJHT200_v4"]                      = &fMT2tree->trigger.HLT_Mu40_FJHT200_v4;
-          fTriggerMap["HLT_Mu40_HT200_v1"]                        = &fMT2tree->trigger.HLT_Mu40_HT200_v1;
-          fTriggerMap["HLT_Mu40_HT200_v2"]                        = &fMT2tree->trigger.HLT_Mu40_HT200_v2;
-          fTriggerMap["HLT_IsoMu20_eta2p1_CentralPFJet80_v3"]     = &fMT2tree->trigger.HLT_IsoMu20_eta2p1_CentralPFJet80_v3;
-          fTriggerMap["HLT_IsoMu20_eta2p1_CentralPFJet80_v4"]     = &fMT2tree->trigger.HLT_IsoMu20_eta2p1_CentralPFJet80_v4;
-          fTriggerMap["HLT_IsoMu20_eta2p1_CentralPFJet80_v5"]     = &fMT2tree->trigger.HLT_IsoMu20_eta2p1_CentralPFJet80_v5;
-          fTriggerMap["HLT_IsoMu20_eta2p1_CentralPFJet80_v6"]     = &fMT2tree->trigger.HLT_IsoMu20_eta2p1_CentralPFJet80_v6;
-          fTriggerMap["HLT_IsoMu20_eta2p1_CentralPFJet80_v7"]     = &fMT2tree->trigger.HLT_IsoMu20_eta2p1_CentralPFJet80_v7;
-          fTriggerMap["HLT_IsoMu24_eta2p1_v11"]                   = &fMT2tree->trigger.HLT_IsoMu24_eta2p1_v11;
-          fTriggerMap["HLT_IsoMu24_eta2p1_v12"]                   = &fMT2tree->trigger.HLT_IsoMu24_eta2p1_v12;
-          fTriggerMap["HLT_IsoMu24_eta2p1_v13"]                   = &fMT2tree->trigger.HLT_IsoMu24_eta2p1_v13;
-          fTriggerMap["HLT_IsoMu24_eta2p1_v14"]                   = &fMT2tree->trigger.HLT_IsoMu24_eta2p1_v14;
 	}
 
 
@@ -350,6 +339,8 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	fMT2tree->SetNBJetsHE      (fMT2tree->GetNBtags(2,1.74 ,20,2.4,1));
 	fMT2tree->SetNBJetsCSVM    (fMT2tree->GetNBtags(4,0.679,20,2.4,1));
 	fMT2tree->SetNBJetsCSVT    (fMT2tree->GetNBtags(4,0.898,20,2.4,1));
+	fMT2tree->SetNBJets40CSVM  (fMT2tree->GetNBtags(4,0.679,40,2.4,1));
+	fMT2tree->SetNBJets40CSVT  (fMT2tree->GetNBtags(4,0.898,40,2.4,1));
 	fMT2tree->SetNEles         ((Int_t)fElecs.size());
 	fMT2tree->SetNMuons        ((Int_t)fMuons.size());
 	fMT2tree->SetNTaus         ((Int_t)fTaus.size());
@@ -439,6 +430,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->ele[i].Charge   = fTR->ElCharge[fElecs[i]];
 		fMT2tree->ele[i].Iso      = ElePFIso(fElecs[i]);
 		fMT2tree->ele[i].IDMedium = IsGoodMT2ElectronMediumID(fElecs[i]);
+		fMT2tree->ele[i].IDLoose  = IsGoodMT2ElectronLooseID(fElecs[i]);
 		fMT2tree->ele[i].IDVeto   = IsGoodMT2ElectronVetoID(fElecs[i]);
 	}
 	for(int i=0; i<fMuons.size(); ++i) {
@@ -495,7 +487,10 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	for(int i=0; i<fTR->NGenLeptons; ++i){
 		int ID=abs(fTR->GenLeptonID[i]);
 		int MID=abs(fTR->GenLeptonMID[i]);
-		if( (ID == 11 || ID == 12 || ID == 13 || ID == 14 || ID == 15 || ID == 16) && (MID > 24) ) continue;
+		//allow for genleptons from chargino or slepton decays
+		//allow for genleptons from Higgs decays --> changed (MID>24) to the thing below
+		if( (ID == 11 || ID == 12 || ID == 13 || ID == 14 || ID == 15 || ID == 16) && 
+		    (MID > 37 && ( MID<1000001||MID>1000039) && (MID<2000001||MID>2000015) ) ) continue;
 		float mass=0;
 		if     (abs(fTR->GenLeptonID[i]) == 15)   mass=1.776; // tau
 		else if(abs(fTR->GenLeptonID[i]) == 13)   mass=0.106; // mu
@@ -511,6 +506,8 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		NGenLepts++;
 		if(NGenLepts >= 20 ) {cout << "ERROR: NGenLepts >=20: skipping remaining genlepts for event " << fTR->Event << endl; continue;}
 		fMT2tree->genlept[NGenLepts-1].lv.SetPtEtaPhiM(fTR->GenLeptonPt[i], fTR->GenLeptonEta[i], fTR->GenLeptonPhi[i], mass);
+		fMT2tree->genlept[NGenLepts-1].Mlv.SetPtEtaPhiM(fTR->GenLeptonMPt[i], fTR->GenLeptonMEta[i], fTR->GenLeptonMPhi[i], 0);//how to get the mass
+		fMT2tree->genlept[NGenLepts-1].GMlv.SetPtEtaPhiM(fTR->GenLeptonGMPt[i], fTR->GenLeptonGMEta[i], fTR->GenLeptonGMPhi[i], 0);//how to get mass
 		fMT2tree->genlept[NGenLepts-1].ID       = fTR->GenLeptonID[i];
 		fMT2tree->genlept[NGenLepts-1].MID      = fTR->GenLeptonMID[i];
 		fMT2tree->genlept[NGenLepts-1].MStatus  = fTR->GenLeptonMStatus[i];
@@ -575,15 +572,6 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->pileUp.PUnumIntEarly     = fTR->PUOOTnumInteractionsEarly;  // branch added in V02-03-01 
 		fMT2tree->pileUp.PtHat             = fTR->PtHat;
 		fMT2tree->pileUp.PUScenario        = (int) fPUScenario;
-		fMT2tree->pileUp.Rho               = fTR->Rho; // ATTENTION: this rho is from KT6 PF jets without pf-CHS
-		int nvertex=0;
-		for(int i=0; i<fTR->NVrtx; ++i){
-			if(fabs(fTR->VrtxZ[i]) > 24) continue;
-			if(sqrt( (fTR->VrtxX[i])*(fTR->VrtxX[i]) + (fTR->VrtxY[i])*(fTR->VrtxY[i])) > 2) continue;
-			if(fTR->VrtxNdof[i]<=4) continue;
-			nvertex++;
-		}
-		fMT2tree->pileUp.NVertices=nvertex;
 
 		if       (fPUScenario==noPU  )  {fMT2tree->pileUp.Weight            = 1;}
 		else if  (fPUScenario==MC2012)  {fMT2tree->pileUp.Weight            = GetPUWeight(fTR->PUnumTrueInteractions);}
@@ -592,6 +580,15 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		     	     << " fMT2tree->pileUp.Weight "         << fMT2tree->pileUp.Weight << endl; 
 		}
 	}
+	fMT2tree->pileUp.Rho               = fTR->Rho; // ATTENTION: this rho is from KT6 PF jets without pf-CHS
+	int nvertex=0;
+	for(int i=0; i<fTR->NVrtx; ++i){
+		if(fabs(fTR->VrtxZ[i]) > 24) continue;
+		if(sqrt( (fTR->VrtxX[i])*(fTR->VrtxX[i]) + (fTR->VrtxY[i])*(fTR->VrtxY[i])) > 2) continue;
+		if(fTR->VrtxNdof[i]<=4) continue;
+		nvertex++;
+	}
+	fMT2tree->pileUp.NVertices=nvertex;
 
 
 	// _________
@@ -605,29 +602,24 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		// single photon triggers ---------------------------------------------------------------------
 		string singlePhotonTriggers[100];
 		int photontriggernumber=0;
-		singlePhotonTriggers[photontriggernumber++] = "HLT_Photon135_v6";
+		singlePhotonTriggers[photontriggernumber++] = "HLT_Photon150_v1";
+		singlePhotonTriggers[photontriggernumber++] = "HLT_Photon150_v2";
+		singlePhotonTriggers[photontriggernumber++] = "HLT_Photon150_v3";
+		singlePhotonTriggers[photontriggernumber++] = "HLT_Photon150_v4";
 
-		bool SiglePhotFired(false);
+		bool SinglePhotFired(false);
 		for(int i=0; i<photontriggernumber; ++i){
-			if( GetHLTResult(singlePhotonTriggers[i])) SiglePhotFired=true;
+			if( GetHLTResult(singlePhotonTriggers[i])) SinglePhotFired=true;
 		}
-		if(SiglePhotFired) fMT2tree->trigger.HLT_SinglePhotons = true;
-		//NOTE NEW START
-		string MuHadTriggers[100];
-		int muhadtriggernumber=0;
-		MuHadTriggers[muhadtriggernumber++] = "HLT_Mu40_PFHT350_v5";
-
-		bool MuHadFired(false);
-		for(int i=0; i<muhadtriggernumber; ++i){
-			if( GetHLTResult(MuHadTriggers[i])) MuHadFired=true;
-		}
-		if(MuHadFired) fMT2tree->trigger.HLT_MuHad = true;
-		//NOTE NEW END
+		if(SinglePhotFired) fMT2tree->trigger.HLT_SinglePhotons = true;
 
 		// di-electron triggers ------------------------------------------------------------------------------------------------------
 		string diElectronTriggers[100];
 		int diElectronTriggernumber=0;
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v15";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v16";
 		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v17";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v18";
 		bool DiElectronFired(false);
 		for(int i=0; i<diElectronTriggernumber; ++i){
 			if(GetHLTResult(diElectronTriggers[i])) DiElectronFired=true;
@@ -638,6 +630,34 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		string diMuonTriggers[100]; 
 		int diMuonTriggernumber=0;
 		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v16";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v17";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v18";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v19";
+	//	diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v20";//is not there?
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v21";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_TkMu8_v9";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_TkMu8_v10";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_TkMu8_v11";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_TkMu8_v12";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_TkMu8_v13";
+/*
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v16";//prescaled
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v17";//prescaled
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v18";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v19";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v20";//is not there?
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v21";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu22_TkMu8_v4";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu22_TkMu8_v5";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu22_TkMu8_v6";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu22_TkMu8_v7";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu22_TkMu8_v8";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu22_TkMu22_v4";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu22_TkMu22_v5";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu22_TkMu22_v6";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu22_TkMu22_v7";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu22_TkMu22_v8";
+*/
 		bool DiMuonFired(false);
 		for(int i=0; i<diMuonTriggernumber; ++i){
 			if(GetHLTResult(diMuonTriggers[i])) DiMuonFired=true;
@@ -647,16 +667,120 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		//EMu
 		string EMuTriggers[100];
 		int EMuTriggernumber=0;
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v4";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v5";
 		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v6";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v7";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v8";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu17_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v9";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v4";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v5";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v6";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v7";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v8";
+		EMuTriggers[EMuTriggernumber++] = "HLT_Mu8_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v9";
 		bool EMuFired(false);
 		for(int i=0; i<EMuTriggernumber; ++i){
 			if(GetHLTResult(EMuTriggers[i])) EMuFired=true;
 		}
 		if(EMuFired) fMT2tree->trigger.HLT_EMu =true;
+
+		//SingleMu
+		string SingleMuTriggers[100];
+		int SingleMuTriggerNumber=0;
+		SingleMuTriggers[SingleMuTriggerNumber++] = "HLT_IsoMu24_eta2p1_v11";
+		SingleMuTriggers[SingleMuTriggerNumber++] = "HLT_IsoMu24_eta2p1_v12";
+		SingleMuTriggers[SingleMuTriggerNumber++] = "HLT_IsoMu24_eta2p1_v13";
+		SingleMuTriggers[SingleMuTriggerNumber++] = "HLT_IsoMu24_eta2p1_v14";
+		SingleMuTriggers[SingleMuTriggerNumber++] = "HLT_IsoMu24_eta2p1_v15";
+		/*
+		SingleMuTriggers[SingleMuTriggerNumber++] = "HLT_IsoMu24_v15"; // only from run 193834 on
+		SingleMuTriggers[SingleMuTriggerNumber++] = "HLT_IsoMu24_v16";
+		SingleMuTriggers[SingleMuTriggerNumber++] = "HLT_IsoMu24_v17";
+		*/
+		bool SingleMuFired(false);
+		for(int i=0; i<SingleMuTriggerNumber; ++i){
+			if(GetHLTResult(SingleMuTriggers[i])) SingleMuFired=true;
+		}
+		if(SingleMuFired) fMT2tree->trigger.HLT_SingleMu =true;
+
+		//SingleMuJet
+		string SingleMuJetTriggers[100];
+		int SingleMuJetTriggerNumber=0;
+		SingleMuJetTriggers[SingleMuJetTriggerNumber++] = "HLT_IsoMu20_eta2p1_CentralPFJet80_v3";
+		SingleMuJetTriggers[SingleMuJetTriggerNumber++] = "HLT_IsoMu20_eta2p1_CentralPFJet80_v4";
+		SingleMuJetTriggers[SingleMuJetTriggerNumber++] = "HLT_IsoMu20_eta2p1_CentralPFJet80_v5";
+		SingleMuJetTriggers[SingleMuJetTriggerNumber++] = "HLT_IsoMu20_eta2p1_CentralPFJet80_v6";
+		SingleMuJetTriggers[SingleMuJetTriggerNumber++] = "HLT_IsoMu20_eta2p1_CentralPFJet80_v7";
+		SingleMuJetTriggers[SingleMuJetTriggerNumber++] = "HLT_IsoMu20_eta2p1_CentralPFJet80_v8";
+		bool SingleMuJetFired(false);
+		for(int i=0; i<SingleMuJetTriggerNumber; ++i){
+			if(GetHLTResult(SingleMuJetTriggers[i])) SingleMuJetFired=true;
+		}
+		if(SingleMuJetFired) fMT2tree->trigger.HLT_SingleMu_Jet =true;
+
+		//SingleMuDiJet // only from run 193834 on -->there is a similar pass including MET
+		string SingleMuDiJetTriggers[100];
+		int SingleMuDiJetTriggerNumber=0;
+		SingleMuDiJetTriggers[SingleMuDiJetTriggerNumber++] = "HLT_IsoMu24_CentralPFJet30_CentralPFJet25_v1";
+		SingleMuDiJetTriggers[SingleMuDiJetTriggerNumber++] = "HLT_IsoMu24_CentralPFJet30_CentralPFJet25_v2";
+		SingleMuDiJetTriggers[SingleMuDiJetTriggerNumber++] = "HLT_IsoMu24_CentralPFJet30_CentralPFJet25_v3";
+		SingleMuDiJetTriggers[SingleMuDiJetTriggerNumber++] = "HLT_IsoMu24_CentralPFJet30_CentralPFJet25_v4";
+		bool SingleMuDiJetFired(false);
+		for(int i=0; i<SingleMuDiJetTriggerNumber; ++i){
+			if(GetHLTResult(SingleMuDiJetTriggers[i])) SingleMuDiJetFired=true;
+		}
+		if(SingleMuDiJetFired) fMT2tree->trigger.HLT_SingleMu_DiJet =true;
+
+		//SingleMuTriJet
+		string SingleMuTriJetTriggers[100];
+		int SingleMuTriJetTriggerNumber=0;
+		SingleMuTriJetTriggers[SingleMuTriJetTriggerNumber++] = "HLT_IsoMu17_eta2p1_TriCentralPFJet30_v2";
+		SingleMuTriJetTriggers[SingleMuTriJetTriggerNumber++] = "HLT_IsoMu17_eta2p1_TriCentralPFJet30_v3";
+		SingleMuTriJetTriggers[SingleMuTriJetTriggerNumber++] = "HLT_IsoMu17_eta2p1_TriCentralPFJet30_v4";
+		SingleMuTriJetTriggers[SingleMuTriJetTriggerNumber++] = "HLT_IsoMu17_eta2p1_TriCentralPFJet30_v5";
+		SingleMuTriJetTriggers[SingleMuTriJetTriggerNumber++] = "HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v1";
+		SingleMuTriJetTriggers[SingleMuTriJetTriggerNumber++] = "HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v1";
+		SingleMuTriJetTriggers[SingleMuTriJetTriggerNumber++] = "HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_30_20_v2";
+		SingleMuTriJetTriggers[SingleMuTriJetTriggerNumber++] = "HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v3";
+		SingleMuTriJetTriggers[SingleMuTriJetTriggerNumber++] = "HLT_IsoMu17_eta2p1_TriCentralPFNoPUJet30_v4";
+		bool SingleMuTriJetFired(false);
+		for(int i=0; i<SingleMuTriJetTriggerNumber; ++i){
+			if(GetHLTResult(SingleMuTriJetTriggers[i])) SingleMuTriJetFired=true;
+		}
+		if(SingleMuTriJetFired) fMT2tree->trigger.HLT_SingleMu_TriJet =true;
+
+		//SingleEleDiJetMET
+		string SingleEleDiJetMETTriggers[100];
+		int SingleEleDiJetMETTriggerNumber=0;
+		SingleEleDiJetMETTriggers[SingleEleDiJetMETTriggerNumber++] = "HLT_Ele27_WP80_CentralPFJet30_CentralPFJet25_PFMET20_v2";
+		SingleEleDiJetMETTriggers[SingleEleDiJetMETTriggerNumber++] = "HLT_Ele27_WP80_CentralPFJet30_CentralPFJet25_PFMET20_v3";
+		SingleEleDiJetMETTriggers[SingleEleDiJetMETTriggerNumber++] = "HLT_Ele27_WP80_CentralPFJet30_CentralPFJet25_PFMET20_v4";
+		SingleEleDiJetMETTriggers[SingleEleDiJetMETTriggerNumber++] = "HLT_Ele32_WP80_CentralPFJet35_CentralPFJet25_PFMET20_v1";
+		SingleEleDiJetMETTriggers[SingleEleDiJetMETTriggerNumber++] = "HLT_Ele32_WP80_CentralPFJet35_CentralPFJet25_PFMET20_v2";
+		SingleEleDiJetMETTriggers[SingleEleDiJetMETTriggerNumber++] = "HLT_Ele32_WP80_CentralPFJet35_CentralPFJet25_PFMET20_v3";
+		SingleEleDiJetMETTriggers[SingleEleDiJetMETTriggerNumber++] = "HLT_Ele32_WP80_CentralPFJet35_CentralPFJet25_PFMET20_v4";
+		bool SingleEleDiJetMETFired(false);
+		for(int i=0; i<SingleEleDiJetMETTriggerNumber; ++i){
+			if(GetHLTResult(SingleEleDiJetMETTriggers[i])) SingleEleDiJetMETFired=true;
+		}
+		if(SingleEleDiJetMETFired) fMT2tree->trigger.HLT_SingleEle_DiJet_MET =true;
+
+		//SingleEleMETMT
+		string SingleEleMETMTTriggers[100];
+		int SingleEleMETMTTriggerNumber=0;
+		SingleEleMETMTTriggers[SingleEleMETMTTriggerNumber++] = "HLT_Ele27_WP80_PFMET_MT50_v2";
+		SingleEleMETMTTriggers[SingleEleMETMTTriggerNumber++] = "HLT_Ele27_WP80_PFMET_MT50_v3";
+		SingleEleMETMTTriggers[SingleEleMETMTTriggerNumber++] = "HLT_Ele27_WP80_PFMET_MT50_v4";
+		SingleEleMETMTTriggers[SingleEleMETMTTriggerNumber++] = "HLT_Ele27_WP80_PFMET_MT50_v5";
+		SingleEleMETMTTriggers[SingleEleMETMTTriggerNumber++] = "HLT_Ele27_WP80_PFMET_MT50_v6";
+		SingleEleMETMTTriggers[SingleEleMETMTTriggerNumber++] = "HLT_Ele27_WP80_PFMET_MT50_v7";
+		bool SingleEleMETMTFired(false);
+		for(int i=0; i<SingleEleMETMTTriggerNumber; ++i){
+			if(GetHLTResult(SingleEleMETMTTriggers[i])) SingleEleMETMTFired=true;
+		}
+		if(SingleEleDiJetMETFired) fMT2tree->trigger.HLT_SingleEle_MET_MT =true;
 	}
-
-
-
 	// ___________________________________________________________________________
 	
 	// ------------------------------------------------------------------
@@ -664,6 +788,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	fMT2tree->misc.isData              = fisData;
 	fMT2tree->misc.isType1MET          = fisType1MET;
 	fMT2tree->misc.isCHSJets           = fisCHSJets;
+	fMT2tree->misc.isFastSim           = fisFastSim;
 	fMT2tree->misc.QCDPartonicHT       = fTR->QCDPartonicHT;     
 	fMT2tree->misc.ProcessID           = fID;
 	fMT2tree->misc.Run                 = fTR->Run;
@@ -731,25 +856,34 @@ void MT2Analysis::FillMT2treeCalculations(){
 	fMT2tree->FillMT2Hemi(0,0,1,20,2.4,2,3,1,0);  
 	
 	// testmass 0, massless pseudojets, PF-JID, JPt > 20, |jet-eta|<2.4, minimizing Delta_HT, pf-met, hemi-index 1  -> AlphaT version
-	// fMT2tree->FillMT2HemiMinDHT(0,0,1,20,2.4,1,2);  
+	fMT2tree->FillMT2HemiMinDHT(0,0,1,20,2.4,1,1);  
 	
 	// store MT2 misc variables
 	fMT2tree->misc.MT2                 = fMT2tree->hemi[0].MT2;    // note: this is a bit dangerous, 
 	fMT2tree->misc.MCT                 = fMT2tree->hemi[0].MCT;
+	fMT2tree->misc.MT2jet40            = fMT2tree->GetMT2(0,false,1,40,2.4,2,3,1);
+	fMT2tree->misc.MT2jet50            = fMT2tree->GetMT2(0,false,1,50,2.4,2,3,1);
+
 
 	// other variables to be computed based on MT2tree
 	// ----------------------------------------------------------------------------------
 	fMT2tree->misc.Vectorsumpt	   = fMT2tree->GetMHTminusMET(1, 20, 2.4, true); // including leptons, ID jets only
 	fMT2tree->misc.MinMetJetDPhi       = fMT2tree->MinMetJetDPhi(0,20,5.0,1);
 	fMT2tree->misc.MinMetJetDPhi4      = fMT2tree->MinMetJetDPhi(0,20,5.0,1,4);  // use first 4 jets
+	fMT2tree->misc.MinMetJetDPhiPt40   = fMT2tree->MinMetJetDPhi(0,40,5.0,1);    // use jets having pT>40 GeV
+	fMT2tree->misc.MinMetJetDPhiPt50   = fMT2tree->MinMetJetDPhi(0,50,5.0,1);    // use jets having pT>50 GeV
+	fMT2tree->misc.MinMetJetDPhi4Pt40  = fMT2tree->MinMetJetDPhi(0,40,5.0,1,4);  // use first 4 jets having pT>40 GeV
+	fMT2tree->misc.MinMetJetDPhi4Pt50  = fMT2tree->MinMetJetDPhi(0,50,5.0,1,4);  // use first 4 jets having pT>50 GeV
+	fMT2tree->misc.MinMetJetDPhiInCrack= fMT2tree->MinMetJetDPhi(0,20,5.0,0,99,true);
 	fMT2tree->misc.MinMetJetDPhiIndex  = fMT2tree->MinMetJetDPhiIndex(0,20,5.0,1);
 	fMT2tree->misc.MinMetBJetDPhi      = fMT2tree->BJetMETdPhi(2,1.74,20,5,1);  // minmetjet dPhi w.r.t SSVHEM bjets with pt > 20 and no eta restriction. 
 	fMT2tree->misc.PassJetID           = fMT2tree->PassJetID(50,2.4,1);
+	fMT2tree->misc.PassJet40ID         = fMT2tree->PassJetID(40,2.4,1);
 	if(fMT2tree->NJets > 0) {
 		fMT2tree->misc.Jet0Pass      = (Int_t) fMT2tree->jet[0].IsGoodPFJet(100,2.4,1);
 	} else  fMT2tree->misc.Jet0Pass      = 0; 
 	if(fMT2tree->NJets > 1) {
-		fMT2tree->misc.Jet1Pass      = (Int_t) fMT2tree->jet[1].IsGoodPFJet( 60,2.4,1);
+		fMT2tree->misc.Jet1Pass      = (Int_t) fMT2tree->jet[1].IsGoodPFJet(100,2.4,1);
 	} else  fMT2tree->misc.Jet1Pass      = 0;
 	
 	// MHT from jets and taus
@@ -1022,6 +1156,17 @@ bool MT2Analysis::IsSelectedEvent(){
 		cout << "WARNING: Event with Jets with negative JEC: Run " << fTR->Run << " LS " << fTR->LumiSection << " Event " << fTR->Event
 		     << " N PFJets " << fTR->NJets << " NCaloJets " << fTR->CANJets << endl; 
 	}
+	//only electrons and muons
+	if(fCut_NLeptons_min > 0){
+		if(fElecs.size() + fMuons.size()<fCut_NLeptons_min) {cout << "NLepmin " << fCut_NLeptons_min << " NLep " << fElecs.size() + fMuons.size() << endl; return false;}
+	}
+	if(fCut_NJets40_min > 0){
+	int NJets40_min=0;
+	for(int j=0; j<Jets.size(); ++j){
+	  if(Jets[j].IsGoodPFJet(40, 2.4,1) ) {++NJets40_min;}
+	}
+		if(NJets40_min<fCut_NJets40_min) {return false;}
+	}
 
 	// ------------------------------------------------------------------------------------------	
 	return true;	
@@ -1081,6 +1226,13 @@ void MT2Analysis::ReadCuts(const char* SetofCuts="MT2_cuts/default.dat"){
 			fCut_JPt_second_min      = float(ParValue); ok = true;			
 		} else if( !strcmp(ParName, "PtHat_max")){
 			fCut_PtHat_max            = float(ParValue); ok = true;
+		} 
+		else if( !strcmp(ParName, "NJets40_min")){
+			fCut_NJets40_min         = int(ParValue); ok = true;
+		} 
+		//only electrons and muons
+		else if( !strcmp(ParName, "NLeptons_min")){
+			fCut_NLeptons_min         = int(ParValue); ok = true;
 		} 
 
 		if(!ok) cout << "%% MT2Analysis::ReadCuts ==> ERROR: Unknown variable " << ParName << endl;
@@ -1173,6 +1325,50 @@ bool MT2Analysis::IsGoodMT2ElectronVetoID(const int index){
 	return true;
 }
 
+bool MT2Analysis::IsGoodMT2ElectronLooseID(const int index){
+  	if(!(fabs(fTR->ElEta[index]) < 2.4) ) return false;
+  	if(!(fabs(fTR->ElPt[index]) > 10.0 ) ) return false;
+
+  	// ECAL gap veto
+  	if ( fabs(fTR->ElSCEta[index]) > 1.4442 && fabs(fTR->ElSCEta[index]) < 1.566 )  return false;  
+	
+	// Medium Working Point
+	if ( fabs(fTR->ElEta[index]) < 1.479 ) { // Barrel
+		if(!(fabs(fTR->ElDeltaEtaSuperClusterAtVtx[index])<0.007)) return false;
+		if(!(fabs(fTR->ElDeltaPhiSuperClusterAtVtx[index])<0.15))  return false;
+		if(!(fTR->ElSigmaIetaIeta[index]<0.01))                    return false;
+		if(!(fTR->ElHcalOverEcal[index]<0.12)) return false;
+	} else { // Endcap
+		if(!(fabs(fTR->ElDeltaEtaSuperClusterAtVtx[index])<0.009)) return false;
+		if(!(fabs(fTR->ElDeltaPhiSuperClusterAtVtx[index])<0.10))  return false;
+		if(!(fTR->ElSigmaIetaIeta[index]<0.03)) return false;
+		if(!(fTR->ElHcalOverEcal[index]<0.10)) return false;
+	}
+  
+	// Vertex
+	if(!(abs(fTR->ElD0PV[index])<0.02)) return false;
+	if(!(abs(fTR->ElDzPV[index])<0.2)) return false;
+
+	// Conversion rejection
+  	if(!(fTR->ElPassConversionVeto[index])) return false;
+ 	if(!(fTR->ElNumberOfMissingInnerHits[index]<=1)) return false;
+
+	// |1/e-1/p|<0.05
+	float e=fTR->ElCaloEnergy[index];
+	float p=fTR->ElCaloEnergy[index]/fTR->ElESuperClusterOverP[index];
+	if(!(fabs(1./e-1./p)<0.05)) return false;
+  
+
+  	float pfIso = ElePFIso(index);
+  	if ( fabs(fTR->ElEta[index]) < 1.479 || fTR->ElPt[index]>20.0) { // Barrel
+		if ( !((pfIso  < 0.15) ) ) return false;
+	} else {
+    	//Endcap with pt<20
+    		if ( !((pfIso  < 0.10) ) ) return false;
+  	}
+	return true;
+}
+
 bool MT2Analysis::IsGoodMT2ElectronMediumID(const int index){
   	if(!(fabs(fTR->ElEta[index]) < 2.4) ) return false;
   	if(!(fabs(fTR->ElPt[index]) > 10.0 ) ) return false;
@@ -1204,7 +1400,7 @@ bool MT2Analysis::IsGoodMT2ElectronMediumID(const int index){
 	// |1/e-1/p|<0.05
 	float e=fTR->ElCaloEnergy[index];
 	float p=fTR->ElCaloEnergy[index]/fTR->ElESuperClusterOverP[index];
-	if(!(fabs(1/e-1/p)<0.05)) return false;
+	if(!(fabs(1./e-1./p)<0.05)) return false;
   
 
   	float pfIso = ElePFIso(index);
@@ -1314,8 +1510,8 @@ bool MT2Analysis::IsGoodTau(int i){
 
 // Jets and JES uncertainty
 void MT2Analysis::Initialize_JetCorrectionUncertainty(){
-	string Calo="/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+ (fisCHSJets?"_Uncertainty_AK5PFchs.txt":"_Uncertainty_AK5PF.txt");
-	string PF  ="/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+"_Uncertainty_AK5Calo.txt";
+	string PF  ="/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+ (fisCHSJets?"_Uncertainty_AK5PFchs.txt":"_Uncertainty_AK5PF.txt");
+	string Calo="/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+"_Uncertainty_AK5Calo.txt";
 
 	ifstream fileCalo(Calo.c_str());
 	ifstream filePF  (PF.c_str());
@@ -1429,7 +1625,7 @@ MT2AnalysisJet::MT2AnalysisJet(int index, TString type, MT2Analysis *ana): MT2Je
 						  fAna->fTR->Rho, 1);               // L1Fast
 			lv          = PFJetScaled(jraw, fAna->fTR->JArea[index], fAna->fTR->Rho, fAna->fisData?1230:123);
 		}
-		//JAera
+		// JArea
 		Area          =  fAna->fTR->JArea[index];
 		// btags
 		bTagProbTCHE  =  fAna->fTR->JnewPFTrackCountingHighEffBJetTags[index];
@@ -1438,6 +1634,8 @@ MT2AnalysisJet::MT2AnalysisJet(int index, TString type, MT2Analysis *ana): MT2Je
 		bTagProbSSVHP =  fAna->fTR->JnewPFSimpleSecondaryVertexHighPurBJetTags[index];
 		bTagProbJProb =  fAna->fTR->JnewPFJetProbabilityBPFJetTags[index];
 		bTagProbCSV   =  fAna->fTR->JnewPFCombinedSecondaryVertexBPFJetTags[index];
+		// PartonFlavour
+		if(!fAna->fisData) Flavour = fAna->fTR->JPartonFlavour[index]; // only from V03-08-00 onwards
 		// Jet energy fractions
 		ChHadFrac     =  fAna->fTR->JChargedHadFrac       [index];	
 		NeuHadFrac    =  fAna->fTR->JNeutralHadFrac       [index];
@@ -1471,7 +1669,7 @@ MT2AnalysisJet::MT2AnalysisJet(int index, TString type, MT2Analysis *ana): MT2Je
 						  fAna->fTR->Rho, 1);               // L1Fast
 			lv          = PFJetScaled(jraw, fAna->fTR->PFCHSJArea[index], fAna->fTR->Rho, fAna->fisData?1230:123);
 		}
-		//JAera
+		// JArea
 		Area          =  fAna->fTR->PFCHSJArea[index];
 		// btags
 		bTagProbTCHE  =  fAna->fTR->PFCHSJtrackCountingHighEffBJetTags[index];
@@ -1480,6 +1678,8 @@ MT2AnalysisJet::MT2AnalysisJet(int index, TString type, MT2Analysis *ana): MT2Je
 		bTagProbSSVHP =  fAna->fTR->PFCHSJsimpleSecondaryVertexHighPurBJetTags[index];
 		bTagProbJProb =  fAna->fTR->PFCHSJjetProbabilityBJetTags[index];
 		bTagProbCSV   =  fAna->fTR->PFCHSJcombinedSecondaryVertexBJetTags[index];
+		// PartonFlavour
+		if(!fAna->fisData) Flavour = fAna->fTR->PFCHSJFlavour[index];
 		// Jet energy fractions
 		ChHadFrac     =  fAna->fTR->PFCHSJChHadfrac       [index];	
 		NeuHadFrac    =  fAna->fTR->PFCHSJNeuHadfrac      [index];
@@ -1506,7 +1706,7 @@ MT2AnalysisJet::MT2AnalysisJet(int index, TString type, MT2Analysis *ana): MT2Je
 			lv    = CAJetScaled(jraw, fAna->fisData?230:23);
 		}
 	}else{
-		cout << "ERROR: T2AnalysisJet::MT2AnalysisJet. exiting.." <<endl;
+		cout << "ERROR: MT2AnalysisJet::MT2AnalysisJet. exiting.." <<endl;
 		exit(-1);
 	}
 } 

@@ -15,6 +15,7 @@ MT2Analyzer::MT2Analyzer(std::vector<std::string>& fileList)
 	fbtagFileName="";
 	fType1MET    =false;
 	fCHSJets     =false;
+	fisFastSim   =false;
 }
 
 MT2Analyzer::~MT2Analyzer(){
@@ -42,6 +43,7 @@ void MT2Analyzer::Loop(){
 			fMT2Analysis        ->BeginRun(fCurRun);
                   	skipRun = false; // re-initialize
                   	if ( !CheckRun() ) skipRun = true;
+
                 }
                 // Check if new lumi is in JSON file
                 if ( !skipRun && fCurLumi != fTR->LumiSection ) {
@@ -49,9 +51,9 @@ void MT2Analyzer::Loop(){
                   	skipLumi = false; // Re-initialise
                   	if ( !CheckRunLumi() ) skipLumi = true;
                 }
+
 		if ( !(skipRun || skipLumi) ) {
 			fMT2Analysis        ->Analyze();
-
 			double PUWeight = 0;
 			//PU mean weight
 			if (fPu=="MC2012"){
@@ -88,6 +90,7 @@ void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, str
         fMT2Analysis             	->isScan        = isScan;
 	fMT2Analysis                    ->SetType1MET(fType1MET);
 	fMT2Analysis                    ->SetCHSJets(fCHSJets);
+	fMT2Analysis                    ->SetFastSim(fisFastSim);
 
 
 	fMT2Analysis                    ->Begin(filename);

@@ -1158,7 +1158,7 @@ bool MT2Analysis::IsSelectedEvent(){
 	}
 	//only electrons and muons
 	if(fCut_NLeptons_min > 0){
-		if(fElecs.size() + fMuons.size()<fCut_NLeptons_min) {cout << "NLepmin " << fCut_NLeptons_min << " NLep " << fElecs.size() + fMuons.size() << endl; return false;}
+		if(fElecs.size() + fMuons.size()<fCut_NLeptons_min) {return false;}
 	}
 	if(fCut_NJets40_min > 0){
 	int NJets40_min=0;

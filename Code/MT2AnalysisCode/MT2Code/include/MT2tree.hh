@@ -168,6 +168,18 @@ public:
 	Bool_t HLT_PFHT750_v5;
 	Bool_t HLT_PFHT750_v6;
 	Bool_t HLT_PFHT750_v7;
+	Bool_t HLT_PFNoPUHT350_v1;
+	Bool_t HLT_PFNoPUHT350_v2;
+	Bool_t HLT_PFNoPUHT350_v3;
+	Bool_t HLT_PFNoPUHT650_v1;
+	Bool_t HLT_PFNoPUHT650_v2;
+	Bool_t HLT_PFNoPUHT650_v3;
+	Bool_t HLT_PFNoPUHT700_v1;
+	Bool_t HLT_PFNoPUHT700_v2;
+	Bool_t HLT_PFNoPUHT700_v3;
+	Bool_t HLT_PFNoPUHT750_v1;
+	Bool_t HLT_PFNoPUHT750_v2;
+	Bool_t HLT_PFNoPUHT750_v3;
 
 	// HT/HTMHT dataset
 	Bool_t HLT_PFHT350_PFMET100_v3;
@@ -180,6 +192,12 @@ public:
 	Bool_t HLT_PFHT400_PFMET100_v5;
 	Bool_t HLT_PFHT400_PFMET100_v6;
 	Bool_t HLT_PFHT400_PFMET100_v7;
+	Bool_t HLT_PFNoPUHT350_PFMET100_v1;
+	Bool_t HLT_PFNoPUHT350_PFMET100_v3;
+	Bool_t HLT_PFNoPUHT350_PFMET100_v4;
+	Bool_t HLT_PFNoPUHT400_PFMET100_v1;
+	Bool_t HLT_PFNoPUHT400_PFMET100_v3;
+	Bool_t HLT_PFNoPUHT400_PFMET100_v4;
 
         // MET Dataset
         Bool_t HLT_MET120_v9;
@@ -195,9 +213,15 @@ public:
         Bool_t HLT_PFMET150_v2;
         Bool_t HLT_PFMET150_v3;
         Bool_t HLT_PFMET150_v4;
+        Bool_t HLT_PFMET150_v5;
+        Bool_t HLT_PFMET150_v6;
+        Bool_t HLT_PFMET150_v7;
         Bool_t HLT_PFMET180_v2;
         Bool_t HLT_PFMET180_v3;
         Bool_t HLT_PFMET180_v4;
+        Bool_t HLT_PFMET180_v5;
+        Bool_t HLT_PFMET180_v6;
+        Bool_t HLT_PFMET180_v7;
         Bool_t HLT_DiCentralPFJet30_PFMHT80_v5;
         Bool_t HLT_DiCentralPFJet30_PFMHT80_v6;
         Bool_t HLT_DiCentralPFJet30_PFMHT80_v7;
@@ -205,26 +229,44 @@ public:
         Bool_t HLT_DiCentralPFJet50_PFMET80_v4;
         Bool_t HLT_DiCentralPFJet50_PFMET80_v5;
         Bool_t HLT_DiCentralPFJet50_PFMET80_v6;
+        Bool_t HLT_DiCentralPFNoPUJet50_PFMETORPFMETNoMu80_v1;
+        Bool_t HLT_DiCentralPFNoPUJet50_PFMETORPFMETNoMu80_v3;
+        Bool_t HLT_DiCentralPFNoPUJet50_PFMETORPFMETNoMu80_v4;
 
         // Multijet dataset
         Bool_t HLT_DiJet80_DiJet60_DiJet20_v1;
         Bool_t HLT_DiJet80_DiJet60_DiJet20_v2;
+        Bool_t HLT_DiJet80_DiJet60_DiJet20_v3;
+        Bool_t HLT_DiJet80_DiJet60_DiJet20_v4;
+        Bool_t HLT_DiJet80_DiJet60_DiJet20_v5;
+        Bool_t HLT_DiJet80_DiJet60_DiJet20_v6;
         Bool_t HLT_QuadJet60_DiJet20_v1;
         Bool_t HLT_QuadJet60_DiJet20_v2;
+        Bool_t HLT_QuadJet60_DiJet20_v3;
+        Bool_t HLT_QuadJet60_DiJet20_v5;
+        Bool_t HLT_QuadJet60_DiJet20_v6;
         Bool_t HLT_QuadJet50_v1;
         Bool_t HLT_QuadJet50_v2;
         Bool_t HLT_QuadJet70_v1;
         Bool_t HLT_QuadJet70_v2;
         Bool_t HLT_QuadJet70_v3;
+        Bool_t HLT_QuadJet70_v4;
+        Bool_t HLT_QuadJet70_v6;
         Bool_t HLT_QuadJet80_v1;
         Bool_t HLT_QuadJet80_v2;
         Bool_t HLT_QuadJet80_v3;
+        Bool_t HLT_QuadJet80_v4;
+        Bool_t HLT_QuadJet80_v6;
         Bool_t HLT_SixJet35_v1;
         Bool_t HLT_SixJet35_v2;
         Bool_t HLT_SixJet35_v3;
+        Bool_t HLT_SixJet35_v4;
+        Bool_t HLT_SixJet35_v6;
         Bool_t HLT_SixJet45_v1;
         Bool_t HLT_SixJet45_v2;
         Bool_t HLT_SixJet45_v3;
+        Bool_t HLT_SixJet45_v4;
+        Bool_t HLT_SixJet45_v6;
 
         // Jet/JetMon dataset
         Bool_t HLT_PFJet320_v3; //JetHT
@@ -271,7 +313,7 @@ public:
 	Bool_t HLT_SingleEle_DiJet_MET;
 	Bool_t HLT_SingleEle_MET_MT;
 
-	ClassDef(MT2Trigger, 19);
+	ClassDef(MT2Trigger, 20);
 };
 
 // MT2Jet ----------------------------------

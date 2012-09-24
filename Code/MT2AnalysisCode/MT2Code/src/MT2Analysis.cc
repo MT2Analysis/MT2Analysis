@@ -141,6 +141,19 @@ void MT2Analysis::Begin(const char* filename){
 	  fTriggerMap["HLT_PFHT750_v5"]     = &fMT2tree->trigger.HLT_PFHT750_v5;
 	  fTriggerMap["HLT_PFHT750_v6"]     = &fMT2tree->trigger.HLT_PFHT750_v6;
 	  fTriggerMap["HLT_PFHT750_v7"]     = &fMT2tree->trigger.HLT_PFHT750_v7;
+	  fTriggerMap["HLT_PFNoPUHT350_v1"] = &fMT2tree->trigger.HLT_PFNoPUHT350_v1;
+	  fTriggerMap["HLT_PFNoPUHT350_v2"] = &fMT2tree->trigger.HLT_PFNoPUHT350_v2;
+	  fTriggerMap["HLT_PFNoPUHT350_v3"] = &fMT2tree->trigger.HLT_PFNoPUHT350_v3;
+	  fTriggerMap["HLT_PFNoPUHT650_v1"] = &fMT2tree->trigger.HLT_PFNoPUHT650_v1;
+	  fTriggerMap["HLT_PFNoPUHT650_v2"] = &fMT2tree->trigger.HLT_PFNoPUHT650_v2;
+	  fTriggerMap["HLT_PFNoPUHT650_v3"] = &fMT2tree->trigger.HLT_PFNoPUHT650_v3;
+	  fTriggerMap["HLT_PFNoPUHT700_v1"] = &fMT2tree->trigger.HLT_PFNoPUHT700_v1;
+	  fTriggerMap["HLT_PFNoPUHT700_v2"] = &fMT2tree->trigger.HLT_PFNoPUHT700_v2;
+	  fTriggerMap["HLT_PFNoPUHT700_v3"] = &fMT2tree->trigger.HLT_PFNoPUHT700_v3;
+	  fTriggerMap["HLT_PFNoPUHT750_v1"] = &fMT2tree->trigger.HLT_PFNoPUHT750_v1;
+	  fTriggerMap["HLT_PFNoPUHT750_v2"] = &fMT2tree->trigger.HLT_PFNoPUHT750_v2;
+	  fTriggerMap["HLT_PFNoPUHT750_v3"] = &fMT2tree->trigger.HLT_PFNoPUHT750_v3;
+
 	  
 	  // HT/HTMHT dataset
 	  fTriggerMap["HLT_PFHT350_PFMET100_v3"]     = &fMT2tree->trigger.HLT_PFHT350_PFMET100_v3;
@@ -153,6 +166,12 @@ void MT2Analysis::Begin(const char* filename){
 	  fTriggerMap["HLT_PFHT400_PFMET100_v5"]     = &fMT2tree->trigger.HLT_PFHT400_PFMET100_v5;
 	  fTriggerMap["HLT_PFHT400_PFMET100_v6"]     = &fMT2tree->trigger.HLT_PFHT400_PFMET100_v6;
 	  fTriggerMap["HLT_PFHT400_PFMET100_v7"]     = &fMT2tree->trigger.HLT_PFHT400_PFMET100_v7;
+	  fTriggerMap["HLT_PFNoPUHT350_PFMET100_v1"] = &fMT2tree->trigger.HLT_PFNoPUHT350_PFMET100_v1;
+	  fTriggerMap["HLT_PFNoPUHT350_PFMET100_v3"] = &fMT2tree->trigger.HLT_PFNoPUHT350_PFMET100_v3;
+	  fTriggerMap["HLT_PFNoPUHT350_PFMET100_v4"] = &fMT2tree->trigger.HLT_PFNoPUHT350_PFMET100_v4;
+	  fTriggerMap["HLT_PFNoPUHT400_PFMET100_v1"] = &fMT2tree->trigger.HLT_PFNoPUHT400_PFMET100_v1;
+	  fTriggerMap["HLT_PFNoPUHT400_PFMET100_v3"] = &fMT2tree->trigger.HLT_PFNoPUHT400_PFMET100_v3;
+	  fTriggerMap["HLT_PFNoPUHT400_PFMET100_v4"] = &fMT2tree->trigger.HLT_PFNoPUHT400_PFMET100_v4;
 	  
 	  // MET Dataset
 	  fTriggerMap["HLT_MET120_v9"]                       = &fMT2tree->trigger.HLT_MET120_v9;
@@ -168,9 +187,15 @@ void MT2Analysis::Begin(const char* filename){
 	  fTriggerMap["HLT_PFMET150_v2"]                     = &fMT2tree->trigger.HLT_PFMET150_v2;
 	  fTriggerMap["HLT_PFMET150_v3"]                     = &fMT2tree->trigger.HLT_PFMET150_v3;
 	  fTriggerMap["HLT_PFMET150_v4"]                     = &fMT2tree->trigger.HLT_PFMET150_v4;
+	  fTriggerMap["HLT_PFMET150_v5"]                     = &fMT2tree->trigger.HLT_PFMET150_v5;
+	  fTriggerMap["HLT_PFMET150_v6"]                     = &fMT2tree->trigger.HLT_PFMET150_v6;
+	  fTriggerMap["HLT_PFMET150_v7"]                     = &fMT2tree->trigger.HLT_PFMET150_v7;
 	  fTriggerMap["HLT_PFMET180_v2"]                     = &fMT2tree->trigger.HLT_PFMET180_v2;
 	  fTriggerMap["HLT_PFMET180_v3"]                     = &fMT2tree->trigger.HLT_PFMET180_v3;
 	  fTriggerMap["HLT_PFMET180_v4"]                     = &fMT2tree->trigger.HLT_PFMET180_v4;
+	  fTriggerMap["HLT_PFMET180_v5"]                     = &fMT2tree->trigger.HLT_PFMET180_v5;
+	  fTriggerMap["HLT_PFMET180_v6"]                     = &fMT2tree->trigger.HLT_PFMET180_v6;
+	  fTriggerMap["HLT_PFMET180_v7"]                     = &fMT2tree->trigger.HLT_PFMET180_v7;
 	  fTriggerMap["HLT_DiCentralPFJet30_PFMHT80_v5"]     = &fMT2tree->trigger.HLT_DiCentralPFJet30_PFMHT80_v5;
 	  fTriggerMap["HLT_DiCentralPFJet30_PFMHT80_v6"]     = &fMT2tree->trigger.HLT_DiCentralPFJet30_PFMHT80_v6;
 	  fTriggerMap["HLT_DiCentralPFJet30_PFMHT80_v7"]     = &fMT2tree->trigger.HLT_DiCentralPFJet30_PFMHT80_v7;
@@ -178,26 +203,44 @@ void MT2Analysis::Begin(const char* filename){
 	  fTriggerMap["HLT_DiCentralPFJet50_PFMET80_v4"]     = &fMT2tree->trigger.HLT_DiCentralPFJet50_PFMET80_v4;
 	  fTriggerMap["HLT_DiCentralPFJet50_PFMET80_v5"]     = &fMT2tree->trigger.HLT_DiCentralPFJet50_PFMET80_v5;
 	  fTriggerMap["HLT_DiCentralPFJet50_PFMET80_v6"]     = &fMT2tree->trigger.HLT_DiCentralPFJet50_PFMET80_v6;
+	  fTriggerMap["HLT_DiCentralPFNoPUJet50_PFMETORPFMETNoMu80_v1"] = &fMT2tree->trigger.HLT_DiCentralPFNoPUJet50_PFMETORPFMETNoMu80_v1;
+	  fTriggerMap["HLT_DiCentralPFNoPUJet50_PFMETORPFMETNoMu80_v3"] = &fMT2tree->trigger.HLT_DiCentralPFNoPUJet50_PFMETORPFMETNoMu80_v3;
+	  fTriggerMap["HLT_DiCentralPFNoPUJet50_PFMETORPFMETNoMu80_v4"] = &fMT2tree->trigger.HLT_DiCentralPFNoPUJet50_PFMETORPFMETNoMu80_v4;
 	  
 	  // Multijet dataset
 	  fTriggerMap["HLT_DiJet80_DiJet60_DiJet20_v1"]     = &fMT2tree->trigger.HLT_DiJet80_DiJet60_DiJet20_v1;
 	  fTriggerMap["HLT_DiJet80_DiJet60_DiJet20_v2"]     = &fMT2tree->trigger.HLT_DiJet80_DiJet60_DiJet20_v2;
+	  fTriggerMap["HLT_DiJet80_DiJet60_DiJet20_v3"]     = &fMT2tree->trigger.HLT_DiJet80_DiJet60_DiJet20_v3;
+	  fTriggerMap["HLT_DiJet80_DiJet60_DiJet20_v4"]     = &fMT2tree->trigger.HLT_DiJet80_DiJet60_DiJet20_v4;
+	  fTriggerMap["HLT_DiJet80_DiJet60_DiJet20_v5"]     = &fMT2tree->trigger.HLT_DiJet80_DiJet60_DiJet20_v5;
+	  fTriggerMap["HLT_DiJet80_DiJet60_DiJet20_v6"]     = &fMT2tree->trigger.HLT_DiJet80_DiJet60_DiJet20_v6;
 	  fTriggerMap["HLT_QuadJet60_DiJet20_v1"]           = &fMT2tree->trigger.HLT_QuadJet60_DiJet20_v1;
 	  fTriggerMap["HLT_QuadJet60_DiJet20_v2"]           = &fMT2tree->trigger.HLT_QuadJet60_DiJet20_v2;
+	  fTriggerMap["HLT_QuadJet60_DiJet20_v3"]           = &fMT2tree->trigger.HLT_QuadJet60_DiJet20_v3;
+	  fTriggerMap["HLT_QuadJet60_DiJet20_v5"]           = &fMT2tree->trigger.HLT_QuadJet60_DiJet20_v5;
+	  fTriggerMap["HLT_QuadJet60_DiJet20_v6"]           = &fMT2tree->trigger.HLT_QuadJet60_DiJet20_v6;
 	  fTriggerMap["HLT_QuadJet50_v1"]                   = &fMT2tree->trigger.HLT_QuadJet50_v1;
 	  fTriggerMap["HLT_QuadJet50_v2"]                   = &fMT2tree->trigger.HLT_QuadJet50_v2;
 	  fTriggerMap["HLT_QuadJet70_v1"]                   = &fMT2tree->trigger.HLT_QuadJet70_v1;
 	  fTriggerMap["HLT_QuadJet70_v2"]                   = &fMT2tree->trigger.HLT_QuadJet70_v2;
 	  fTriggerMap["HLT_QuadJet70_v3"]                   = &fMT2tree->trigger.HLT_QuadJet70_v3;
+	  fTriggerMap["HLT_QuadJet70_v4"]                   = &fMT2tree->trigger.HLT_QuadJet70_v4;
+	  fTriggerMap["HLT_QuadJet70_v6"]                   = &fMT2tree->trigger.HLT_QuadJet70_v6;
 	  fTriggerMap["HLT_QuadJet80_v1"]                   = &fMT2tree->trigger.HLT_QuadJet80_v1;
 	  fTriggerMap["HLT_QuadJet80_v2"]                   = &fMT2tree->trigger.HLT_QuadJet80_v2;
 	  fTriggerMap["HLT_QuadJet80_v3"]                   = &fMT2tree->trigger.HLT_QuadJet80_v3;
+	  fTriggerMap["HLT_QuadJet80_v4"]                   = &fMT2tree->trigger.HLT_QuadJet80_v4;
+	  fTriggerMap["HLT_QuadJet80_v6"]                   = &fMT2tree->trigger.HLT_QuadJet80_v6;
 	  fTriggerMap["HLT_SixJet35_v1"]                    = &fMT2tree->trigger.HLT_SixJet35_v1;
 	  fTriggerMap["HLT_SixJet35_v2"]                    = &fMT2tree->trigger.HLT_SixJet35_v2;
 	  fTriggerMap["HLT_SixJet35_v3"]                    = &fMT2tree->trigger.HLT_SixJet35_v3;
+	  fTriggerMap["HLT_SixJet35_v4"]                    = &fMT2tree->trigger.HLT_SixJet35_v4;
+	  fTriggerMap["HLT_SixJet35_v6"]                    = &fMT2tree->trigger.HLT_SixJet35_v6;
 	  fTriggerMap["HLT_SixJet45_v1"]                    = &fMT2tree->trigger.HLT_SixJet45_v1;
 	  fTriggerMap["HLT_SixJet45_v2"]                    = &fMT2tree->trigger.HLT_SixJet45_v2;
 	  fTriggerMap["HLT_SixJet45_v3"]                    = &fMT2tree->trigger.HLT_SixJet45_v3;
+	  fTriggerMap["HLT_SixJet45_v4"]                    = &fMT2tree->trigger.HLT_SixJet45_v4;
+	  fTriggerMap["HLT_SixJet45_v6"]                    = &fMT2tree->trigger.HLT_SixJet45_v6;
 
           // Jet/JetMon dataset
           fTriggerMap["HLT_PFJet320_v3"]                     = &fMT2tree->trigger.HLT_PFJet320_v3;

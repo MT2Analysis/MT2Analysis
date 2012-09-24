@@ -170,6 +170,18 @@ void MT2Trigger::Reset(){
 	HLT_PFHT750_v5     = false;
 	HLT_PFHT750_v6     = false;
 	HLT_PFHT750_v7     = false;
+	HLT_PFNoPUHT350_v1 = false;
+	HLT_PFNoPUHT350_v2 = false;
+	HLT_PFNoPUHT350_v3 = false;
+	HLT_PFNoPUHT650_v1 = false;
+	HLT_PFNoPUHT650_v2 = false;
+	HLT_PFNoPUHT650_v3 = false;
+	HLT_PFNoPUHT700_v1 = false;
+	HLT_PFNoPUHT700_v2 = false;
+	HLT_PFNoPUHT700_v3 = false;
+	HLT_PFNoPUHT750_v1 = false;
+	HLT_PFNoPUHT750_v2 = false;
+	HLT_PFNoPUHT750_v3 = false;
 
 	// HT/HTMHT dataset
 	HLT_PFHT350_PFMET100_v3     = false;
@@ -182,6 +194,12 @@ void MT2Trigger::Reset(){
 	HLT_PFHT400_PFMET100_v5     = false;
 	HLT_PFHT400_PFMET100_v6     = false;
 	HLT_PFHT400_PFMET100_v7     = false;
+	HLT_PFNoPUHT350_PFMET100_v1 = false;
+	HLT_PFNoPUHT350_PFMET100_v3 = false;
+	HLT_PFNoPUHT350_PFMET100_v4 = false;
+	HLT_PFNoPUHT400_PFMET100_v1 = false;
+	HLT_PFNoPUHT400_PFMET100_v3 = false;
+	HLT_PFNoPUHT400_PFMET100_v4 = false;
 
         // MET Dataset
         HLT_MET120_v9                       = false;
@@ -197,9 +215,15 @@ void MT2Trigger::Reset(){
         HLT_PFMET150_v2                     = false;
         HLT_PFMET150_v3                     = false;
         HLT_PFMET150_v4                     = false;
+        HLT_PFMET150_v5                     = false;
+        HLT_PFMET150_v6                     = false;
+        HLT_PFMET150_v7                     = false;
         HLT_PFMET180_v2                     = false;
         HLT_PFMET180_v3                     = false;
         HLT_PFMET180_v4                     = false;
+        HLT_PFMET180_v5                     = false;
+        HLT_PFMET180_v6                     = false;
+        HLT_PFMET180_v7                     = false;
         HLT_DiCentralPFJet30_PFMHT80_v5     = false;
         HLT_DiCentralPFJet30_PFMHT80_v6     = false;
         HLT_DiCentralPFJet30_PFMHT80_v7     = false;
@@ -207,26 +231,44 @@ void MT2Trigger::Reset(){
         HLT_DiCentralPFJet50_PFMET80_v4     = false;
         HLT_DiCentralPFJet50_PFMET80_v5     = false;
         HLT_DiCentralPFJet50_PFMET80_v6     = false;
+        HLT_DiCentralPFNoPUJet50_PFMETORPFMETNoMu80_v1 = false;
+        HLT_DiCentralPFNoPUJet50_PFMETORPFMETNoMu80_v3 = false;
+        HLT_DiCentralPFNoPUJet50_PFMETORPFMETNoMu80_v4 = false;
 
         // Multijet dataset
         HLT_DiJet80_DiJet60_DiJet20_v1     = false;
         HLT_DiJet80_DiJet60_DiJet20_v2     = false;
+        HLT_DiJet80_DiJet60_DiJet20_v3     = false;
+        HLT_DiJet80_DiJet60_DiJet20_v4     = false;
+        HLT_DiJet80_DiJet60_DiJet20_v5     = false;
+        HLT_DiJet80_DiJet60_DiJet20_v6     = false;
         HLT_QuadJet60_DiJet20_v1           = false;
         HLT_QuadJet60_DiJet20_v2           = false;
+        HLT_QuadJet60_DiJet20_v3           = false;
+        HLT_QuadJet60_DiJet20_v5           = false;
+        HLT_QuadJet60_DiJet20_v6           = false;
         HLT_QuadJet50_v1                   = false;
         HLT_QuadJet50_v2                   = false;
         HLT_QuadJet70_v1                   = false;
         HLT_QuadJet70_v2                   = false;
         HLT_QuadJet70_v3                   = false;
+        HLT_QuadJet70_v4                   = false;
+        HLT_QuadJet70_v6                   = false;
         HLT_QuadJet80_v1                   = false;
         HLT_QuadJet80_v2                   = false;
         HLT_QuadJet80_v3                   = false;
+        HLT_QuadJet80_v4                   = false;
+        HLT_QuadJet80_v6                   = false;
         HLT_SixJet35_v1                    = false;
         HLT_SixJet35_v2                    = false;
         HLT_SixJet35_v3                    = false;
+        HLT_SixJet35_v4                    = false;
+        HLT_SixJet35_v6                    = false;
         HLT_SixJet45_v1                    = false;
         HLT_SixJet45_v2                    = false;
         HLT_SixJet45_v3                    = false;
+        HLT_SixJet45_v4                    = false;
+        HLT_SixJet45_v6                    = false;
 
         // Jet/JetMon dataset
         HLT_PFJet320_v3                     = false;

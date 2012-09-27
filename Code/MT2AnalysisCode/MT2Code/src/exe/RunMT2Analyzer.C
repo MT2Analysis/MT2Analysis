@@ -134,15 +134,15 @@ int main(int argc, char* argv[]) {
 		cout << "ERROR: need puScenario" << puScenario << " required input files."  << endl; exit(-1);
 	}
 
-//	setofcuts   ="/shome/haweber/MT2Analysis_8TeV/Code/CutsMT2/"+setofcuts+".dat";
-//	if(data_PileUp.length()!=0   ){data_PileUp ="/shome/haweber/MT2Analysis_8TeV/Code/Certification/pileUp_data/"+data_PileUp;}
+	setofcuts   ="/shome/haweber/MT2Analysis_8TeV/Code/CutsMT2/"+setofcuts+".dat";
+	if(data_PileUp.length()!=0   ){data_PileUp ="/shome/haweber/MT2Analysis_8TeV/Code/Certification/pileUp_data/"+ data_PileUp;}
+	if(mc_PileUp.length()  !=0   ){mc_PileUp   ="/shome/haweber/MT2Analysis_8TeV/Code/Certification/pileUp_mc/"  +   mc_PileUp;}
+	if(jsonFileName.length() !=0 ){jsonFileName="/shome/haweber/MT2Analysis_8TeV/Code/Certification/JSONfiles/"  +jsonFileName;}
+//	setofcuts   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/MT2_cuts/"+setofcuts+".dat";
+//	if(data_PileUp.length()!=0   ){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
 //	if(mc_PileUp.length()  !=0   ){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
-//	if(jsonFileName.length() !=0 ){jsonFileName="/shome/haweber/"            +jsonFileName;}
-	setofcuts   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/MT2_cuts/"+setofcuts+".dat";
-	if(data_PileUp.length()!=0   ){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
-	if(mc_PileUp.length()  !=0   ){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
-	if(jsonFileName.length() !=0 ){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"            +jsonFileName;}
-	if(btagFileName.length() !=0 ){btagFileName="/shome/haweber/MT2Analysis/Code/Efficiencies/"                               + btagFileName;}
+//	if(jsonFileName.length() !=0 ){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"            +jsonFileName;}
+//	if(btagFileName.length() !=0 ){btagFileName="/shome/haweber/MT2Analysis/Code/Efficiencies/"                               + btagFileName;}
 
 	std::vector<std::string> fileList;
 	for(int i = 0; i < argc; i++){

@@ -366,9 +366,11 @@ void MT2Jet::SetLV(const TLorentzVector v) {
 Bool_t MT2Jet::IsGoodPFJet(float minJPt, float maxJEta, int PFJID) {
 
   float pt = lv.Pt();
+  if( pt < minJPt )               return false; // need to do this first, before getting lv.Eta();
   float eta = lv.Eta();
-  if ( pt < minJPt || fabs(eta) > maxJEta )     return false;
-  if ( Scale <0)                                return false; // jet has negative Scale from JE correction
+  if( fabs(eta) > maxJEta)        return false;
+  //if ( pt < minJPt || fabs(eta) > maxJEta )     return false;
+  if ( Scale <0)                  return false; // jet has negative Scale from JE correction
   
   switch (PFJID) {
   case 3:               // TIGHT

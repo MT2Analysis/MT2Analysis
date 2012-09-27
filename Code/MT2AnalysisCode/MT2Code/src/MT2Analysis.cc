@@ -1173,11 +1173,11 @@ bool MT2Analysis::IsSelectedEvent(){
 	bool leadingjets(true);
 	if(fCut_JPt_hardest_min > 0){
 		if(Jets.size() <1) leadingjets=false;
-		if(! Jets[0].IsGoodPFJet(fCut_JPt_hardest_min, 2.4,1)       ) {leadingjets=false;} 
+		else if(! Jets[0].IsGoodPFJet(fCut_JPt_hardest_min, 2.4,1)       ) {leadingjets=false;} 
 	}
 	if(fCut_JPt_second_min > 0){
 		if(Jets.size() <2) leadingjets=false;
-		if(! Jets[1].IsGoodPFJet(fCut_JPt_second_min, 2.4,1)       ) {leadingjets=false;} 
+		else if(! Jets[1].IsGoodPFJet(fCut_JPt_second_min, 2.4,1)       ) {leadingjets=false;} 
 	}
 	if(leadingjets == false) return false;
 	

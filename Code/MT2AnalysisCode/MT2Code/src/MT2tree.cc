@@ -1581,7 +1581,13 @@ Bool_t MT2tree::FillMT2HemiMinDHT(Float_t testmass, bool massive, Int_t PFJID, F
 	p4s.push_back(muo[i].lv);
   }
   if (p4s.size()<2) return false;
-  
+
+  // Serious memory problem due to combinatorics when more than 20 jets!!!
+  if (p4s.size()>20) {
+    cout << "WARNING: more that 20 objets, skipping alphaT calculation due to memory problem" << endl;
+    return false;
+  }  
+
   // grouping according to minimal dHT
   std::vector<std::vector<float> > ht( 1<<(p4s.size()-1) , std::vector<float>( 2, 0.) ); 
       // initializiert einen vector ht der size 1<<(p4s.size()-1), wobei jeder eintrag ein vector (0,0) ist

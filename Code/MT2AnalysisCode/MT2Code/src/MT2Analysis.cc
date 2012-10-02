@@ -899,7 +899,7 @@ void MT2Analysis::FillMT2treeCalculations(){
 	fMT2tree->FillMT2Hemi(0,0,1,20,2.4,2,3,1,0);  
 	
 	// testmass 0, massless pseudojets, PF-JID, JPt > 20, |jet-eta|<2.4, minimizing Delta_HT, pf-met, hemi-index 1  -> AlphaT version
-	fMT2tree->FillMT2HemiMinDHT(0,0,1,20,2.4,1,1);  
+	fMT2tree->FillMT2HemiMinDHT(0,0,1,40,2.4,1,1);  
 	
 	// store MT2 misc variables
 	fMT2tree->misc.MT2                 = fMT2tree->hemi[0].MT2;    // note: this is a bit dangerous, 

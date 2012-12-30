@@ -16,5 +16,6 @@
 #pragma link C++ class MT2GenLept;
 #pragma link C++ class MT2GenJet;
 #pragma link C++ class MT2Susy;
+#pragma link C++ class MT2SFWeight;
 #endif
 

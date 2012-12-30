@@ -20,6 +20,7 @@ public:
 	void SetMaxEvents(int a){fMaxEvents=a;};
 	void SetProcessID(int ID){fID=ID;};
 	void SetBTagEfficiency(string btagFileName){ fbtagFileName = btagFileName;};
+	void SetHadTauEfficiency(string hadtauFileName){ fhadtauFileName = hadtauFileName;};
 	void SetPUReweighting(string puScenario){fPu = puScenario;};
 	void SetType1MET(bool type1MET){fType1MET = type1MET;};
 	void SetCHSJets(bool CHSJets){fCHSJets = CHSJets;};
@@ -36,5 +37,6 @@ private:
   	int fMaxEvents;   
 	int fID;
 	string fbtagFileName;
+	string fhadtauFileName;
 };
 #endif

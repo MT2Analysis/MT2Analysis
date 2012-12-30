@@ -13,6 +13,7 @@ MT2Analyzer::MT2Analyzer(std::vector<std::string>& fileList)
 	removePhoton =false;
 	fID          =-1;  //default process ID
 	fbtagFileName="";
+	fhadtauFileName="";
 	fType1MET    =false;
 	fCHSJets     =false;
 	fisFastSim   =false;
@@ -38,20 +39,19 @@ void MT2Analyzer::Loop(){
     	Long64_t jentry=0;
     	for ( fTR->ToBegin(); !(fTR->AtEnd()) && (jentry<nentries || nentries<0); ++(*fTR) ) {
 		PrintProgress(jentry++);
-                if ( fCurRun != fTR->Run ) {
+               if ( fCurRun != fTR->Run ) {
         		fCurRun = fTR->Run;
 			fMT2Analysis        ->BeginRun(fCurRun);
                   	skipRun = false; // re-initialize
                   	if ( !CheckRun() ) skipRun = true;
 
                 }
-                // Check if new lumi is in JSON file
+               // Check if new lumi is in JSON file
                 if ( !skipRun && fCurLumi != fTR->LumiSection ) {
                   	fCurLumi = fTR->LumiSection;
                   	skipLumi = false; // Re-initialise
                   	if ( !CheckRunLumi() ) skipLumi = true;
                 }
-
 		if ( !(skipRun || skipLumi) ) {
 			fMT2Analysis        ->Analyze();
 			double PUWeight = 0;
@@ -86,6 +86,7 @@ void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, str
         fMT2Analysis                    ->fRemovePhoton = removePhoton;
 	fMT2Analysis                    ->SetProcessID(fID);
 	fMT2Analysis                    ->SetBTagEfficiency(fbtagFileName);
+	fMT2Analysis                    ->SetHadTauEfficiency(fhadtauFileName);
 	fMT2Analysis             	->doPDF        = doPDF;
         fMT2Analysis             	->isScan        = isScan;
 	fMT2Analysis                    ->SetType1MET(fType1MET);

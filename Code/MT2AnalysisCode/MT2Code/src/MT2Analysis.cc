@@ -24,6 +24,7 @@ MT2Analysis::MT2Analysis(TreeReader *tr) : UserAnalysisBase(tr){
 	fRemovePhoton                       = 0;
 	fID                                 = -1;
 	fbtagFileName                       = "";
+	fhadtauFileName                       = "";
 
 	fisType1MET                         = false;
 	fisCHSJets                          = false;
@@ -87,15 +88,29 @@ void MT2Analysis::Begin(const char* filename){
 	if(!(ifile)) existing = false;
 	if(existing){
 		btagfile = TFile::Open(fbtagFileName.c_str() );
-		hbeff = (TH1D*)btagfile->Get("h_beff"); hbeff->SetDirectory(dir);
-		hceff = (TH1D*)btagfile->Get("h_ceff"); hceff->SetDirectory(dir);
-		hleff = (TH1D*)btagfile->Get("h_leff"); hleff->SetDirectory(dir);
+		hbeff = (TH2F*)btagfile->Get("BEfficiency_mcNOqcd"); hbeff->SetDirectory(dir);
+		hceff = (TH2F*)btagfile->Get("CEfficiency_mcNOqcd"); hceff->SetDirectory(dir);
+		hleff = (TH2F*)btagfile->Get("LEfficiency_mcNOqcd"); hleff->SetDirectory(dir);
 		btagfile->Close();
 		dir->cd();
 	}else{
-		cout << "No btagfile existing: use b-eff = 0.5, c-eff = 0.08, l-eff = 0.001" << endl;
+		cout << "No btagfile existing: use b-eff = 0.70, c-eff = 0.17, l-eff = 0.015" << endl;
 	}
-
+	//define btagging files
+	bool existingtau=true;
+	std::ifstream ifile2(fhadtauFileName.c_str() );
+	if(!(ifile2)) existingtau = false;
+	if(existingtau){
+		hadtaufile = TFile::Open(fhadtauFileName.c_str() );
+		htaueff = (TH1F*)hadtaufile->Get("HadTauTauEfficiency_mc");   htaueff->SetDirectory(dir);
+		hjeteff = (TH1F*)hadtaufile->Get("JetTauEfficiency_mc");      hjeteff->SetDirectory(dir);
+		heleeff = (TH1F*)hadtaufile->Get("ElectronTauEfficiency_mc"); heleeff->SetDirectory(dir);
+		hmuoeff = (TH1F*)hadtaufile->Get("MuonTauEfficiency_mc");     hmuoeff->SetDirectory(dir);
+		hadtaufile->Close();
+		dir->cd();
+	}else{
+		cout << "No hadtaufile existing: use tau-eff = 0.60, jet-eff = 0.03, ele-eff = 0.18, muo-eff = 0.0002" << endl;
+	}
 
 	// book tree
 	fMT2tree = new MT2tree();
@@ -316,7 +331,6 @@ void MT2Analysis::Begin(const char* filename){
 // ***********************************************************************
 // Analyze called for each event
 void MT2Analysis::Analyze(){	
-
 	// ---------------------------------------------------
 	// Initialize fElecs, fBJets, fMuons, 
 	InitializeEvent();
@@ -378,8 +392,6 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	fMT2tree->NJetsIDLoose50 = fMT2tree->GetNjets(50, 2.4, 1);
 	fMT2tree->SetNGenJets      (fTR->NGenJets > gNGenJets ? gNGenJets: fTR->NGenJets);
 	fMT2tree->SetNJetsIDLoose  (fMT2tree->GetNjets(20, 2.4, 1));
-	fMT2tree->SetNBJets        (fMT2tree->GetNBtags(3,2.0  ,20,2.4,1));
-	fMT2tree->SetNBJetsHE      (fMT2tree->GetNBtags(2,1.74 ,20,2.4,1));
 	fMT2tree->SetNBJetsCSVM    (fMT2tree->GetNBtags(4,0.679,20,2.4,1));
 	fMT2tree->SetNBJetsCSVT    (fMT2tree->GetNBtags(4,0.898,20,2.4,1));
 	fMT2tree->SetNBJets40CSVM  (fMT2tree->GetNBtags(4,0.679,40,2.4,1));
@@ -472,16 +484,21 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->ele[i].MT       = fMT2tree->GetMT(fMT2tree->ele[i].lv, 0., METlv, 0.); 
 		fMT2tree->ele[i].Charge   = fTR->ElCharge[fElecs[i]];
 		fMT2tree->ele[i].Iso      = ElePFIso(fElecs[i]);
+		fMT2tree->ele[i].Iso04    = ElePFIso04(fElecs[i]);
 		fMT2tree->ele[i].IDMedium = IsGoodMT2ElectronMediumID(fElecs[i]);
 		fMT2tree->ele[i].IDLoose  = IsGoodMT2ElectronLooseID(fElecs[i]);
 		fMT2tree->ele[i].IDVeto   = IsGoodMT2ElectronVetoID(fElecs[i]);
 	}
+	int commonmuons = 0;
 	for(int i=0; i<fMuons.size(); ++i) {
 	  	fMT2tree->muo[i].lv.SetPtEtaPhiM(fTR->MuPt [fMuons[i]], fTR->MuEta[fMuons[i]], fTR->MuPhi[fMuons[i]], 0.106); 
 		fMT2tree->muo[i].MT       = fMT2tree->GetMT(fMT2tree->muo[i].lv, fMT2tree->muo[i].lv.M(), METlv, 0.); 
 		fMT2tree->muo[i].Charge   = fTR->MuCharge[fMuons[i]];	
 		fMT2tree->muo[i].Iso      = MuPFIso(fMuons[i]);
+		fMT2tree->muo[i].Iso04    = MuPFIso04(fMuons[i]);
+		if(MuPFIso04(fMuons[i])<0.2) ++commonmuons;
 	}
+	fMT2tree->SetNMuonsCommonIso(commonmuons);
 	for(int i=0; i<fTaus.size(); ++i) {
 	  	fMT2tree->tau[i].lv.SetPtEtaPhiE(fTR->TauPt [fTaus[i]], fTR->TauEta[fTaus[i]], 
 				          fTR->TauPhi[fTaus[i]], fTR->TauE  [fTaus[i]]); 
@@ -515,7 +532,11 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->tau[i].MuonRej= 1;
 		if(fTR->TauTightMuonRejection[fTaus[i]]  > 0.5)
 		fMT2tree->tau[i].MuonRej= 3;
+
+		fMT2tree->tau[i].isLooseID = fMT2tree->tau[i].IsGoodTau(20, 2.1, 2, 3, 3);
 	}
+	fMT2tree->SetNTausIDLoose  (fMT2tree->GetNTaus(20,2.1,2,3,3));
+
 	
 	
 
@@ -633,7 +654,6 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	}
 	fMT2tree->pileUp.NVertices=nvertex;
 
-
 	// _________
 
 	// _________
@@ -663,6 +683,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v16";
 		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v17";
 		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v18";
+		diElectronTriggers[diElectronTriggernumber++] = "HLT_Ele17_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_Ele8_CaloIdT_CaloIsoVL_TrkIdVL_TrkIsoVL_v19";
 		bool DiElectronFired(false);
 		for(int i=0; i<diElectronTriggernumber; ++i){
 			if(GetHLTResult(diElectronTriggers[i])) DiElectronFired=true;
@@ -678,11 +699,13 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v19";
 	//	diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v20";//is not there?
 		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v21";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_Mu8_v22";
 		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_TkMu8_v9";
 		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_TkMu8_v10";
 		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_TkMu8_v11";
 		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_TkMu8_v12";
 		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_TkMu8_v13";
+		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu17_TkMu8_v14";
 /*
 		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v16";//prescaled
 		diMuonTriggers[diMuonTriggernumber++] = "HLT_Mu13_Mu8_v17";//prescaled
@@ -756,6 +779,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		SingleMuJetTriggers[SingleMuJetTriggerNumber++] = "HLT_IsoMu20_eta2p1_CentralPFJet80_v6";
 		SingleMuJetTriggers[SingleMuJetTriggerNumber++] = "HLT_IsoMu20_eta2p1_CentralPFJet80_v7";
 		SingleMuJetTriggers[SingleMuJetTriggerNumber++] = "HLT_IsoMu20_eta2p1_CentralPFJet80_v8";
+		SingleMuJetTriggers[SingleMuJetTriggerNumber++] = "HLT_IsoMu20_eta2p1_CentralPFJet80_v9";
 		bool SingleMuJetFired(false);
 		for(int i=0; i<SingleMuJetTriggerNumber; ++i){
 			if(GetHLTResult(SingleMuJetTriggers[i])) SingleMuJetFired=true;
@@ -769,6 +793,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		SingleMuDiJetTriggers[SingleMuDiJetTriggerNumber++] = "HLT_IsoMu24_CentralPFJet30_CentralPFJet25_v2";
 		SingleMuDiJetTriggers[SingleMuDiJetTriggerNumber++] = "HLT_IsoMu24_CentralPFJet30_CentralPFJet25_v3";
 		SingleMuDiJetTriggers[SingleMuDiJetTriggerNumber++] = "HLT_IsoMu24_CentralPFJet30_CentralPFJet25_v4";
+		SingleMuDiJetTriggers[SingleMuDiJetTriggerNumber++] = "HLT_IsoMu18_CentralPFJet30_CentralPFJet25_v1";
 		bool SingleMuDiJetFired(false);
 		for(int i=0; i<SingleMuDiJetTriggerNumber; ++i){
 			if(GetHLTResult(SingleMuDiJetTriggers[i])) SingleMuDiJetFired=true;
@@ -803,6 +828,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		SingleEleDiJetMETTriggers[SingleEleDiJetMETTriggerNumber++] = "HLT_Ele32_WP80_CentralPFJet35_CentralPFJet25_PFMET20_v2";
 		SingleEleDiJetMETTriggers[SingleEleDiJetMETTriggerNumber++] = "HLT_Ele32_WP80_CentralPFJet35_CentralPFJet25_PFMET20_v3";
 		SingleEleDiJetMETTriggers[SingleEleDiJetMETTriggerNumber++] = "HLT_Ele32_WP80_CentralPFJet35_CentralPFJet25_PFMET20_v4";
+		SingleEleDiJetMETTriggers[SingleEleDiJetMETTriggerNumber++] = "HLT_Ele24_WP80_CentralPFJet35_CentralPFJet25_PFMET20_v1";
 		bool SingleEleDiJetMETFired(false);
 		for(int i=0; i<SingleEleDiJetMETTriggerNumber; ++i){
 			if(GetHLTResult(SingleEleDiJetMETTriggers[i])) SingleEleDiJetMETFired=true;
@@ -853,6 +879,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	fMT2tree->misc.trackingFailureFlag                 = fTR->trackingFailureFilter             ? 0:1;
 	fMT2tree->misc.eeBadScFlag                         = fTR->eeBadScFilter                     ? 0:1;
 	fMT2tree->misc.EcalDeadCellTriggerPrimitiveFlag    = fTR->EcalDeadCellTriggerPrimitiveFilter? 0:1;
+	fMT2tree->misc.EcalLaserCorrFlag                   = fTR->ecalLaserCorrFilter               ? 0:1;
 	fMT2tree->misc.CrazyHCAL                           = fCrazyHCAL;                 
 	fMT2tree->misc.NegativeJEC                         = fNegativeJEC;
 	
@@ -898,14 +925,13 @@ void MT2Analysis::FillMT2treeCalculations(){
 	// testmass 0, massless pseudojets, PF-JID, JPt > 20, |jet-eta|<2.4, hemi seed =2 (max inv mass), hemi assoc =3, pf-met, hemi-index 1
 	fMT2tree->FillMT2Hemi(0,0,1,20,2.4,2,3,1,0);  
 	
-	// testmass 0, massless pseudojets, PF-JID, JPt > 20, |jet-eta|<2.4, minimizing Delta_HT, pf-met, hemi-index 1  -> AlphaT version
+	// testmass 0, massless pseudojets, PF-JID, JPt > 40, |jet-eta|<2.4, minimizing Delta_HT, pf-met, hemi-index 1  -> AlphaT version
 	fMT2tree->FillMT2HemiMinDHT(0,0,1,40,2.4,1,1);  
 	
 	// store MT2 misc variables
 	fMT2tree->misc.MT2                 = fMT2tree->hemi[0].MT2;    // note: this is a bit dangerous, 
 	fMT2tree->misc.MCT                 = fMT2tree->hemi[0].MCT;
 	fMT2tree->misc.MT2jet40            = fMT2tree->GetMT2(0,false,1,40,2.4,2,3,1);
-	fMT2tree->misc.MT2jet50            = fMT2tree->GetMT2(0,false,1,50,2.4,2,3,1);
 
 
 	// other variables to be computed based on MT2tree
@@ -914,14 +940,12 @@ void MT2Analysis::FillMT2treeCalculations(){
 	fMT2tree->misc.MinMetJetDPhi       = fMT2tree->MinMetJetDPhi(0,20,5.0,1);
 	fMT2tree->misc.MinMetJetDPhi4      = fMT2tree->MinMetJetDPhi(0,20,5.0,1,4);  // use first 4 jets
 	fMT2tree->misc.MinMetJetDPhiPt40   = fMT2tree->MinMetJetDPhi(0,40,5.0,1);    // use jets having pT>40 GeV
-	fMT2tree->misc.MinMetJetDPhiPt50   = fMT2tree->MinMetJetDPhi(0,50,5.0,1);    // use jets having pT>50 GeV
 	fMT2tree->misc.MinMetJetDPhi4Pt40  = fMT2tree->MinMetJetDPhi(0,40,5.0,1,4);  // use first 4 jets having pT>40 GeV
-	fMT2tree->misc.MinMetJetDPhi4Pt50  = fMT2tree->MinMetJetDPhi(0,50,5.0,1,4);  // use first 4 jets having pT>50 GeV
-	fMT2tree->misc.MinMetJetDPhiInCrack= fMT2tree->MinMetJetDPhi(0,20,5.0,0,99,true);
 	fMT2tree->misc.MinMetJetDPhiIndex  = fMT2tree->MinMetJetDPhiIndex(0,20,5.0,1);
 	fMT2tree->misc.MinMetBJetDPhi      = fMT2tree->BJetMETdPhi(2,1.74,20,5,1);  // minmetjet dPhi w.r.t SSVHEM bjets with pt > 20 and no eta restriction. 
 	fMT2tree->misc.PassJetID           = fMT2tree->PassJetID(50,2.4,1);
 	fMT2tree->misc.PassJet40ID         = fMT2tree->PassJetID(40,2.4,1);
+	fMT2tree->misc.PassJet30ID         = fMT2tree->PassJetID(30,2.4,1);
 	if(fMT2tree->NJets > 0) {
 		fMT2tree->misc.Jet0Pass      = (Int_t) fMT2tree->jet[0].IsGoodPFJet(100,2.4,1);
 	} else  fMT2tree->misc.Jet0Pass      = 0; 
@@ -953,83 +977,333 @@ void MT2Analysis::FillMT2treeCalculations(){
 	fMT2tree->misc.WDecayMode   = fMT2tree->WDecayMode  ();
 	fMT2tree->misc.TopDecayMode = fMT2tree->TopDecayMode();
 
+
 	//btag SF --------------------------------------------------------------------------------------------------------
 	if(!fMT2tree->misc.isData && fbtagFileName.length() !=0){
+		btagfile->cd();
 		bool existing = true;
+//		btagfile->cd();
 		if(hceff==0 || hbeff==0 || hleff ==0) existing=false;
 		//implementation for >=1 btag only, SSVHPT
-		float SFweightErr = 0;
-		float SFweight = 1;//outside, since need it there later
-		string tagger = "SSVHPT";
-		vector<float> jetEff;
-		vector<float> jetEffErr;
-		vector<float> jetSF;
-		vector<float> jetSFErr;
+		TString tagger = "CSVM";
+		vector<float> jetEff;     jetEff.clear();
+		vector<float> jetEffErr;  jetEffErr.clear();
+		vector<float> jetSF;      jetSF.clear();
+		vector<float> jetSFBCUp;  jetSFBCUp.clear();
+		vector<float> jetSFBCDown;jetSFBCDown.clear();
+		vector<float> jetSFLUp;   jetSFLUp.clear();
+		vector<float> jetSFLDown; jetSFLDown.clear();
+		vector<float> jetFSUp;    jetFSUp.clear();
+		vector<float> jetFSDown;  jetFSDown.clear();
 		int njetsusuable = 0;
 		for(int n = 0; n<fMT2tree->NJets; ++n){
+			int effflavour= abs(fMT2tree->jet[n].Flavour);
+			if(effflavour<=-7777) continue;//if samples has no flavour information like qcd
+			float effPt   = fMT2tree->jet[n].lv.Pt();
+			if(effPt<20) continue;
+			float effEta  = fabs(fMT2tree->jet[n].lv.Eta());
+			if(effEta>2.4) continue;
 			if(fMT2tree->jet[n].isPFIDLoose==false) continue;
-			if(fMT2tree->jet[n].Flavour<=-7777) continue;//if samples has no flavour information like qcd
-			float effPt  = fMT2tree->jet[n].lv.Pt();
-			float effEta = fMT2tree->jet[n].lv.Eta();
+			float eff(1), efferr(0.01), SF(0.95), SFup(0.97), SFdown(0.92), FS(1.), FSerr(0.), FSup(0.), FSdown(0.);//default is no fastsim
+//			float eff, efferr, SF, SFup, SFdown, FS(1.), FSerr(0.);//default is no fastsim
 			++njetsusuable;
-			if(abs(fMT2tree->jet[n].Flavour)==5){
+			if(effflavour==5){
 				if(existing){
-					jetEff.push_back( float(hbeff->GetBinContent(hbeff->FindBin(effPt))) );
-					jetEffErr.push_back( float(hbeff->GetBinError(hbeff->FindBin(effPt))) );//here only dummy
-				}
-				else{
-					jetEff.push_back( 0.5 );
-					jetEffErr.push_back( 0.05 );//here only dummy
+					eff    = hbeff->GetBinContent(hbeff->FindBin(TMath::Min(effPt,(float)800.),effEta));
+					efferr = hbeff->GetBinContent(hbeff->FindBin(TMath::Min(effPt,(float)800.),effEta));
+				} else{
+					eff    = 0.70;
+					efferr = 0.07;//here only dummy
 				}
 				float SFErr;
-				float SF = getBTagSF(SFErr, tagger, effPt, effEta);
-				jetSF.push_back(   SF    );
-				jetSFErr.push_back(SFErr );//here only dummy
+				SF     = getBtagSF(SFErr, tagger, effPt, effEta);
+				SFup   = SF+SFErr;
+				SFdown = SF-SFErr;
+				if(fMT2tree->misc.isFastSim){//think how to include scan name
+					FS = FastSimCorrectionFactor(FSerr,tagger,effflavour,effPt,effEta);
+				}
 			}
-			else if(abs(fMT2tree->jet[n].Flavour)==4){
+			else if(effflavour==4){
 				if(existing){
-					jetEff.push_back( float(hceff->GetBinContent(hceff->FindBin(effPt))) );
-					jetEffErr.push_back( float(hceff->GetBinError(hceff->FindBin(effPt))) );//here only dummy
-				}
-				else{
-					jetEff.push_back( 0.08 );
-					jetEffErr.push_back( 0.01 );//here only dummy
+					eff    = hceff->GetBinContent(hceff->FindBin(TMath::Min(effPt,(float)800.),effEta));
+					efferr = hceff->GetBinContent(hceff->FindBin(TMath::Min(effPt,(float)800.),effEta));
+				} else{
+					eff    = 0.170;
+					efferr = 0.017;//here only dummy
 				}
 				float SFErr;
-				float SF = getBTagSF(SFErr, tagger, effPt, effEta );
-				jetSF.push_back(   SF    );
-				jetSFErr.push_back(SFErr*2.);//here only dummy
+				SF     = getBtagSF(SFErr, tagger, effPt, effEta);
+				SFup   = SF+2*SFErr;
+				SFdown = SF-2*SFErr;
+				if(fMT2tree->misc.isFastSim){//think how to include scan name
+					FS = FastSimCorrectionFactor(FSerr,tagger,effflavour,effPt,effEta);
+				}
 			}
 			else {
 				if(existing){
-					jetEff.push_back( float(hleff->GetBinContent(hleff->FindBin(effPt))) );
-					jetEffErr.push_back( float(hleff->GetBinError(hleff->FindBin(effPt))) );//here only dummy
+					eff    = hleff->GetBinContent(hleff->FindBin(TMath::Min(effPt,(float)800.),effEta));
+					efferr = hleff->GetBinContent(hleff->FindBin(TMath::Min(effPt,(float)800.),effEta));
 				}
 				else{
-					jetEff.push_back( 0.001 );
-					jetEffErr.push_back( 0.0003 );//here only dummy
+					eff    = 0.0150;
+					efferr = 0.0015;//here only dummy
 				}
-				float SFErr;
-				float SF = getMistagSF(SFErr, tagger, effPt, effEta);
-				jetSF.push_back(   SF    );
-				jetSFErr.push_back(SFErr );//here only dummy
+				SF     = getMistagSF(tagger, effPt, effEta, 0);
+				SFup   = getMistagSF(tagger, effPt, effEta, 1);
+				SFdown = getMistagSF(tagger, effPt, effEta,-1);
+				if(fMT2tree->misc.isFastSim){//think how to include scan name
+					FS = FastSimCorrectionFactor(FSerr,tagger,effflavour,effPt,effEta);//1 fits for all light jets
+				}
 			}
-		}
-		SFweight = getBTagEventWeightError(SFweightErr, jetEff, jetEffErr, jetSF, jetSFErr, -1);
-		if(SFweight==0){
-			if(njetsusuable!=0){
-				std::cout << "Event has zero weight, set BTagWeight to 0" << std::endl;
-				fMT2tree->misc.BTagWeight = SFweight;
+			if(fMT2tree->misc.isFastSim && (FS>0 && FS<10)){
+				if(FS-FSerr>0) FSup   = SF/(FS-FSerr);
+				else           FSup   = SF/FS;
+				if(FS+FSerr>0) FSdown = SF/(FS+FSerr);
+				else           FSdown = SF/FS;
+				SF     = SF/FS;
+				SFup   = SFup/FS;
+				SFdown = SFdown/FS;
 			}
-			else { //event has no flavour information, use an average event weight
-				SFweight = 0.945572;
-				SFweightErr = sqrt(0.0257166*0.0257166 + 0.0370919+0.0370919);//here only dummy
+			else if(fMT2tree->misc.isFastSim){
+				FSup   = SF;
+				FSdown = SF;
 			}
+			jetEff.push_back(eff);
+			//define here total error and don't run FS in getBTagEventWeight//speeds things up ZZYYXX
+			if(fMT2tree->misc.isFastSim) jetEffErr.push_back(sqrt(efferr*efferr+FSerr*FSerr));
+			else           jetEffErr.push_back(efferr);
+			jetSF.push_back(SF);
+			if(fMT2tree->misc.isFastSim && FS==1) std::cout << "FS " << FS << " but it should be 1" << std::endl;
+			if(fMT2tree->misc.isFastSim && FSerr==0) std::cout << "FSerr " << FSerr << " but it should be 0" << std::endl;
+			if(effflavour==5||effflavour==4) jetSFBCUp.push_back(  SFup  ); else jetSFBCUp.push_back(  SF    );
+			if(effflavour==5||effflavour==4) jetSFBCDown.push_back(SFdown); else jetSFBCDown.push_back(SF    );
+			if(effflavour==5||effflavour==4) jetSFLUp.push_back(   SF    ); else jetSFLUp.push_back(   SFup  );
+			if(effflavour==5||effflavour==4) jetSFLDown.push_back( SF    ); else jetSFLDown.push_back( SFdown);
+			jetFSUp.push_back(  FSup   );
+			jetFSDown.push_back(FSdown );
 		}
 		fHistFile->cd();
-		fMT2tree->misc.BTagWeight = SFweight;
-	} else fMT2tree->misc.BTagWeight = -999.99;
+		if(njetsusuable>0){//event has enough jets
+			float SFweight, SFweightErr;
+			bool usestaterr     = false;//SFerror really only due to SF
+			bool fastsimulation = fMT2tree->misc.isFastSim;//choose this way, see above ZZYYXX
+			//bool fastsimulation = fisFastSim;//and choose NOT this way, see above ZZYYXX
+			SFweight = getBTagEventWeightErrorTotal(SFweightErr, jetEff, jetEffErr, jetSF, jetSFBCDown, jetSFBCUp, jetSFLDown, jetSFLUp, jetFSDown, jetFSUp, usestaterr, fastsimulation, 0);
+			fMT2tree->SFWeight.BTagCSV40eq0      = SFweight;
+			fMT2tree->SFWeight.BTagCSV40eq0Error = SFweightErr;
+			SFweight = getBTagEventWeightErrorTotal(SFweightErr, jetEff, jetEffErr, jetSF, jetSFBCDown, jetSFBCUp, jetSFLDown, jetSFLUp, jetFSDown, jetFSUp, usestaterr, fastsimulation, 1);
+			fMT2tree->SFWeight.BTagCSV40eq1      = SFweight;
+			fMT2tree->SFWeight.BTagCSV40eq1Error = SFweightErr;
+			SFweight = getBTagEventWeightErrorTotal(SFweightErr, jetEff, jetEffErr, jetSF, jetSFBCDown, jetSFBCUp, jetSFLDown, jetSFLUp, jetFSDown, jetFSUp, usestaterr, fastsimulation, 2);
+			fMT2tree->SFWeight.BTagCSV40eq2      = SFweight;
+			fMT2tree->SFWeight.BTagCSV40eq2Error = SFweightErr;
+			SFweight = getBTagEventWeightErrorTotal(SFweightErr, jetEff, jetEffErr, jetSF, jetSFBCDown, jetSFBCUp, jetSFLDown, jetSFLUp, jetFSDown, jetFSUp, usestaterr, fastsimulation, 3);
+			fMT2tree->SFWeight.BTagCSV40eq3      = SFweight;
+			fMT2tree->SFWeight.BTagCSV40eq3Error = SFweightErr;
+			SFweight = getBTagEventWeightErrorTotal(SFweightErr, jetEff, jetEffErr, jetSF, jetSFBCDown, jetSFBCUp, jetSFLDown, jetSFLUp, jetFSDown, jetFSUp, usestaterr, fastsimulation,-1);
+			fMT2tree->SFWeight.BTagCSV40ge1      = SFweight;
+			fMT2tree->SFWeight.BTagCSV40ge1Error = SFweightErr;
+			SFweight = getBTagEventWeightErrorTotal(SFweightErr, jetEff, jetEffErr, jetSF, jetSFBCDown, jetSFBCUp, jetSFLDown, jetSFLUp, jetFSDown, jetFSUp, usestaterr, fastsimulation,-2);
+			fMT2tree->SFWeight.BTagCSV40ge2      = SFweight;
+			fMT2tree->SFWeight.BTagCSV40ge2Error = SFweightErr;
+			SFweight = getBTagEventWeightErrorTotal(SFweightErr, jetEff, jetEffErr, jetSF, jetSFBCDown, jetSFBCUp, jetSFLDown, jetSFLUp, jetFSDown, jetFSUp, usestaterr, fastsimulation,-3);
+			fMT2tree->SFWeight.BTagCSV40ge3      = SFweight;
+			fMT2tree->SFWeight.BTagCSV40ge3Error = SFweightErr;
+		} else {
+			fMT2tree->SFWeight.BTagCSV40eq0      = 1;
+			fMT2tree->SFWeight.BTagCSV40eq0Error = 0;
+			fMT2tree->SFWeight.BTagCSV40eq1      = 1;
+			fMT2tree->SFWeight.BTagCSV40eq1Error = 0;
+			fMT2tree->SFWeight.BTagCSV40eq2      = 1;
+			fMT2tree->SFWeight.BTagCSV40eq2Error = 0;
+			fMT2tree->SFWeight.BTagCSV40eq3      = 1;
+			fMT2tree->SFWeight.BTagCSV40eq3Error = 0;
+			fMT2tree->SFWeight.BTagCSV40ge1      = 1;
+			fMT2tree->SFWeight.BTagCSV40ge1Error = 0;
+			fMT2tree->SFWeight.BTagCSV40ge2      = 1;
+			fMT2tree->SFWeight.BTagCSV40ge2Error = 0;
+			fMT2tree->SFWeight.BTagCSV40ge3      = 1;
+			fMT2tree->SFWeight.BTagCSV40ge3Error = 0;
+		}
+		jetEff.clear();
+		jetEffErr.clear();
+		jetSF.clear();
+		jetSFBCUp.clear();
+		jetSFBCDown.clear();
+		jetSFLUp.clear();
+		jetSFLDown.clear();
+		jetFSUp.clear();
+		jetFSDown.clear();
+	}
+	//tau SF --------------------------------------------------------------------------------------------------------
+	if(!fMT2tree->misc.isData && fhadtauFileName.length() !=0){
+		bool existing = true;
+		if(htaueff==0 || hjeteff==0 || heleeff ==0 || hmuoeff) existing=false;
+		//implementation for >=1 btag only, SSVHPT
+		vector<float> tauEff;     tauEff.clear();
+		vector<float> tauEffErr;  tauEffErr.clear();//dummy
+		vector<float> tauSF;      tauSF.clear();
+		vector<float> tauSFUp;    tauSFUp.clear();
+		vector<float> tauSFDown;  tauSFDown.clear();
+		vector<float> jetSFUp;    jetSFUp.clear();
+		vector<float> jetSFDown; jetSFDown.clear();
+		vector<float> eleSFUp;    eleSFUp.clear();
+		vector<float> eleSFDown;  eleSFDown.clear();
+		vector<float> muoSFUp;    muoSFUp.clear();
+		vector<float> muoSFDown;  muoSFDown.clear();
+		int ntaususuable = 0;
+		for(int n = 0; n<fMT2tree->NJets; ++n){//not NTaus
+			//if(fMT2tree->tau[n].isLooseID==false) continue;
+			float effPt   = fMT2tree->jet[n].lv.Pt();
+			if(effPt<20) continue;
+			float effEta  = fabs(fMT2tree->jet[n].lv.Eta());
+			if(effEta>2.3) continue;
+			//if(fMT2tree->jet[n].isPFIDLoose==false) continue;
+			int kind= -1;//Tau:  == 0: taueff, ==1: jetfake, ==2: elefake, ==3: muofake
+			float eff, efferr, SF, SFerr;//default is no fastsim
+			++ntaususuable;
+			for(int j = 0; j< fMT2tree->NGenLepts; ++j){
+				if(abs(fMT2tree->genlept[j].ID  )!=16) continue;
+				if(abs(fMT2tree->genlept[j].MID )!=15) continue;
+				if(abs(fMT2tree->genlept[j].GMID)!=24) continue;
+				TLorentzVector gtau = fMT2tree->genlept[j].Mlv;//gentau
+				if(gtau.Pt()<0.001) continue;
+				bool gtauishad = true;
+				for(int jj = 0; jj< fMT2tree->NGenLepts; ++jj){
+					if(abs(fMT2tree->genlept[jj].ID  )!=11 && abs(fMT2tree->genlept[jj].ID  )!=13) continue;
+					if(abs(fMT2tree->genlept[jj].MID )!=15) continue;
+					if(abs(fMT2tree->genlept[jj].GMID)!=24) continue;
+					TLorentzVector gtau2 = fMT2tree->genlept[jj].Mlv;//gentau2
+					if(fabs(gtau2.Pt()  - gtau.Pt()) >0.001) continue;
+					if(fabs(gtau2.Eta() - gtau.Eta())>0.001) continue;
+					if(fabs(gtau2.Phi() - gtau.Phi())>0.001) continue;
+					if(fMT2tree->genlept[j].MID!= fMT2tree->genlept[jj].MID) continue;
+					gtauishad = false;//gtau matched to genele/genmuo from tau decay
+				}
+				if(gtauishad) {
+					gtau = gtau - fMT2tree->genlept[j].lv;//get visible tau by subtracting tau-neutrino
+					if(fMT2tree->jet[n].lv.DeltaR(gtau)<0.5) kind = 0;
+				}
+				if(kind!=-1) break;
+			} if(kind==-1){
+				for(int j = 0; j< fMT2tree->NGenJets; ++j){
+					if(fMT2tree->genjet[j].lv.Pt()<0.001) continue;
+					if(fMT2tree->genjet[j].lv.DeltaR(fMT2tree->jet[n].lv)<0.5) kind = 1;
+					if(kind!=-1) break;
+				}
+			} if(kind==-1){
+				for(int j = 0; j< fMT2tree->NGenLepts; ++j){
+					if(abs(fMT2tree->genlept[j].ID  )!=11) continue;
+					if(!((abs(fMT2tree->genlept[j].MID)==15 && abs(fMT2tree->genlept[j].GMID)==24 ) || abs(fMT2tree->genlept[j].MID)==24)) continue;
+					if(fMT2tree->genlept[j].lv.Pt()<0.001) continue;
+					if(fMT2tree->genlept[j].lv.DeltaR(fMT2tree->jet[n].lv)<0.5) kind = 2;
+					if(kind!=-1) break;
+				}
+			} if(kind==-1){
+				for(int j = 0; j< fMT2tree->NGenLepts; ++j){
+					if(abs(fMT2tree->genlept[j].ID  )!=13) continue;
+					if(!((abs(fMT2tree->genlept[j].MID)==15 && abs(fMT2tree->genlept[j].GMID)==24 ) || abs(fMT2tree->genlept[j].MID)==24)) continue;
+					if(fMT2tree->genlept[j].lv.Pt()<0.001) continue;
+					if(fMT2tree->genlept[j].lv.DeltaR(fMT2tree->jet[n].lv)<0.5) kind = 3;
+					if(kind!=-1) break;
+				}
+			}
+			if(kind==-1) kind = 1;//default = jetfake
+			if(kind==0){
+				if(existing) eff    = htaueff->GetBinContent(htaueff->FindBin(TMath::Min(effPt,(float)80.)));
+				else eff    = 0.42;
+			}
+			if(kind==1){
+				if(existing) eff    = heleeff->GetBinContent(htaueff->FindBin(TMath::Min(effEta,(float)2.3)));
+				else eff    = 0.18;
+			}
+			if(kind==3){
+				if(existing) eff    = hmuoeff->GetBinContent(htaueff->FindBin(TMath::Min(effEta,(float)2.3)));
+				else eff    = 0.0002;
+			}
+			else {
+				if(existing) eff    = hjeteff->GetBinContent(htaueff->FindBin(TMath::Min(effPt,(float)200.)));
+				else eff    = 0.03;
+			}
+			SF    = getTauSF(kind, effPt, effEta, 1, false);
+			SFerr = getTauSF(kind, effPt, effEta, 1, true );
+			tauEff.push_back(eff);
+			tauEffErr.push_back(0.);
+			tauSF.push_back(SF);
+			if(kind==0) tauSFUp.push_back(  SF+SFerr); else tauSFUp.push_back(SF);
+			if(kind==0) tauSFDown.push_back(SF-SFerr); else tauSFDown.push_back(SF);
+			if(kind==1) jetSFUp.push_back(  SF+SFerr); else jetSFUp.push_back(SF);
+			if(kind==1) jetSFDown.push_back(SF-SFerr); else jetSFDown.push_back(SF);
+			if(kind==2) eleSFUp.push_back(  SF+SFerr); else eleSFUp.push_back(SF);
+			if(kind==2) eleSFDown.push_back(SF-SFerr); else eleSFDown.push_back(SF);
+			if(kind==3) muoSFUp.push_back(  SF+SFerr); else muoSFUp.push_back(SF);
+			if(kind==3) muoSFDown.push_back(SF-SFerr); else muoSFDown.push_back(SF);
+		}
+		fHistFile->cd();
+		if(ntaususuable>0){//event has enough jets
+			float SFweight, SFweightErr(0.);
+			float SFerrtauup, SFerrtaudown, SFerrjetup, SFerrjetdown, SFerreleup, SFerreledown, SFerrmuoup, SFerrmuodown;
+			SFweight     =               getBTagEventWeight(tauEff, tauSF,     0);
+			SFerrtauup   = fabs(SFweight-getBTagEventWeight(tauEff, tauSFUp,   0));// tau error
+			SFerrtaudown = fabs(SFweight-getBTagEventWeight(tauEff, tauSFDown, 0));// tau error
+			SFerrjetup   = fabs(SFweight-getBTagEventWeight(tauEff, jetSFUp,   0));// jet error
+			SFerrjetdown = fabs(SFweight-getBTagEventWeight(tauEff, jetSFDown, 0));// jet error
+			SFerreleup   = fabs(SFweight-getBTagEventWeight(tauEff, eleSFUp,   0));// ele error
+			SFerreledown = fabs(SFweight-getBTagEventWeight(tauEff, eleSFDown, 0));// ele error
+			SFerrmuoup   = fabs(SFweight-getBTagEventWeight(tauEff, muoSFUp,   0));// muo error
+			SFerrmuodown = fabs(SFweight-getBTagEventWeight(tauEff, muoSFDown, 0));// muo error
+			SFweightErr += SFerrtauup>SFerrtaudown ? pow(SFerrtauup,2) : pow(SFerrtaudown,2);
+			SFweightErr += SFerrjetup>SFerrjetdown ? pow(SFerrjetup,2) : pow(SFerrjetdown,2);
+			SFweightErr += SFerreleup>SFerreledown ? pow(SFerreleup,2) : pow(SFerreledown,2);
+			SFweightErr += SFerrmuoup>SFerrmuodown ? pow(SFerrmuoup,2) : pow(SFerrmuodown,2);
+			SFweightErr = sqrt(SFweightErr);
+			fMT2tree->SFWeight.TauTageq0      = SFweight;
+			fMT2tree->SFWeight.TauTageq0Error = SFweightErr;
+			SFweightErr = 0;
+			SFweight     =               getBTagEventWeight(tauEff, tauSF,     1);
+			SFerrtauup   = fabs(SFweight-getBTagEventWeight(tauEff, tauSFUp,   1));// tau error
+			SFerrtaudown = fabs(SFweight-getBTagEventWeight(tauEff, tauSFDown, 1));// tau error
+			SFerrjetup   = fabs(SFweight-getBTagEventWeight(tauEff, jetSFUp,   1));// jet error
+			SFerrjetdown = fabs(SFweight-getBTagEventWeight(tauEff, jetSFDown, 1));// jet error
+			SFerreleup   = fabs(SFweight-getBTagEventWeight(tauEff, eleSFUp,   1));// ele error
+			SFerreledown = fabs(SFweight-getBTagEventWeight(tauEff, eleSFDown, 1));// ele error
+			SFerrmuoup   = fabs(SFweight-getBTagEventWeight(tauEff, muoSFUp,   1));// muo error
+			SFerrmuodown = fabs(SFweight-getBTagEventWeight(tauEff, muoSFDown, 1));// muo error
+			SFweightErr += SFerrtauup>SFerrtaudown ? pow(SFerrtauup,2) : pow(SFerrtaudown,2);
+			SFweightErr += SFerrjetup>SFerrjetdown ? pow(SFerrjetup,2) : pow(SFerrjetdown,2);
+			SFweightErr += SFerreleup>SFerreledown ? pow(SFerreleup,2) : pow(SFerreledown,2);
+			SFweightErr += SFerrmuoup>SFerrmuodown ? pow(SFerrmuoup,2) : pow(SFerrmuodown,2);
+			SFweightErr = sqrt(SFweightErr);
+			fMT2tree->SFWeight.TauTageq1      = SFweight;
+			fMT2tree->SFWeight.TauTageq1Error = SFweightErr;
+			SFweightErr = 0;
+			SFweight     =               getBTagEventWeight(tauEff, tauSF,    -1);
+			SFerrtauup   = fabs(SFweight-getBTagEventWeight(tauEff, tauSFUp,  -1));// tau error
+			SFerrtaudown = fabs(SFweight-getBTagEventWeight(tauEff, tauSFDown,-1));// tau error
+			SFerrjetup   = fabs(SFweight-getBTagEventWeight(tauEff, jetSFUp,  -1));// jet error
+			SFerrjetdown = fabs(SFweight-getBTagEventWeight(tauEff, jetSFDown,-1));// jet error
+			SFerreleup   = fabs(SFweight-getBTagEventWeight(tauEff, eleSFUp,  -1));// ele error
+			SFerreledown = fabs(SFweight-getBTagEventWeight(tauEff, eleSFDown,-1));// ele error
+			SFerrmuoup   = fabs(SFweight-getBTagEventWeight(tauEff, muoSFUp,  -1));// muo error
+			SFerrmuodown = fabs(SFweight-getBTagEventWeight(tauEff, muoSFDown,-1));// muo error
+			SFweightErr += SFerrtauup>SFerrtaudown ? pow(SFerrtauup,2) : pow(SFerrtaudown,2);
+			SFweightErr += SFerrjetup>SFerrjetdown ? pow(SFerrjetup,2) : pow(SFerrjetdown,2);
+			SFweightErr += SFerreleup>SFerreledown ? pow(SFerreleup,2) : pow(SFerreledown,2);
+			SFweightErr += SFerrmuoup>SFerrmuodown ? pow(SFerrmuoup,2) : pow(SFerrmuodown,2);
+			SFweightErr = sqrt(SFweightErr);
+			fMT2tree->SFWeight.TauTagge1      = SFweight;
+			fMT2tree->SFWeight.TauTagge1Error = SFweightErr;
+		} else {
+			fMT2tree->SFWeight.TauTageq0      = 1;
+			fMT2tree->SFWeight.TauTageq0Error = 0;
+			fMT2tree->SFWeight.TauTageq1      = 1;
+			fMT2tree->SFWeight.TauTageq1Error = 0;
+			fMT2tree->SFWeight.TauTagge1      = 1;
+			fMT2tree->SFWeight.TauTagge1Error = 0;
+		}
+	}
 	// -------------------------------------------------------------------------------------------------
+
 }
 
 // *****************************************************************************
@@ -1314,7 +1588,7 @@ bool MT2Analysis::IsGoodMT2Muon(const int index){
 	if (!(fabs(fTR->MuEta[index])<2.4) )       return false;
 	// Quality cuts
 	if ( !fTR->MuIsGlobalMuon[index] )         return false;
-//	if ( !fTR->MuIsPFMuon[index] )             return false;  // optional cut 
+	if ( !fTR->MuIsPFMuon[index] )             return false;  // optional cut 
 	// Hits
 	if ( !(fTR->MuNChi2[index] < 10) )         return false;
 	if ( !(fTR->MuNMuHits[index] > 0) )        return false;   //  muon.outerTrack()->hitPattern().numberOfValidHits()
@@ -1332,6 +1606,12 @@ bool MT2Analysis::IsGoodMT2Muon(const int index){
 float MT2Analysis::MuPFIso(const int index){
 	  double neutral = (fTR->MuPfIsoR03NeHad[index] + fTR->MuPfIsoR03Photon[index] - 0.5*fTR->MuPfIsoR03SumPUPt[index] );
 	  float iso      = (fTR->MuPfIsoR03ChHad[index] + TMath::Max(0.0, neutral) ) / fTR->MuPt[index];
+	  return iso;
+}
+
+float MT2Analysis::MuPFIso04(const int index){
+	  double neutral = (fTR->MuPfIsoR04NeHad[index] + fTR->MuPfIsoR04Photon[index] - 0.5*fTR->MuPfIsoR04SumPUPt[index] );
+	  float iso      = (fTR->MuPfIsoR04ChHad[index] + TMath::Max(0.0, neutral) ) / fTR->MuPt[index];
 	  return iso;
 }
 
@@ -1465,21 +1745,42 @@ float MT2Analysis::ElePFIso(const int index){
 	return iso;
 }
 
-const float MT2Analysis::EffArea(float abseta) {
-	// see here:  https://twiki.cern.ch/twiki/bin/view/CMS/EgammaEARhoCorrection 
-	abseta=fabs(abseta); // making sure we're looking at |eta|
-	if(abseta<1.0)   return 0.10;
-	if(abseta<1.479) return 0.12;
-	if(abseta<2.0)   return 0.085;
-	if(abseta<2.2)   return 0.11;
-	if(abseta<2.3)   return 0.12;
-	if(abseta<2.4)   return 0.12;
-	return 0.13;
+float MT2Analysis::ElePFIso04(const int index){
+	// Isolation: EffArea corrected, with cone size 03
+	// see here: https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation
+	double  neutral = fTR->ElEventelPFIsoValueNeutral04PFIdStandard[index] + fTR->ElEventelPFIsoValueGamma04PFIdStandard[index];
+	double  rhocorr = fTR->RhoForIso * EffArea(fTR->ElEta[index]);
+	float   iso = ( fTR->ElEventelPFIsoValueCharged04PFIdStandard[index] + TMath::Max(0., neutral - rhocorr) )/ fTR->ElPt[index];
+	return iso;
 }
 
+const float MT2Analysis::EffArea(float abseta) {//for cone of 03
+	// see here:  https://twiki.cern.ch/twiki/bin/view/CMS/EgammaEARhoCorrection 
+	abseta=fabs(abseta); // making sure we're looking at |eta|
+	if(abseta<1.0)   return 0.13;
+	if(abseta<1.479) return 0.14;
+	if(abseta<2.0)   return 0.07;
+	if(abseta<2.2)   return 0.09;
+	if(abseta<2.3)   return 0.11;
+	if(abseta<2.4)   return 0.11;
+	return 0.14;
+}
+
+const float MT2Analysis::EffArea04(float abseta) {//for cone of 03
+	// see here:  https://twiki.cern.ch/twiki/bin/view/CMS/EgammaEARhoCorrection 
+	abseta=fabs(abseta); // making sure we're looking at |eta|
+	if(abseta<1.0)   return 0.21;
+	if(abseta<1.479) return 0.21;
+	if(abseta<2.0)   return 0.11;
+	if(abseta<2.2)   return 0.14;
+	if(abseta<2.3)   return 0.18;
+	if(abseta<2.4)   return 0.19;
+	return 0.26;
+}
 
 //****************************************************************************************************
 // Photon Selectors
+// see https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedPhotonID2012 <-- what are the correct iso variables ask Marco or Nicholas
 
 bool MT2Analysis::IsGoodPhotonEGMLooseID(int i){
 	// EGM-10-006 Loose Photon selection
@@ -1535,6 +1836,18 @@ bool MT2Analysis::IsGoodPhoton(int i){
 	if( fTR->PhoHoverE[i]   > 0.05                                         ) return false; // H/E cut
 	if( fTR->PhoHasPixSeed[i]==1                                           ) return false; // veto pixel seed for electron rejection 
 	return true;
+}
+
+//***************************************************************************************************
+// Electron Selector
+bool MT2Analysis::IsGoodTauLooseID(int i){
+       if(fTR->TauPt[i]                          < 20.0         ) return false;    
+       if(fabs(fTR->TauEta[i])                   > 2.3          ) return false;
+       if(fTR->TauDecayModeFinding[i]            < 0.5          ) return false;  
+       if(fTR->TauLooseElectronRejection[i]      < 0.5          ) return false;  
+       if(fTR->TauLooseMuonRejection[i]          < 2.5          ) return false;  
+       if(fTR->TauVLooseCombinedIsoDBSumPtCorr[i]< 1.5          ) return false;
+       return true;
 }
 
 bool MT2Analysis::IsGoodTau(int i){

@@ -40,6 +40,7 @@ void usage( int status = 0 ) {
 	cout << "     mc_PileUP     root file from which the generated # pile up                      " << endl;
 	cout << "                   interactions is read                                              " << endl;
 	cout << "     btag          file with btag efficiency histograms                              " << endl;
+	cout << "     htau          file with hadronic tau efficiency histograms                      " << endl;
 	cout << "     type          data, scan or mc=default                                          " << endl;
 	cout << "     photon        add Photon to MET and remove jets/ele matched to photon           " << endl;
 	cout << "     ID            ProcessID: 0=data, 1=Znunu, 2=Zll, 3=WJets, 4=Top,                " << endl;
@@ -73,6 +74,7 @@ int main(int argc, char* argv[]) {
 	string  type = "mc";
 	string  JEC  ="";
 	string  btagFileName = "";
+	string  htauFileName = "";
 	bool isData  = false;
 	bool isCHSJets = false;
 	bool isType1MET = false;
@@ -87,7 +89,7 @@ int main(int argc, char* argv[]) {
 
 // Parse options
 	char ch;
-	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:r:b:i:C:w:eEflh?")) != -1 ) {
+	while ((ch = getopt(argc, argv, "s:d:o:v:j:m:n:p:P:t:r:b:u:i:C:w:eEflh?")) != -1 ) {
 	  switch (ch) {
 	  case 'd': outputdir       = TString(optarg);break;
 	  case 'o': filename        = TString(optarg);break;
@@ -100,6 +102,7 @@ int main(int argc, char* argv[]) {
 	  case 't': type            = string(optarg); break;
 	  case 'r': photon          = string(optarg); break;
 	  case 'b': btagFileName    = string(optarg); break;
+	  case 'u': htauFileName    = string(optarg); break;
 	  case 'w': pdf             = string(optarg); break;
 	  case 'i': ID              = atoi(optarg);   break;
 	  case 's': puScenario      = string(optarg); break;
@@ -142,7 +145,8 @@ int main(int argc, char* argv[]) {
 //	if(data_PileUp.length()!=0   ){data_PileUp ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_data/"+data_PileUp;}
 //	if(mc_PileUp.length()  !=0   ){mc_PileUp   ="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/pileUp_mc/"  + mc_PileUp;}
 //	if(jsonFileName.length() !=0 ){jsonFileName="/shome/pnef/Projects/CMSAnalysis/MT2Analysis/Code/Certification/"            +jsonFileName;}
-//	if(btagFileName.length() !=0 ){btagFileName="/shome/haweber/MT2Analysis/Code/Efficiencies/"                               + btagFileName;}
+	if(btagFileName.length() !=0 ){btagFileName="/shome/haweber/MT2Analysis_8TeV/Code/Efficiencies/"            + btagFileName;}
+	if(htauFileName.length() !=0 ){htauFileName="/shome/haweber/MT2Analysis_8TeV/Code/Efficiencies/"            + htauFileName;}
 
 	std::vector<std::string> fileList;
 	for(int i = 0; i < argc; i++){
@@ -164,6 +168,7 @@ int main(int argc, char* argv[]) {
 	cout << "--------------" << endl;
 	cout << "OutputDir is:                   " << outputdir << endl;
 	cout << "Type is:                        " << type << endl;
+	cout << "isFastSim                       " << (isFastSim ? "true":"false") << endl;
 	cout << "Verbose level is:               " << verbose << endl;
   	cout << "JSON file is:                   " << (jsonFileName.length()>0?jsonFileName:"empty") << endl;
   	cout << "MC_PileUp file:                 " << (mc_PileUp.length()>0?mc_PileUp:"empty") << endl;
@@ -173,6 +178,9 @@ int main(int argc, char* argv[]) {
 	cout << "pfMET is:                       " << (isType1MET? "Type1 corrected":"raw") << endl;
   	if(btagFileName.length() !=0){
 	cout << "btag file is:                   " << (btagFileName.length()>0?btagFileName:"empty") << endl;
+	}
+  	if(htauFileName.length() !=0){
+	cout << "hadronic tau file is:           " << (htauFileName.length()>0?htauFileName:"empty") << endl;
 	}
 	cout << "Set of Cuts is:                 " << setofcuts << endl;
 	if(JEC.length()!=0){
@@ -191,6 +199,7 @@ int main(int argc, char* argv[]) {
 	tA->SetMaxEvents(maxEvents);
 	tA->SetProcessID(ID);
 	tA->SetBTagEfficiency(btagFileName);
+	tA->SetHadTauEfficiency(htauFileName);
 	tA->SetPUReweighting(puScenario);
 	tA->SetType1MET(isType1MET);
 	tA->SetCHSJets(isCHSJets);

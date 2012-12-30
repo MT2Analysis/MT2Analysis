@@ -36,11 +36,11 @@ void MT2Misc::Reset() {
   ProcessID               = -1; 
   PassJetID               = -1;
   PassJet40ID             = -1;
+  PassJet30ID             = -1;
   Jet0Pass                = -1;
   Jet1Pass                = -1;
   MT2                     = -99999.99;
   MT2jet40                = -99999.99;
-  MT2jet50                = -99999.99;
   MCT                     = -99999.99;
   MET                     = -99999.99;
   METPhi                  = -99999.99;
@@ -57,15 +57,11 @@ void MT2Misc::Reset() {
   MinMetJetDPhi           = -99999.99;
   MinMetJetDPhi4          = -99999.99;
   MinMetJetDPhiPt40       = -99999.99;
-  MinMetJetDPhiPt50       = -99999.99;
   MinMetJetDPhi4Pt40      = -99999.99;
-  MinMetJetDPhi4Pt50      = -99999.99;
-  MinMetJetDPhiInCrack    = -99999.99;
   MinMetJetDPhiIndex      = -1;
   MinMetBJetDPhi          = -99999.99;
   WDecayMode              = -1;
   TopDecayMode            = -1;
-  BTagWeight              = -99999.99;
 
   // Noise Filters
   CrazyHCAL                        =  0;
@@ -76,6 +72,7 @@ void MT2Misc::Reset() {
   trackingFailureFlag              =  0;
   eeBadScFlag                      =  0;
   EcalDeadCellTriggerPrimitiveFlag =  0;
+  EcalLaserCorrFlag                =  0;
 
 }
 
@@ -516,6 +513,7 @@ void MT2Muon::Reset() {
   lv.SetPxPyPzE(0, 0, 0, 0);
   MT            = -9999.99;
   Iso           = -9999.99;
+  Iso04         = -9999.99;
   Charge        = -999;
 }
 
@@ -572,10 +570,24 @@ void MT2Tau::Reset(){
   Isolation     = -9999;
   ElectronRej   = -9999;
   MuonRej       = -9999;
+  isLooseID     = 0;
 }
 
 void MT2Tau::SetLV(const TLorentzVector v) {
   lv = v;
+}
+
+Bool_t MT2Tau::IsGoodTau(float minJPt, float maxJEta, int iso, int elerej, int muorej) {
+
+  float pt = lv.Pt();
+  if( pt < minJPt )               return false; // need to do this first, before getting lv.Eta();
+  float eta = lv.Eta();
+  if( fabs(eta) > maxJEta)        return false;
+  if(Isolation<iso)               return false;
+  if(ElectronRej<elerej)          return false;
+  if(MuonRej<muorej)              return false;
+
+  return true;
 }
 
 
@@ -592,6 +604,7 @@ void MT2Elec::Reset() {
   lv.SetPxPyPzE(0, 0, 0, 0);
   MT            = -9999.99;
   Iso           = -9999.99;
+  Iso04         = -9999.99;
   Charge        = -999;
   IDMedium      = -999;
   IDLoose       = -999;
@@ -601,6 +614,40 @@ void MT2Elec::Reset() {
 void MT2Elec::SetLV(const TLorentzVector v) {
   lv = v;
 }
+
+
+
+// MT2SFWeight -----------------------------
+MT2SFWeight::MT2SFWeight(){
+  Reset();
+}
+
+MT2SFWeight::~MT2SFWeight(){
+}
+
+void MT2SFWeight::Reset(){
+  BTagCSV40eq0 = 1;
+  BTagCSV40eq1 = 1;
+  BTagCSV40eq2 = 1;
+  BTagCSV40eq3 = 1;
+  BTagCSV40ge1 = 1;
+  BTagCSV40ge2 = 1;
+  BTagCSV40ge3 = 1;
+  BTagCSV40eq0Error = 0;
+  BTagCSV40eq1Error = 0;
+  BTagCSV40eq2Error = 0;
+  BTagCSV40eq3Error = 0;
+  BTagCSV40ge1Error = 0;
+  BTagCSV40ge2Error = 0;
+  BTagCSV40ge3Error = 0;
+  TauTageq0    = 1;
+  TauTageq1    = 1;
+  TauTagge1    = 1;
+  TauTageq0Error    = 0;
+  TauTageq1Error    = 0;
+  TauTagge1Error    = 0;
+}
+
 
 // MT2tree ----------------------------------
 MT2tree::MT2tree(){
@@ -612,18 +659,18 @@ MT2tree::~MT2tree(){
 
 void MT2tree::Reset() {
   NJets            = 0;
-  NTaus            = 0;
   NJetsIDLoose     = 0;
   NJetsIDLoose40   = 0;
   NJetsIDLoose50   = 0;
   NEles            = 0;
   NMuons           = 0;
+  NMuonsCommonIso  = 0;
+  NTaus            = 0;
+  NTausIDLoose     = 0;
   NPhotons         = 0;
   NGenLepts        = 0;
   NGenJets         = 0;
   NPdfs            = 0;
-  NBJets           = 0;
-  NBJetsHE         = 0;
   NBJetsCSVM       = 0;
   NBJetsCSVT       = 0;
   NBJets40CSVM     = 0;
@@ -636,6 +683,7 @@ void MT2tree::Reset() {
   misc.Reset();
   pileUp.Reset();
   trigger.Reset();
+  SFWeight.Reset();
 
   for (int i = 0; i < m_jetSize; ++i) {
     jet[i].Reset();
@@ -682,14 +730,6 @@ void MT2tree::SetNJetsIDLoose(int n) {
   NJetsIDLoose = n;
 }
 
-void MT2tree::SetNBJets(int n) {
-  NBJets = n;
-}
-
-void MT2tree::SetNBJetsHE(int n) {
-  NBJetsHE = n;
-}
-
 void MT2tree::SetNBJetsCSVM(int n) {
   NBJetsCSVM = n;
 }
@@ -718,8 +758,16 @@ void MT2tree::SetNMuons(int n) {
   NMuons = n;
 }
 
+void MT2tree::SetNMuonsCommonIso(int n) {
+  NMuonsCommonIso = n;
+}
+
 void MT2tree::SetNTaus(int n) {
   NTaus = n;
+}
+
+void MT2tree::SetNTausIDLoose(int n) {
+  NTausIDLoose = n;
 }
 
 // --------------------------------------------------------
@@ -792,6 +840,22 @@ Int_t MT2tree::GetJetIndexByEta(int ijet, int PFJID, float minJPt, float maxJEta
   if (ijet>=indices.size())  return -9;
   indx = Util::VSort(indices,etas,true);
   return indx[ijet];
+}
+
+Int_t MT2tree::GetNTaus(float minJPt, float maxJEta, int iso, int elerej, int muorej){
+  int ntaus=0;
+  for(int i=0; i<NTaus; ++i){
+	float pt = tau[i].lv.Pt();
+	if( pt < minJPt )               continue; // need to do this first, before getting lv.Eta();
+	float eta = tau[i].lv.Eta();
+	if( fabs(eta) > maxJEta)        continue;
+	if(tau[i].Isolation<iso)        continue;
+	if(tau[i].ElectronRej<elerej)   continue;
+	if(tau[i].MuonRej<muorej)       continue;
+	//if(tau[i].IsGoodTau(minJPt, maxJEta, iso, elerej, muorej)==false) continue;
+	ntaus++;
+  }
+  return ntaus;
 }
 
 // ----------------------------------------------------------------------------
@@ -1581,12 +1645,11 @@ Bool_t MT2tree::FillMT2HemiMinDHT(Float_t testmass, bool massive, Int_t PFJID, F
 	p4s.push_back(muo[i].lv);
   }
   if (p4s.size()<2) return false;
-
   // Serious memory problem due to combinatorics when more than 20 jets!!!
   if (p4s.size()>20) {
-    cout << "WARNING: more that 20 objets, skipping alphaT calculation due to memory problem" << endl;
+    cout << "WARNING: more that 20 objects, skipping alphaT calculation due to memory problem" << endl;
     return false;
-  }  
+  }
 
   // grouping according to minimal dHT
   std::vector<std::vector<float> > ht( 1<<(p4s.size()-1) , std::vector<float>( 2, 0.) ); 
@@ -1994,6 +2057,21 @@ Bool_t MT2tree::GenLeptFromW(int pid, float pt, float eta, bool includeTau){
 	return good;	
 }
 
+Int_t MT2tree::GenNumLeptFromW(int pid, float pt, float eta, bool includeTau){
+	int good(0);
+	for(int i=0; i<NGenLepts; ++i){
+		if(pid==1113 && (abs(genlept[i].ID)!=11 && abs(genlept[i].ID)!=13 ))//either electon or muon
+			continue;
+		if(pid!=1113 && abs(genlept[i].ID) !=pid            ) continue;
+		if( (!includeTau) && abs(genlept[i].MID) !=24       ) continue;
+		if(   includeTau  && !((abs(genlept[i].MID)==15 && abs(genlept[i].GMID)==24 ) || abs(genlept[i].MID)==24)) continue;
+		if(genlept[i].lv.Pt()       < pt                    ) continue;
+		if(fabs(genlept[i].lv.Eta())>eta                    ) continue;
+		++good;
+	}
+	return good;	
+}
+
 Float_t MT2tree::GetLeptPt(int index){
 	if(NEles + NMuons ==0) return -999;
 	float pt_0 =0;
@@ -2032,6 +2110,37 @@ Int_t MT2tree::TopDecayMode(){
 	// 32 = tau 2
 	// 64 = leptonic tau1
 	// 128= leptonic tau2
+	//	fully hadronic ttbar
+	//  0 = fully hadronic
+	//      semileptonic ttbar
+	//  1 = ele
+	//  4 = muo
+	// 16 = tau_had
+	//113 = tau_ele // same as tau_had-tau_ele
+	//116 = tau_muo // same as tau_had-tau_ele
+	//      dileptonic ttbar
+	//  3 = ele-ele
+	//  5 = ele-muo
+	// 12 = muo-muo
+	// 17 = ele-tau_had
+	// 20 = muo-tau_had
+	// 48 = tau_had-tau_had
+	//113 = tau_had-tau_ele // same as tau_ele
+	//115 = ele-tau_ele
+	//116 = tau_had-tau_muo // same as tau_muo
+	//117 = muo-tau_ele // same as ele-tau_muo
+	//117 = ele-tau_muo // same as muo-tau_ele
+	//124 = muo-tau_muo
+	//243 = tau_ele-tau_ele
+	//245 = tau_ele-tau_muo
+	//252 = tau_muo-tau_muo
+	//    additionally for SingeTop-tW-channel
+	// 81 = tau_ele
+	// 83 = ele-tau_ele
+	// 84 = tau_muo
+	// 85 = ele-tau_muo
+	// 85 = muo-tau_ele
+	// 92 = muo-tau_muo
 	Int_t bit=0;
 	Bool_t acceptance(true);
 	for(int i=0; i<NGenLepts; ++i){
@@ -2134,10 +2243,13 @@ Float_t MT2tree::SLTopEta(float pt){
 Int_t MT2tree::WDecayMode(){
 	// bit map:
 	// 0 not recognized
-	// 1= ele
-	// 2= muo
+	// 1= ele (not incl. tau decays)
+	// 2= muo (not incl. tau decays)
 	// 4= tau
 	// 8= tau stable (i.e. problem in MC sample)
+	//12= tau_had
+	//13= tau_ele
+	//14= tau_muo
 	Int_t result =0;
 	for(int i=0; i<NGenLepts; ++i){
 		if( abs(genlept[i].ID)==11 && abs(genlept[i].MID)==24 )                               {result = result | 1;} 
@@ -2543,7 +2655,7 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	for(int i=0; i<NMuons; ++i){
 	for(int j=i+1; j<NMuons; ++j){
 	for(int k=0; k<NJets; ++k){
-	TLorentzVector pj = muo[i].lv + muo[j].lv + muo[k].lv;
+	TLorentzVector pj = muo[i].lv + muo[j].lv + jet[k].lv;
 	logStream << "    Muon " << i << " and muo " << j << " and jet " << k << ": Pt " << pj.Pt() << " Px " << pj.Px() << " Py " << pj.Py() << " Pz " << pj.Pz()
 		  << " Eta " << pj.Eta() << " Phi " << pj.Phi() << " E " << pj.E() << " M " << pj.M() << endl;	
 	}
@@ -2568,7 +2680,7 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	for(int i=0; i<NMuons; ++i){
 	for(int j=0; j<NJets; ++j){
 	for(int k=j+1; k<NJets; ++k){
-	TLorentzVector pj = muo[i].lv + jet[j].lv + muo[k].lv;
+	TLorentzVector pj = muo[i].lv + jet[j].lv + jet[k].lv;
 	logStream << "    Muon " << i << " and jet " << j << " and jet " << k << ": Pt " << pj.Pt() << " Px " << pj.Px() << " Py " << pj.Py() << " Pz " << pj.Pz()
 		  << " Eta " << pj.Eta() << " Phi " << pj.Phi() << " E " << pj.E() << " M " << pj.M() << endl;	
 	}
@@ -2732,4 +2844,5 @@ ClassImp(MT2Muon)
 ClassImp(MT2Photon)
 ClassImp(MT2Hemi)
 ClassImp(MT2GenLept)
+ClassImp(MT2SFWeight)
 ClassImp(MT2tree)

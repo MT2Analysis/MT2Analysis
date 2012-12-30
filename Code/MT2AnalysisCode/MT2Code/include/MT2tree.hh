@@ -30,9 +30,9 @@ public:
   Int_t    Jet1Pass;
   Int_t    PassJetID;
   Int_t    PassJet40ID;
+  Int_t    PassJet30ID;
   Float_t  MT2;
   Float_t  MT2jet40;
-  Float_t  MT2jet50;
   Float_t  MCT;
   Float_t  MET;
   Float_t  METPhi;
@@ -45,10 +45,7 @@ public:
   Float_t  MinMetJetDPhi;       // use all jets
   Float_t  MinMetJetDPhi4;      // use first 4 jets
   Float_t  MinMetJetDPhiPt40;   // use jets that have pT>40GeV
-  Float_t  MinMetJetDPhiPt50;   // use jets that have pT>50GeV
   Float_t  MinMetJetDPhi4Pt40;  // use first 4 jets that have pT>40GeV
-  Float_t  MinMetJetDPhi4Pt50;  // use first 4 jets that have pT>50GeV
-  Float_t  MinMetJetDPhiInCrack;// use only jets close to crack ( abs(eta) < 0.3, or 1.15<abs(eta)<1.85)
   Int_t    MinMetJetDPhiIndex;
   Float_t  MinMetBJetDPhi;
   Float_t  QCDPartonicHT;
@@ -60,7 +57,6 @@ public:
   Float_t  pfHT50;
   Int_t    WDecayMode;
   Int_t    TopDecayMode;
-  Float_t  BTagWeight;
 
   //Noise Filters
   Bool_t   CrazyHCAL;             // store bad events as "true"
@@ -71,8 +67,9 @@ public:
   Bool_t   trackingFailureFlag;
   Bool_t   eeBadScFlag;
   Bool_t   EcalDeadCellTriggerPrimitiveFlag;
+  Bool_t   EcalLaserCorrFlag;
   
-  ClassDef(MT2Misc, 35)
+  ClassDef(MT2Misc, 36)
 };
 
 
@@ -422,6 +419,7 @@ public:
 
   void Reset();
   void SetLV(const TLorentzVector v);
+  Bool_t IsGoodTau(float minJPt, float maxJEta, int iso, int elerej, int muorej);
 
   TLorentzVector lv;
 
@@ -434,7 +432,8 @@ public:
   Int_t    Isolation;
   Int_t    ElectronRej;
   Int_t    MuonRej;
-  ClassDef(MT2Tau, 4)
+  Bool_t   isLooseID;
+  ClassDef(MT2Tau, 5)
 };
 
 // MT2Elec ----------------------------------
@@ -451,12 +450,13 @@ public:
 
   Float_t  MT;
   Float_t  Iso;
+  Float_t  Iso04;
   Int_t    Charge;
   Int_t    IDMedium;
   Int_t    IDLoose;
   Int_t    IDVeto;
 
-  ClassDef(MT2Elec, 11)
+  ClassDef(MT2Elec, 12)
 };
 
 // MT2Muon ----------------------------------
@@ -473,9 +473,10 @@ public:
 
   Float_t  MT;
   Float_t  Iso;
+  Float_t  Iso04;
   Int_t    Charge;
 
-  ClassDef(MT2Muon, 8)
+  ClassDef(MT2Muon, 9)
 };
 
 // MT2Photon  ----------------------------------
@@ -531,6 +532,40 @@ public:
   ClassDef(MT2GenLept, 6)
 };
 
+// MT2SFWeight -----------------------------
+class MT2SFWeight : public TObject {
+
+public:
+  MT2SFWeight();
+  virtual ~MT2SFWeight();
+
+  void Reset();
+
+  Float_t BTagCSV40eq0;
+  Float_t BTagCSV40eq1;
+  Float_t BTagCSV40eq2;
+  Float_t BTagCSV40eq3;
+  Float_t BTagCSV40ge1;
+  Float_t BTagCSV40ge2;
+  Float_t BTagCSV40ge3;
+  Float_t BTagCSV40eq0Error;
+  Float_t BTagCSV40eq1Error;
+  Float_t BTagCSV40eq2Error;
+  Float_t BTagCSV40eq3Error;
+  Float_t BTagCSV40ge1Error;
+  Float_t BTagCSV40ge2Error;
+  Float_t BTagCSV40ge3Error;
+  Float_t TauTageq0;
+  Float_t TauTageq1;
+  Float_t TauTagge1;
+  Float_t TauTageq0Error;
+  Float_t TauTageq1Error;
+  Float_t TauTagge1Error;
+
+
+  ClassDef(MT2SFWeight, 1);
+};
+
 // MT2tree ----------------------------------
 class MT2tree : public TObject {
 
@@ -543,16 +578,16 @@ public:
   void SetNJets         (int n);
   void SetNGenJets      (int n);
   void SetNJetsIDLoose  (int n);
-  void SetNBJets        (int n);
-  void SetNBJetsHE      (int n);
   void SetNBJetsCSVM    (int n);
   void SetNBJetsCSVT    (int n);
   void SetNBJets40CSVM  (int n);
   void SetNBJets40CSVT  (int n);
   void SetNEles         (int n);
   void SetNMuons        (int n);
+  void SetNMuonsCommonIso(int n);
   void SetNPhotons      (int n);
   void SetNTaus         (int n);
+  void SetNTausIDLoose  (int n);
   
   // My functions here
   // NJets
@@ -561,6 +596,7 @@ public:
   Int_t    GetJetIndexByEta(int ijet=0, int PFJID=0, float minJPt=20, float maxJEta=2.4);
   Int_t    GetNBtags  (int algo=3, float value=2., float minJPt=20, float maxJEta=2.4, int PFJID=0);  // algo - 0:TCHE, 1:TCHP, 2:SSVHE, 3:SSVHP
   Float_t  JetPt      (int ijet=0, int PFJID=0, float minJPt=20, float maxJEta=2.4);
+  Int_t    GetNTaus   (float minJPt=20, float maxJEta=2.4, int iso=2, int elerej=1, int muorej=3);
 
   // HT, MHT, ...
   Float_t GetHT         (int PFJID=0, float minJPt=50, float maxJEta=2.4);
@@ -624,6 +660,7 @@ public:
   Float_t GetGenLeptEta2(int which, int pid, int mother, int gmother, float pt, float eta);
   Int_t   GetGenLeptIndex2(int which, int pid, int mother, int gmother, float pt, float eta);
   Bool_t  GenLeptFromW(int pid, float pt, float eta, bool includeTaus);
+  Int_t   GenNumLeptFromW(int pid, float pt, float eta, bool includeTaus);
   Float_t GetLeptPt(int index);
   Float_t ElClosestJet();
   Int_t   WDecayMode();
@@ -665,16 +702,16 @@ public:
   Int_t   NJetsIDLoose;
   Int_t   NJetsIDLoose40;
   Int_t   NJetsIDLoose50;
-  Int_t   NBJets;
-  Int_t   NBJetsHE;
   Int_t   NBJetsCSVM;
   Int_t   NBJetsCSVT;
   Int_t   NBJets40CSVM;
   Int_t   NBJets40CSVT;
   Int_t   NEles;
   Int_t   NMuons;
+  Int_t   NMuonsCommonIso;
   Int_t   NPhotons;
   Int_t   NTaus;
+  Int_t   NTausIDLoose;
   Int_t   NGenLepts;
   Int_t   NPdfs;
   Int_t GenProcessID;
@@ -684,6 +721,7 @@ public:
   MT2Misc        misc;
   MT2PileUp      pileUp;
   MT2Trigger     trigger;
+  MT2SFWeight    SFWeight;
   MT2Jet         jet[m_jetSize];
   MT2GenJet      genjet[m_genjetSize];
   MT2Hemi        hemi[m_hemiSize];
@@ -702,7 +740,7 @@ public:
                               // identical to pfmet unless met is JEScales or modified in data-driven estimates
   double pdfW[100];
   
-  ClassDef(MT2tree, 28)
+  ClassDef(MT2tree, 29)
 };
 
 #endif

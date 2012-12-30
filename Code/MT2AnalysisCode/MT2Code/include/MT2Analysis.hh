@@ -14,7 +14,7 @@
 #include "helper/Davismt2.h"
 #include "helper/TMctLib.h"
 #include "helper/Hemisphere.hh"
-#include "BTagWeight.hh"
+#include "BTagSFWeight.hh"
 #include "MT2tree.hh"
 #include <TLorentzVector.h>
 #include "JetCorrectionUncertainty.h" 
@@ -46,6 +46,7 @@ public:
 	void SetType(bool isData=false){fisData=isData;};
 	void SetProcessID(int ID){fID=ID;};
 	void SetBTagEfficiency(string btagFileName){ fbtagFileName = btagFileName;};
+	void SetHadTauEfficiency(string hadtauFileName){ fhadtauFileName = hadtauFileName;};
 	void SetType1MET(bool type1MET){fisType1MET = type1MET;};
 	void SetCHSJets(bool CHSJets){fisCHSJets = CHSJets;};
 	void SetFastSim(bool FastSim){fisFastSim = FastSim;};
@@ -101,11 +102,18 @@ private:
         //Control Histograms
   	//  TH1F *fH_PUWeights ;
 
-	//btagging histograms and files: maybe make histogram for each sample
+	//btagging histograms and files
 	TFile *btagfile;
-	TH1D *hbeff;
-	TH1D *hceff;
-	TH1D *hleff;
+	TH2F  *hbeff;
+	TH2F  *hceff;
+	TH2F  *hleff;
+
+	//hadronic tau tagging histograms and files
+	TFile *hadtaufile;
+	TH1F  *htaueff;
+	TH1F  *hjeteff;
+	TH1F  *heleeff;
+	TH1F  *hmuoeff;
 
 	// data members-----------------------------------------
 	bool fisData;
@@ -114,6 +122,7 @@ private:
 	bool fBasicMT2treeFilled;
 	string fJEC;
 	string fbtagFileName;
+	string fhadtauFileName;
 
 
 	// vectors for jets and lepton indices
@@ -190,17 +199,20 @@ private:
 	bool IsGoodPhoton(int index);
 
         //Taus
+	bool IsGoodTauLooseID(int i);
         bool IsGoodTau(int index);
-
 	//Muons 
 	bool IsGoodMT2Muon(const int index);
 	float MuPFIso(const int index);
+	float MuPFIso04(const int index);
 	// Electrons
 	bool IsGoodMT2ElectronVetoID(const int index);
 	bool IsGoodMT2ElectronLooseID(const int index);
 	bool IsGoodMT2ElectronMediumID(const int index);
 	const float EffArea(float abseta);
+	const float EffArea04(float abseta);
 	float ElePFIso(const int index);
+	float ElePFIso04(const int index);
 
 	//pfJetID
 	bool IsGoodMT2PFJetIDLoose(int index, float ptcut, float absetacut);

@@ -541,10 +541,6 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	fMT2tree->SetNTausIDLoose  (fMT2tree->GetNTaus(20,2.3,2,3,3));
 	fMT2tree->SetNTausIDLoose2 (fMT2tree->GetNTaus(20,2.1,2,3,3));
 
-	
-	
-
-
 
 	// ---------------------------------------------------------------
 	// GenMET	
@@ -1929,7 +1925,7 @@ bool MT2Analysis::IsGoodTauLooseID(int i){
        if(fTR->TauDecayModeFinding[i]            < 0.5          ) return false;  
        if(fTR->TauLooseElectronRejection[i]      < 2.5          ) return false;  
        if(fTR->TauLooseMuonRejection[i]          < 2.5          ) return false;  
-       if(fTR->TauVLooseCombinedIsoDBSumPtCorr[i]< 1.5          ) return false;
+       if(fTR->TauLooseCombinedIsoDBSumPtCorr[i] < 0.5          ) return false;
        return true;
 }
 
@@ -1939,7 +1935,7 @@ bool MT2Analysis::IsGoodTau(int i){
        if(fTR->TauDecayModeFinding[i]            < 0.5          ) return false;  
        if(fTR->TauLooseElectronRejection[i]      < 0.5          ) return false;  
        if(fTR->TauLooseMuonRejection[i]          < 0.5          ) return false;  
-       if(fTR->TauVLooseCombinedIsoDBSumPtCorr[i]< 0.5          ) return false;
+       if(fTR->TauLooseCombinedIsoDBSumPtCorr[i] < 0.5          ) return false;
        return true;
 }
 

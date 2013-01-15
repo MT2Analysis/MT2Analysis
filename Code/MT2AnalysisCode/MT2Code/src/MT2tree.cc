@@ -64,15 +64,18 @@ void MT2Misc::Reset() {
   TopDecayMode            = -1;
 
   // Noise Filters
-  CrazyHCAL                        =  0;
-  NegativeJEC                      =  0;
-  CSCTightHaloIDFlag               =  0;
-  HBHENoiseFlag                    =  0;
-  hcalLaserEventFlag               =  0;
-  trackingFailureFlag              =  0;
-  eeBadScFlag                      =  0;
-  EcalDeadCellTriggerPrimitiveFlag =  0;
-  EcalLaserCorrFlag                =  0;
+  CrazyHCAL                           = 0;
+  NegativeJEC                         = 0;
+  CSCTightHaloIDFlag                  = 0;
+  HBHENoiseFlag                       = 0;
+  hcalLaserEventFlag                  = 0;
+  trackingFailureFlag                 = 0;
+  eeBadScFlag                         = 0;
+  EcalDeadCellTriggerPrimitiveFlag    = 0;
+  EcalLaserCorrFlag                   = 0;
+  TrackingManyStripClusFlag           = 0;
+  TrackingTooManyStripClusFlag        = 0;
+  TrackingLogErrorTooManyClustersFlag = 0;
 
 }
 
@@ -536,15 +539,16 @@ void MT2Photon::Reset() {
   HcalIso         = -999.99;
   SigmaIEtaIEta   = -999.99;
   HoverE          = -999.99; 
+  HoverE2012      = -999.99;
+  ChargedHadIso   = -999.99;
+  NeutralHadIso   = -999.99;
+  PhotonIso       = -999.99;
   GenJetMinDR     = -999.99;
   MCmatchexitcode = -999;
-  isEGMlooseID    = 0;
-  isEGMtightID    = 0;
-  isEGMlooseIso   = 0;
-  isEGMlooseRelIso= 0;
-  isEGMtightIso   = 0;
   JetRemoved      = 0;
-  hasPixelSeed    = 0;
+  isLooseID       = 0;
+  isMediumID      = 0;
+  isTightID       = 0;
 }
 
 void MT2Photon::SetLV(const TLorentzVector v) {
@@ -667,7 +671,9 @@ void MT2tree::Reset() {
   NMuonsCommonIso  = 0;
   NTaus            = 0;
   NTausIDLoose     = 0;
+  NTausIDLoose2    = 0;
   NPhotons         = 0;
+  NPhotonsIDLoose25= 0;
   NGenLepts        = 0;
   NGenJets         = 0;
   NPdfs            = 0;
@@ -754,6 +760,10 @@ void MT2tree::SetNPhotons(int n) {
   NPhotons = n;
 }
 
+void MT2tree::SetNPhotonsIDLoose25(int n) {
+  NPhotonsIDLoose25 = n;
+}
+
 void MT2tree::SetNMuons(int n) {
   NMuons = n;
 }
@@ -768,6 +778,10 @@ void MT2tree::SetNTaus(int n) {
 
 void MT2tree::SetNTausIDLoose(int n) {
   NTausIDLoose = n;
+}
+
+void MT2tree::SetNTausIDLoose2(int n) {
+  NTausIDLoose2 = n;
 }
 
 // --------------------------------------------------------
@@ -2515,6 +2529,8 @@ Bool_t MT2tree::PrintOut(Bool_t logfile){
 	logStream << "    Pt      " << photon[i].lv.Et() << " Eta " << photon[i].lv.Eta() << " Phi " << photon[i].lv.Phi() << endl;
 	logStream << "    TrkIso  " << photon[i].TrkIso  << " EcalIso " << photon[i].EcalIso << " HcalIso " << photon[i].HcalIso << endl;
 	logStream << "    HoverE  " << photon[i].HoverE  << " SigmaIEtaIEta " << photon[i].SigmaIEtaIEta  << endl;
+	logStream << "    ChHadPFIso " << photon[i].ChargedHadIso  << " NeuHadPFIso " << photon[i].NeutralHadIso << " PhotPFIso " << photon[i].PhotonIso << endl;
+	logStream << "    HoverE2012  " << photon[i].HoverE2012  << endl;
 	     e += photon[i].lv.E(); px += photon[i].lv.Px(); py += photon[i].lv.Py(); pz += photon[i].lv.Pz(); 
 	if(NEles >0){
 	logStream << "    Closest Ele " << PhotonEleDREIndex(i,10,5)   << " with dR " << PhotonEleDR(i,10,5) << endl;

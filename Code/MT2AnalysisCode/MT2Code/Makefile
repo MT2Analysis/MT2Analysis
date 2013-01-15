@@ -2348,7 +2348,7 @@ src/MT2Analysis.o: /usr/include/bits/mathcalls.h
 src/MT2Analysis.o: ../TESCO/include/helper/TMctLib.h
 src/MT2Analysis.o: ../TESCO/include/helper/mctlib.h
 src/MT2Analysis.o: ../TESCO/include/helper/Hemisphere.hh
-src/MT2Analysis.o: ./include/BTagWeight.hh ./include/MT2tree.hh
+src/MT2Analysis.o: ./include/BTagSFWeight.hh ./include/MT2tree.hh
 src/MT2Analysis.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw-patch/CMSSW_5_3_2_patch4/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 src/MT2Analysis.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw-patch/CMSSW_5_3_2_patch4/src/CondFormats/JetMETObjects/interface/JetCorrectorParameters.h
 src/MT2Analysis.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw-patch/CMSSW_5_3_2_patch4/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h
@@ -2861,7 +2861,7 @@ src/MT2Analyzer.o: /usr/include/bits/mathcalls.h
 src/MT2Analyzer.o: ../TESCO/include/helper/TMctLib.h
 src/MT2Analyzer.o: ../TESCO/include/helper/mctlib.h
 src/MT2Analyzer.o: ../TESCO/include/helper/Hemisphere.hh
-src/MT2Analyzer.o: ./include/BTagWeight.hh ./include/MT2tree.hh
+src/MT2Analyzer.o: ./include/BTagSFWeight.hh ./include/MT2tree.hh
 src/MT2Analyzer.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw-patch/CMSSW_5_3_2_patch4/src/CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h
 src/MT2Analyzer.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw-patch/CMSSW_5_3_2_patch4/src/CondFormats/JetMETObjects/interface/JetCorrectorParameters.h
 src/MT2Analyzer.o: /swshare/cms/slc5_amd64_gcc462/cms/cmssw-patch/CMSSW_5_3_2_patch4/src/CondFormats/JetMETObjects/interface/FactorizedJetCorrector.h

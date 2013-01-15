@@ -191,12 +191,14 @@ private:
 	bool IsSelectedEvent();
 	void InitializeEvent();
 	// photons
-	bool IsGoodPhotonEGMLooseISO(int index);
-	bool IsGoodPhotonEGMLooseRelISO(int index);
-	bool IsGoodPhotonEGMLooseID(int index);
-	bool IsGoodPhotonEGMTightISO(int index);
-	bool IsGoodPhotonEGMTightID(int index);
-	bool IsGoodPhoton(int index);
+	bool IsGoodPhotonEGMLoose(int i);
+	bool IsGoodPhotonEGMMedium(int i);
+	bool IsGoodPhotonEGMTight(int i);
+	bool IsGoodPhoton(int i);
+	float SingleTowerHoverE(int i); // want photon.hadTowOverEm() which we do not store directly
+	const float EffAreaChargedHad(float abseta);
+	const float EffAreaNeutralHad(float abseta);
+	const float EffAreaPhoton(float abseta);
 
         //Taus
 	bool IsGoodTauLooseID(int i);

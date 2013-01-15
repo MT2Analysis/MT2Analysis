@@ -44,13 +44,14 @@ void MT2Analyzer::Loop(){
 			fMT2Analysis        ->BeginRun(fCurRun);
                   	skipRun = false; // re-initialize
                   	if ( !CheckRun() ) skipRun = true;
-
+			//if(skipRun) cout << "skip run " << fCurRun << endl;
                 }
                // Check if new lumi is in JSON file
                 if ( !skipRun && fCurLumi != fTR->LumiSection ) {
                   	fCurLumi = fTR->LumiSection;
                   	skipLumi = false; // Re-initialise
                   	if ( !CheckRunLumi() ) skipLumi = true;
+			//if(skipLumi) cout << "skip lumi " << fCurLumi << " in run " << fTR->Run << endl;
                 }
 		if ( !(skipRun || skipLumi) ) {
 			fMT2Analysis        ->Analyze();

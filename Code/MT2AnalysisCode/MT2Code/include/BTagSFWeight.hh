@@ -672,8 +672,8 @@ inline Float_t getBTagEventWeightErrorTotal(float &werr, vector<float> jetEff, v
 	float FSerrorup(0.), FSerrordown(0.);
 	if(fastsimulation) FSerrorup   = fabs(weight-getBTagEventWeight(jetEff,   jetSFFSup,   nBTags));//fastsimulation error
 	if(fastsimulation) FSerrordown = fabs(weight-getBTagEventWeight(jetEff,   jetSFFSdown, nBTags));//fastsimulation error
-	if(FSerrorup  >=weight) FSerrorup   = 0;
-	if(FSerrordown>=weight) FSerrordown = 0;
+	if(FSerrorup  >=weight) FSerrorup   = 0;//fastsim can do crazy stuff
+	if(FSerrordown>=weight) FSerrordown = 0;//fastsim can do crazy stuff
 
 	float bcerr, lerr, fserr, sterr;
 //	sterr = statefferr;
@@ -694,7 +694,7 @@ inline Float_t getBTagEventWeightErrorTotal(float &werr, vector<float> jetEff, v
 //the monster function with gets you SF + total error due to all possible systematics
 // is double sided error up and down
 //uses getBTagEventWeightError and getBTagEventWeight from above
-inline Float_t getBTagEventWeightTwoSidedErrorTotal(float &werrup, float &werrdown, vector<float> jetEff, vector<float> jetEffErr, vector<float> jetSF, vector<float> jetSFBCdown, vector<float> jetSFBCup, vector<float> jetSFlightdown, vector<float> jetSFlightup, vector<float> jetEffFSdown, vector<float> jetEffFSup, bool fastsimulation, int nBTags){
+inline Float_t getBTagEventWeightTwoSidedErrorTotal(float &werrup, float &werrdown, vector<float> jetEff, vector<float> jetEffErr, vector<float> jetSF, vector<float> jetSFBCdown, vector<float> jetSFBCup, vector<float> jetSFlightdown, vector<float> jetSFlightup, vector<float> jetSFFSdown, vector<float> jetSFFSup, bool fastsimulation, int nBTags){
 	float statefferr = 0;
 //	float weight = getBTagEventWeightError(statefferr, jetEff, jetEffErr, jetSF, nBTags);
 //	float staterrdown = statefferr; float staterrup = statefferr;
@@ -712,8 +712,10 @@ inline Float_t getBTagEventWeightTwoSidedErrorTotal(float &werrup, float &werrdo
 	float lighterrorup      = fabs(weight-getBTagEventWeight(jetEff,       jetSFlightup,   nBTags));// mistag error
 	float lighterrordown    = fabs(weight-getBTagEventWeight(jetEff,       jetSFlightdown, nBTags));// mistag error
 	float FSerrorup(0.), FSerrordown(0.);
-	if(fastsimulation) FSerrorup   = fabs(weight-getBTagEventWeight(jetEffFSup,   jetSF,          nBTags));//fastsimulation error
-	if(fastsimulation) FSerrordown = fabs(weight-getBTagEventWeight(jetEffFSdown, jetSF,          nBTags));//fastsimulation error
+	if(fastsimulation) FSerrorup   = fabs(weight-getBTagEventWeight(jetEff,   jetSFFSup,   nBTags));//fastsimulation error
+	if(fastsimulation) FSerrordown = fabs(weight-getBTagEventWeight(jetEff,   jetSFFSdown, nBTags));//fastsimulation error
+	if(FSerrorup  >=weight) FSerrorup   = 0;
+	if(FSerrordown>=weight) FSerrordown = 0;
 
 	werrup   = sqrt(staterrup  *staterrup   + bcerrorup  *bcerrorup   + lighterrorup  *lighterrorup   + FSerrorup  *FSerrorup  );
 	werrdown = sqrt(staterrdown*staterrdown + bcerrordown*bcerrordown + lighterrordown*lighterrordown + FSerrordown*FSerrordown);

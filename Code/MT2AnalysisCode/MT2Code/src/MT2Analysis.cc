@@ -111,7 +111,6 @@ void MT2Analysis::Begin(const char* filename){
 	}else{
 		cout << "No hadtaufile existing: use tau-eff = 0.60, jet-eff = 0.03, ele-eff = 0.18, muo-eff = 0.0002" << endl;
 	}
-
 	// book tree
 	fMT2tree = new MT2tree();
 	BookTree();
@@ -168,7 +167,6 @@ void MT2Analysis::Begin(const char* filename){
 	  fTriggerMap["HLT_PFNoPUHT750_v1"] = &fMT2tree->trigger.HLT_PFNoPUHT750_v1;
 	  fTriggerMap["HLT_PFNoPUHT750_v2"] = &fMT2tree->trigger.HLT_PFNoPUHT750_v2;
 	  fTriggerMap["HLT_PFNoPUHT750_v3"] = &fMT2tree->trigger.HLT_PFNoPUHT750_v3;
-
 	  
 	  // HT/HTMHT dataset
 	  fTriggerMap["HLT_PFHT350_PFMET100_v3"]     = &fMT2tree->trigger.HLT_PFHT350_PFMET100_v3;
@@ -422,18 +420,21 @@ bool MT2Analysis::FillMT2TreeBasics(){
 
 	// -----------------------------------------------------------------
 	// Photons
+	int num_phot = 0;
 	for(int i=0; i<fPhotons.size(); ++i){
 		fMT2tree->photon[i].lv.SetPtEtaPhiM(fTR->PhoPt[fPhotons[i]], fTR->PhoEta[fPhotons[i]], fTR->PhoPhi[fPhotons[i]], 0.);
-		fMT2tree->photon[i].TrkIso              =fTR->PhoIso04TrkHollow[fPhotons[i]]; 
-		fMT2tree->photon[i].EcalIso             =fTR->PhoIso04Ecal[fPhotons[i]];
-		fMT2tree->photon[i].HcalIso             =fTR->PhoIso04Hcal[fPhotons[i]];
+		fMT2tree->photon[i].TrkIso              =fTR->PhoIso04TrkHollow[fPhotons[i]];//should we keep detector isolation variables?
+		fMT2tree->photon[i].EcalIso             =fTR->PhoIso04Ecal[fPhotons[i]];//should we keep detector isolation variables?
+		fMT2tree->photon[i].HcalIso             =fTR->PhoIso04Hcal[fPhotons[i]];//should we keep detector isolation variables?
 		fMT2tree->photon[i].SigmaIEtaIEta       =fTR->PhoSigmaIetaIeta[fPhotons[i]];
-		fMT2tree->photon[i].HoverE              =fTR->PhoHoverE[fPhotons[i]];
-		fMT2tree->photon[i].isEGMlooseID        =IsGoodPhotonEGMLooseID(fPhotons[i]);
-		fMT2tree->photon[i].isEGMlooseIso       =IsGoodPhotonEGMLooseISO(fPhotons[i]);
-		fMT2tree->photon[i].isEGMlooseRelIso    =IsGoodPhotonEGMLooseRelISO(fPhotons[i]);
-		fMT2tree->photon[i].isEGMtightID        =IsGoodPhotonEGMTightID(fPhotons[i]);
-		fMT2tree->photon[i].isEGMtightIso       =IsGoodPhotonEGMTightISO(fPhotons[i]);
+		fMT2tree->photon[i].HoverE              =fTR->PhoHoverE[fPhotons[i]];//should we keep deprecated H/E?
+		fMT2tree->photon[i].ChargedHadIso       = TMath::Max(fTR->PhoNewIsoPFCharged[fPhotons[i]] - fTR->Rho * EffAreaChargedHad(fabs(fTR->PhoEta[fPhotons[i]])),(float)0.);
+		fMT2tree->photon[i].NeutralHadIso       = TMath::Max(fTR->PhoNewIsoPFNeutral[fPhotons[i]] - fTR->Rho * EffAreaNeutralHad(fabs(fTR->PhoEta[fPhotons[i]])),(float)0.);
+		fMT2tree->photon[i].PhotonIso           = TMath::Max(fTR->PhoNewIsoPFPhoton[fPhotons[i]]  - fTR->Rho * EffAreaPhoton(    fabs(fTR->PhoEta[fPhotons[i]])),(float)0.);
+		fMT2tree->photon[i].HoverE2012          = SingleTowerHoverE(fPhotons[i]);
+		fMT2tree->photon[i].isLooseID           = IsGoodPhotonEGMLoose(fPhotons[i]);
+		fMT2tree->photon[i].isMediumID          = IsGoodPhotonEGMMedium(fPhotons[i]);
+		fMT2tree->photon[i].isTightID           = IsGoodPhotonEGMTight(fPhotons[i]);
 		fMT2tree->photon[i].JetRemoved          =fPhotonJetOverlapRemoved[i];
 		if(!fisData){
 			fMT2tree->photon[i].MCmatchexitcode     =fTR->PhoMCmatchexitcode[fPhotons[i]]; 
@@ -442,6 +443,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 				fMT2tree->photon[i].GenJetMinDR= fTR->GenPhotonPartonMindR[index];
 			}
 		}
+		if(IsGoodPhotonEGMLoose(fPhotons[i]) && fTR->PhoPt[fPhotons[i]]>25.) ++num_phot;
 		// exit code meaning:  
 		//                     0 = matched to particle that is not a photon -> fake
 		//                     1 = photon  with status 3 quark or gluon as mother (hard scatter) (gluon happens, though gamma does not have color..)
@@ -449,7 +451,8 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		//                     3 = other particle, i.e. showering.. 
 		//                     negative values: no MC match. 
 	}
-	
+	fMT2tree->SetNPhotonsIDLoose25((Int_t)num_phot);
+
 	
 	
 	// --------------------------------------------------------------
@@ -533,9 +536,10 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		if(fTR->TauTightMuonRejection[fTaus[i]]  > 0.5)
 		fMT2tree->tau[i].MuonRej= 3;
 
-		fMT2tree->tau[i].isLooseID = fMT2tree->tau[i].IsGoodTau(20, 2.1, 2, 3, 3);
+		fMT2tree->tau[i].isLooseID = fMT2tree->tau[i].IsGoodTau(20, 2.3, 2, 3, 3);
 	}
-	fMT2tree->SetNTausIDLoose  (fMT2tree->GetNTaus(20,2.1,2,3,3));
+	fMT2tree->SetNTausIDLoose  (fMT2tree->GetNTaus(20,2.3,2,3,3));
+	fMT2tree->SetNTausIDLoose2 (fMT2tree->GetNTaus(20,2.1,2,3,3));
 
 	
 	
@@ -1069,9 +1073,7 @@ void MT2Analysis::FillMT2treeCalculations(){
 				FSdown = SF;
 			}
 			jetEff.push_back(eff);
-			//define here total error and don't run FS in getBTagEventWeight//speeds things up ZZYYXX
-			if(fMT2tree->misc.isFastSim) jetEffErr.push_back(sqrt(efferr*efferr+FSerr*FSerr));
-			else           jetEffErr.push_back(efferr);
+			jetEffErr.push_back(efferr);
 			jetSF.push_back(SF);
 			if(fMT2tree->misc.isFastSim && FS==1) std::cout << "FS " << FS << " but it should be 1" << std::endl;
 			if(fMT2tree->misc.isFastSim && FSerr==0) std::cout << "FSerr " << FSerr << " but it should be 0" << std::endl;
@@ -1086,8 +1088,8 @@ void MT2Analysis::FillMT2treeCalculations(){
 		if(njetsusuable>0){//event has enough jets
 			float SFweight, SFweightErr;
 			bool usestaterr     = false;//SFerror really only due to SF
-			bool fastsimulation = fMT2tree->misc.isFastSim;//choose this way, see above ZZYYXX
-			//bool fastsimulation = fisFastSim;//and choose NOT this way, see above ZZYYXX
+			bool fastsimulation = fMT2tree->misc.isFastSim;//choose this way
+			//bool fastsimulation = fisFastSim;            //and choose NOT this way
 			SFweight = getBTagEventWeightErrorTotal(SFweightErr, jetEff, jetEffErr, jetSF, jetSFBCDown, jetSFBCUp, jetSFLDown, jetSFLUp, jetFSDown, jetFSUp, usestaterr, fastsimulation, 0);
 			fMT2tree->SFWeight.BTagCSV40eq0      = SFweight;
 			fMT2tree->SFWeight.BTagCSV40eq0Error = SFweightErr;
@@ -1152,7 +1154,8 @@ void MT2Analysis::FillMT2treeCalculations(){
 		vector<float> muoSFUp;    muoSFUp.clear();
 		vector<float> muoSFDown;  muoSFDown.clear();
 		int ntaususuable = 0;
-		for(int n = 0; n<fMT2tree->NJets; ++n){//not NTaus
+		for(int n = 0; n<fMT2tree->NJets; ++n){//not NTaus, basic selection is jets from which tau collection is created
+			//note this is not perfect as jet-pT has not to be equal to matched tau-pt.
 			//if(fMT2tree->tau[n].isLooseID==false) continue;
 			float effPt   = fMT2tree->jet[n].lv.Pt();
 			if(effPt<20) continue;
@@ -1213,15 +1216,15 @@ void MT2Analysis::FillMT2treeCalculations(){
 				if(existing) eff    = htaueff->GetBinContent(htaueff->FindBin(TMath::Min(effPt,(float)80.)));
 				else eff    = 0.42;
 			}
-			if(kind==1){
+			if(kind==2){
 				if(existing) eff    = heleeff->GetBinContent(htaueff->FindBin(TMath::Min(effEta,(float)2.3)));
-				else eff    = 0.18;
+				else eff    = 0.001;
 			}
 			if(kind==3){
 				if(existing) eff    = hmuoeff->GetBinContent(htaueff->FindBin(TMath::Min(effEta,(float)2.3)));
 				else eff    = 0.0002;
 			}
-			else {
+			else {//set it to fake tau rate
 				if(existing) eff    = hjeteff->GetBinContent(htaueff->FindBin(TMath::Min(effPt,(float)200.)));
 				else eff    = 0.03;
 			}
@@ -1326,7 +1329,7 @@ void MT2Analysis::GetLeptonJetIndices(){
 	vector<float> photon_pts;
 	for(int i=0; i<fTR->NPhotons; ++i){
 		if(! IsGoodPhoton(i))                             continue; 
-		if(! IsGoodPhotonEGMLooseRelISO(i))               continue;   // preselection: use only photons passing the loose RelIso
+		if(! IsGoodPhotonEGMLoose(i))                     continue;   // preselection: use only photons passing the loose ID
 		fPhotons.push_back(i);
 		photon_pts.push_back(fTR->PhoPt[i]);
 		fPhotonJetOverlapRemoved.push_back(false);
@@ -1590,10 +1593,17 @@ bool MT2Analysis::IsGoodMT2Muon(const int index){
 	if ( !fTR->MuIsGlobalMuon[index] )         return false;
 	if ( !fTR->MuIsPFMuon[index] )             return false;  // optional cut 
 	// Hits
-	if ( !(fTR->MuNChi2[index] < 10) )         return false;
-	if ( !(fTR->MuNMuHits[index] > 0) )        return false;   //  muon.outerTrack()->hitPattern().numberOfValidHits()
+	if ( !(fTR->MuNChi2[index] < 10) )         return false;   //  muon.globalTrack()->normalizedChi2()
+//	The two lines below are wrong - we want //  muon.globalTrack()->hitPattern().numberOfValidMuonHits()
+//	not in ETHntuples: for now we choose fTR->MuNGlHits[index], as SS does!!
+//	if ( !(fTR->MuNMuHits[index] > 0) )        return false;   //  muon.outerTrack()->hitPattern().numberOfValidHits()
+	if ( !(fTR->MuNGlHits[index] > 0) )        return false;   //  muon.globalTrack()->hitPattern().numberOfValidHits()
 	if ( !(fTR->MuNPxHits[index] > 0) )        return false;   //  muon.innerTrack()->hitPattern().numberOfValidPixelHits()
-	if ( !(fTR->MuNMatches[index] > 1) )       return false;   //  numberOfMatches()
+//	if ( !(fTR->MuNMatches[index]>1) )         return false;   //  numberOfMatches()
+	if ( !(fTR->MuNMatchedStations[index]>1) ) return false;   // muon.numberOfMatchedStations()       
+//	if(fTR->MuNMatchedStations.size() > 0) {   //Marc does it that way - why
+//	    if(!(fTR->MuNMatchedStations[index]>1))return false;   // muon.numberOfMatchedStations()       
+//	}
 	if ( !(fTR->MuNSiLayers[index] > 5) )      return false;   //  track()->hitPattern().trackerLayersWithMeasurement() 
 	// Vertex compatibility
 	if ( !(fabs(fTR->MuD0PV[index]) < 0.2 ) )  return false;
@@ -1618,7 +1628,7 @@ float MT2Analysis::MuPFIso04(const int index){
 //***************************************************************************************************
 // Electron Selector
 bool MT2Analysis::IsGoodMT2ElectronVetoID(const int index){
-  	if(!(fabs(fTR->ElEta[index]) < 2.4) ) return false;
+  	if(!(fabs(fTR->ElEta[index]) < 2.4) )  return false;
   	if(!(fabs(fTR->ElPt[index]) > 10.0 ) ) return false;
 
   	// ECAL gap veto
@@ -1631,9 +1641,9 @@ bool MT2Analysis::IsGoodMT2ElectronVetoID(const int index){
 		if(!(fTR->ElSigmaIetaIeta[index]<0.01))                    return false;
 		if(!(fTR->ElHcalOverEcal[index]<0.15))                     return false;
 	} else { // Endcap
-		if(!(fabs(fTR->ElDeltaEtaSuperClusterAtVtx[index])<0.01)) return false;
-		if(!(fabs(fTR->ElDeltaPhiSuperClusterAtVtx[index])<0.7))  return false;
-		if(!(fTR->ElSigmaIetaIeta[index]<0.03))                   return false;
+		if(!(fabs(fTR->ElDeltaEtaSuperClusterAtVtx[index])<0.01))  return false;
+		if(!(fabs(fTR->ElDeltaPhiSuperClusterAtVtx[index])<0.7))   return false;
+		if(!(fTR->ElSigmaIetaIeta[index]<0.03))                    return false;
 	}
   
 	// Vertex
@@ -1649,7 +1659,7 @@ bool MT2Analysis::IsGoodMT2ElectronVetoID(const int index){
 }
 
 bool MT2Analysis::IsGoodMT2ElectronLooseID(const int index){
-  	if(!(fabs(fTR->ElEta[index]) < 2.4) ) return false;
+  	if(!(fabs(fTR->ElEta[index]) < 2.4) )  return false;
   	if(!(fabs(fTR->ElPt[index]) > 10.0 ) ) return false;
 
   	// ECAL gap veto
@@ -1660,20 +1670,20 @@ bool MT2Analysis::IsGoodMT2ElectronLooseID(const int index){
 		if(!(fabs(fTR->ElDeltaEtaSuperClusterAtVtx[index])<0.007)) return false;
 		if(!(fabs(fTR->ElDeltaPhiSuperClusterAtVtx[index])<0.15))  return false;
 		if(!(fTR->ElSigmaIetaIeta[index]<0.01))                    return false;
-		if(!(fTR->ElHcalOverEcal[index]<0.12)) return false;
+		if(!(fTR->ElHcalOverEcal[index]<0.12))                     return false;
 	} else { // Endcap
 		if(!(fabs(fTR->ElDeltaEtaSuperClusterAtVtx[index])<0.009)) return false;
 		if(!(fabs(fTR->ElDeltaPhiSuperClusterAtVtx[index])<0.10))  return false;
-		if(!(fTR->ElSigmaIetaIeta[index]<0.03)) return false;
-		if(!(fTR->ElHcalOverEcal[index]<0.10)) return false;
+		if(!(fTR->ElSigmaIetaIeta[index]<0.03))                    return false;
+		if(!(fTR->ElHcalOverEcal[index]<0.10))                     return false;
 	}
   
 	// Vertex
 	if(!(abs(fTR->ElD0PV[index])<0.02)) return false;
-	if(!(abs(fTR->ElDzPV[index])<0.2)) return false;
+	if(!(abs(fTR->ElDzPV[index])<0.2))  return false;
 
 	// Conversion rejection
-  	if(!(fTR->ElPassConversionVeto[index])) return false;
+  	if(!(fTR->ElPassConversionVeto[index]))          return false;
  	if(!(fTR->ElNumberOfMissingInnerHits[index]<=1)) return false;
 
 	// |1/e-1/p|<0.05
@@ -1693,7 +1703,7 @@ bool MT2Analysis::IsGoodMT2ElectronLooseID(const int index){
 }
 
 bool MT2Analysis::IsGoodMT2ElectronMediumID(const int index){
-  	if(!(fabs(fTR->ElEta[index]) < 2.4) ) return false;
+  	if(!(fabs(fTR->ElEta[index]) < 2.4) )  return false;
   	if(!(fabs(fTR->ElPt[index]) > 10.0 ) ) return false;
 
   	// ECAL gap veto
@@ -1704,20 +1714,20 @@ bool MT2Analysis::IsGoodMT2ElectronMediumID(const int index){
 		if(!(fabs(fTR->ElDeltaEtaSuperClusterAtVtx[index])<0.004)) return false;
 		if(!(fabs(fTR->ElDeltaPhiSuperClusterAtVtx[index])<0.06))  return false;
 		if(!(fTR->ElSigmaIetaIeta[index]<0.01))                    return false;
-		if(!(fTR->ElHcalOverEcal[index]<0.12)) return false;
+		if(!(fTR->ElHcalOverEcal[index]<0.12))                     return false;
 	} else { // Endcap
 		if(!(fabs(fTR->ElDeltaEtaSuperClusterAtVtx[index])<0.007)) return false;
 		if(!(fabs(fTR->ElDeltaPhiSuperClusterAtVtx[index])<0.03))  return false;
-		if(!(fTR->ElSigmaIetaIeta[index]<0.03)) return false;
-		if(!(fTR->ElHcalOverEcal[index]<0.10)) return false;
+		if(!(fTR->ElSigmaIetaIeta[index]<0.03))                    return false;
+		if(!(fTR->ElHcalOverEcal[index]<0.10))                     return false;
 	}
   
 	// Vertex
 	if(!(abs(fTR->ElD0PV[index])<0.02)) return false;
-	if(!(abs(fTR->ElDzPV[index])<0.1)) return false;
+	if(!(abs(fTR->ElDzPV[index])<0.1))  return false;
 
 	// Conversion rejection
-  	if(!(fTR->ElPassConversionVeto[index])) return false;
+  	if(!(fTR->ElPassConversionVeto[index]))          return false;
  	if(!(fTR->ElNumberOfMissingInnerHits[index]<=1)) return false;
 
 	// |1/e-1/p|<0.05
@@ -1740,7 +1750,8 @@ float MT2Analysis::ElePFIso(const int index){
 	// Isolation: EffArea corrected, with cone size 03
 	// see here: https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation
 	double  neutral = fTR->ElEventelPFIsoValueNeutral03PFIdStandard[index] + fTR->ElEventelPFIsoValueGamma03PFIdStandard[index];
-	double  rhocorr = fTR->RhoForIso * EffArea(fTR->ElEta[index]);
+//	double  rhocorr = fTR->RhoForIso * EffArea(fTR->ElEta[index]);
+	double  rhocorr = fTR->Rho * EffArea(fTR->ElEta[index]);
 	float   iso = ( fTR->ElEventelPFIsoValueCharged03PFIdStandard[index] + TMath::Max(0., neutral - rhocorr) )/ fTR->ElPt[index];
 	return iso;
 }
@@ -1749,7 +1760,8 @@ float MT2Analysis::ElePFIso04(const int index){
 	// Isolation: EffArea corrected, with cone size 03
 	// see here: https://twiki.cern.ch/twiki/bin/view/CMS/EgammaPFBasedIsolation
 	double  neutral = fTR->ElEventelPFIsoValueNeutral04PFIdStandard[index] + fTR->ElEventelPFIsoValueGamma04PFIdStandard[index];
-	double  rhocorr = fTR->RhoForIso * EffArea(fTR->ElEta[index]);
+	double  rhocorr = fTR->Rho * EffArea(fTR->ElEta[index]);
+//	double  rhocorr = fTR->RhoForIso * EffArea(fTR->ElEta[index]);
 	float   iso = ( fTR->ElEventelPFIsoValueCharged04PFIdStandard[index] + TMath::Max(0., neutral - rhocorr) )/ fTR->ElPt[index];
 	return iso;
 }
@@ -1780,71 +1792,142 @@ const float MT2Analysis::EffArea04(float abseta) {//for cone of 03
 
 //****************************************************************************************************
 // Photon Selectors
-// see https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedPhotonID2012 <-- what are the correct iso variables ask Marco or Nicholas
+// see https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedPhotonID2012
 
-bool MT2Analysis::IsGoodPhotonEGMLooseID(int i){
-	// EGM-10-006 Loose Photon selection
-	bool isGood(true);
-	if(!IsGoodPhoton(i)                                                    ) isGood=false;
-	if( fabs(fTR->PhoEta[i]) < 1.4442 && fTR->PhoSigmaIetaIeta[i] > 0.01   ) isGood=false;
-	if( fabs(fTR->PhoEta[i]) > 1.566  && fTR->PhoSigmaIetaIeta[i] > 0.03   ) isGood=false;
-	if( fTR->PhoHoverE[i]   > 0.05                                         ) isGood=false; // H/E cut
-	return isGood;
-}
-bool MT2Analysis::IsGoodPhotonEGMLooseISO(int i){
-	// EGM-10-006 Loose Photon selection
-	bool isGood(true);
-	if(!IsGoodPhoton(i)                                                    ) isGood=false;
-	if( fTR->PhoIso04TrkHollow[i] > 2.0                                    ) isGood=false; // trk Iso
-	if( fTR->PhoIso04Ecal[i] > 4.2                                         ) isGood=false; // Ecal ISo
-	if( fTR->PhoIso04Hcal[i] > 2.2                                         ) isGood=false; // Hcal Iso
-	return isGood;
-}
-bool MT2Analysis::IsGoodPhotonEGMLooseRelISO(int i){
-	// e.g. CMS AN AN-2011/033
-	bool isGood(true);
+bool MT2Analysis::IsGoodPhotonEGMTight(int i){
+	if(!IsGoodPhoton(i)                        ) return false;
 	float pt = fTR->PhoPt[i];
-	if(!IsGoodPhoton(i)                                                     ) isGood=false;
-	if( fTR->PhoIso04TrkHollow[i] > (2.0 + 0.001*pt)                        ) isGood=false; // trk Iso
-	if( fTR->PhoIso04Ecal[i]      > (4.2 + 0.003*pt)                        ) isGood=false; // Ecal ISo
-	if( fTR->PhoIso04Hcal[i]      > (2.2 + 0.001*pt)                        ) isGood=false; // Hcal Iso
-	return isGood;
-}
-bool MT2Analysis::IsGoodPhotonEGMTightID(int i){
-	// EGM-10-006 Loose Photon selection
-	bool isGood(true);
-	if(!IsGoodPhoton(i)                                                    ) isGood=false;
-	if( fabs(fTR->PhoEta[i]) < 1.4442 && fTR->PhoSigmaIetaIeta[i] > 0.01   ) isGood=false;
-	if( fabs(fTR->PhoEta[i]) > 1.566  && fTR->PhoSigmaIetaIeta[i] > 0.028  ) isGood=false;
-	if( fTR->PhoHoverE[i]   > 0.03                                         ) isGood=false; // H/E cut
-	return isGood;
-}
-bool MT2Analysis::IsGoodPhotonEGMTightISO(int i){
-	// EGM-10-006 Loose Photon selection
-	bool isGood(true);
-	if(!IsGoodPhoton(i)                                                    ) isGood=false;
-	if( fTR->PhoIso04TrkHollow[i] > 0.9                                    ) isGood=false; // trk Iso
-	if( fTR->PhoIso04Ecal[i] > 2.4                                         ) isGood=false; // Ecal ISo
-	if( fTR->PhoIso04Hcal[i] > 1.0                                         ) isGood=false; // Hcal Iso
-	return isGood;
-}
-
-bool MT2Analysis::IsGoodPhoton(int i){
-	if( fTR->PhoPt[i] < 20                                                 ) return false; // pt cut
-	if( fabs(fTR->PhoEta[i])> 2.4                                          ) return false;
-	if( fabs(fTR->PhoEta[i])> 1.4442 && fabs(fTR->PhoEta[i])<1.566         ) return false; // veto EB-EE gap
-	if( fTR->PhoHoverE[i]   > 0.05                                         ) return false; // H/E cut
-	if( fTR->PhoHasPixSeed[i]==1                                           ) return false; // veto pixel seed for electron rejection 
+	float abseta = fabs(fTR->PhoEta[i]);
+	float chhadiso  = TMath::Max(fTR->PhoNewIsoPFCharged[i] - fTR->Rho * EffAreaChargedHad(abseta),(float)0.);
+	float chneuiso  = TMath::Max(fTR->PhoNewIsoPFNeutral[i] - fTR->Rho * EffAreaNeutralHad(abseta),(float)0.);
+	float photoniso = TMath::Max(fTR->PhoNewIsoPFPhoton[i]  - fTR->Rho * EffAreaPhoton(    abseta),(float)0.);
+	if(abseta<1.442){//EB
+		if(fTR->PhoSigmaIetaIeta[i] > 0.011) return false;
+		if(chhadiso  >  0.7                ) return false;
+		if(chneuiso  > (0.4 + 0.04  * pt)  ) return false;
+		if(photoniso > (0.5 + 0.005 * pt)  ) return false;
+	}
+	if(abseta>1.566){//EE
+		if(fTR->PhoSigmaIetaIeta[i] > 0.031) return false;
+		if(chhadiso  >  0.5                ) return false;
+		if(chneuiso  > (1.5 + 0.04  * pt)  ) return false;
+		if(photoniso > (1.0 + 0.005 * pt)  ) return false;
+	}
 	return true;
 }
 
+bool MT2Analysis::IsGoodPhotonEGMMedium(int i){
+	if(!IsGoodPhoton(i)                        ) return false;
+	float pt = fTR->PhoPt[i];
+	float abseta = fabs(fTR->PhoEta[i]);
+	float chhadiso  = TMath::Max(fTR->PhoNewIsoPFCharged[i] - fTR->Rho * EffAreaChargedHad(abseta),(float)0.);
+	float chneuiso  = TMath::Max(fTR->PhoNewIsoPFNeutral[i] - fTR->Rho * EffAreaNeutralHad(abseta),(float)0.);
+	float photoniso = TMath::Max(fTR->PhoNewIsoPFPhoton[i]  - fTR->Rho * EffAreaPhoton(    abseta),(float)0.);
+	if(abseta<1.442){//EB
+		if(fTR->PhoSigmaIetaIeta[i] > 0.011) return false;
+		if(chhadiso  >  1.5                ) return false;
+		if(chneuiso  > (1.0 + 0.04  * pt)  ) return false;
+		if(photoniso > (0.7 + 0.005 * pt)  ) return false;
+	}
+	if(abseta>1.566){//EE
+		if(fTR->PhoSigmaIetaIeta[i] > 0.033) return false;
+		if(chhadiso  >  1.2                ) return false;
+		if(chneuiso  > (1.5 + 0.04  * pt)  ) return false;
+		if(photoniso > (1.0 + 0.005 * pt)  ) return false;
+	}
+	return true;
+}
+
+bool MT2Analysis::IsGoodPhotonEGMLoose(int i){
+	if(!IsGoodPhoton(i)                        ) return false;
+	float pt = fTR->PhoPt[i];
+	float abseta = fabs(fTR->PhoEta[i]);
+	float chhadiso  = TMath::Max(fTR->PhoNewIsoPFCharged[i] - fTR->Rho * EffAreaChargedHad(abseta),(float)0.);
+	float chneuiso  = TMath::Max(fTR->PhoNewIsoPFNeutral[i] - fTR->Rho * EffAreaNeutralHad(abseta),(float)0.);
+	float photoniso = TMath::Max(fTR->PhoNewIsoPFPhoton[i]  - fTR->Rho * EffAreaPhoton(    abseta),(float)0.);
+	if(abseta<1.442){//EB
+		if(fTR->PhoSigmaIetaIeta[i] > 0.012) return false;
+		if(chhadiso  >  2.6                ) return false;
+		if(chneuiso  > (3.5 + 0.04  * pt)  ) return false;
+		if(photoniso > (1.3 + 0.005 * pt)  ) return false;
+	}
+	else if(abseta>1.566){//EE
+		if(fTR->PhoSigmaIetaIeta[i] > 0.034) return false;
+		if(chhadiso  >  2.3                ) return false;
+		if(chneuiso  > (2.9 + 0.04  * pt)  ) return false;
+		//no photoniso here
+	}
+	else return false;
+	return true;
+}
+
+bool MT2Analysis::IsGoodPhoton(int i){//new
+	if( fTR->PhoPt[i] < 20                                                 ) return false; // pt cut
+	if( fabs(fTR->PhoEta[i])> 2.4                                          ) return false;
+	if( fabs(fTR->PhoEta[i])> 1.4442 && fabs(fTR->PhoEta[i])<1.566         ) return false; // veto EB-EE gap
+	float HoverE = SingleTowerHoverE(i);
+	if( HoverE < 0                                                         ) return false; // H/E not calculable due missing matched SC
+	if( HoverE> 0.05                                                       ) return false; // H/E cut for 2012
+	if(!(fTR->PhoPassConversionVeto[i])                                    ) return false; // Conversion safe electron veto
+	return true;
+}
+
+float MT2Analysis::SingleTowerHoverE(int i){ // want photon.hadTowOverEm()
+	float hcaliso = fTR->PhoHCalIso2012ConeDR03[i];//PhoHCalIso2012ConeDR03 = photon.hcalTowerSumEtConeDR03() + (photon.hadronicOverEm() - photon.hadTowOverEm())*photon.superCluster()->energy()/cosh(photon.superCluster()->eta());
+	int SCind = fTR->PhotSCindex[i];
+	if(SCind<0) return -1;//cannot find matching supercluster
+	float SCenergy  = fTR->SCEnergy[SCind];
+	float SCeta     = fTR->SCEta[SCind];
+	float HadOverEm = fTR->PhoHoverE[i];
+	float Iso03Hcal = fTR->PhoIso03Hcal[i];
+	float HoverE2012 = hcaliso - Iso03Hcal;
+	HoverE2012 = HoverE2012 * TMath::CosH(SCeta);
+	HoverE2012 = HoverE2012 / SCenergy;
+	HoverE2012 = -HoverE2012 + HadOverEm;
+	if(TMath::IsNaN(HoverE2012)) return -1;//if something went wrong
+	return HoverE2012;
+}
+
+const float MT2Analysis::EffAreaChargedHad(float abseta){
+	abseta=fabs(abseta); // making sure we're looking at |eta|
+	if(abseta<1.0)   return 0.012;
+	if(abseta<1.479) return 0.010;
+	if(abseta<2.0)   return 0.014;
+	if(abseta<2.2)   return 0.012;
+	if(abseta<2.3)   return 0.016;
+	if(abseta<2.4)   return 0.020;
+	return 0.012;
+}
+
+const float MT2Analysis::EffAreaNeutralHad(float abseta){
+	abseta=fabs(abseta); // making sure we're looking at |eta|
+	if(abseta<1.0)   return 0.030;
+	if(abseta<1.479) return 0.057;
+	if(abseta<2.0)   return 0.039;
+	if(abseta<2.2)   return 0.015;
+	if(abseta<2.3)   return 0.024;
+	if(abseta<2.4)   return 0.039;
+	return 0.072;
+}
+
+const float MT2Analysis::EffAreaPhoton(float abseta){
+	abseta=fabs(abseta); // making sure we're looking at |eta|
+	if(abseta<1.0)   return 0.148;
+	if(abseta<1.479) return 0.130;
+	if(abseta<2.0)   return 0.112;
+	if(abseta<2.2)   return 0.216;
+	if(abseta<2.3)   return 0.262;
+	if(abseta<2.4)   return 0.260;
+	return 0.266;
+}
+
 //***************************************************************************************************
-// Electron Selector
+// Tau Selector
 bool MT2Analysis::IsGoodTauLooseID(int i){
        if(fTR->TauPt[i]                          < 20.0         ) return false;    
        if(fabs(fTR->TauEta[i])                   > 2.3          ) return false;
        if(fTR->TauDecayModeFinding[i]            < 0.5          ) return false;  
-       if(fTR->TauLooseElectronRejection[i]      < 0.5          ) return false;  
+       if(fTR->TauLooseElectronRejection[i]      < 2.5          ) return false;  
        if(fTR->TauLooseMuonRejection[i]          < 2.5          ) return false;  
        if(fTR->TauVLooseCombinedIsoDBSumPtCorr[i]< 1.5          ) return false;
        return true;
@@ -1866,8 +1949,8 @@ bool MT2Analysis::IsGoodTau(int i){
 
 // Jets and JES uncertainty
 void MT2Analysis::Initialize_JetCorrectionUncertainty(){
-	string PF  ="/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+ (fisCHSJets?"_Uncertainty_AK5PFchs.txt":"_Uncertainty_AK5PF.txt");
-	string Calo="/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+"_Uncertainty_AK5Calo.txt";
+	string PF  ="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+ (fisCHSJets?"_Uncertainty_AK5PFchs.txt":"_Uncertainty_AK5PF.txt");
+	string Calo="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+"_Uncertainty_AK5Calo.txt";
 
 	ifstream fileCalo(Calo.c_str());
 	ifstream filePF  (PF.c_str());
@@ -1881,13 +1964,13 @@ void MT2Analysis::Initialize_JetCorrectionUncertainty(){
 }
 
 void MT2Analysis::Initialize_JetEnergyCorrection(){
-	string Calo_L2  ="/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+"_L2Relative_AK5Calo.txt";
-	string Calo_L3  ="/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+"_L3Absolute_AK5Calo.txt";
-	string Calo_RES ="/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+"_L2L3Residual_AK5Calo.txt";
-	string PF_L1    ="/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+(fisCHSJets?"_L1FastJet_AK5PFchs.txt"    :"_L1FastJet_AK5PF.txt");
-	string PF_L2    ="/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+(fisCHSJets?"_L2Relative_AK5PFchs.txt"   :"_L2Relative_AK5PF.txt");
-	string PF_L3    ="/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+(fisCHSJets?"_L3Absolute_AK5PFchs.txt"   :"_L3Absolute_AK5PF.txt");
-	string PF_RES   ="/shome/pnef/MT2Analysis/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+(fisCHSJets?"_L2L3Residual_AK5PFchs.txt" :"_L2L3Residual_AK5PF.txt");
+	string Calo_L2  ="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+"_L2Relative_AK5Calo.txt";
+	string Calo_L3  ="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+"_L3Absolute_AK5Calo.txt";
+	string Calo_RES ="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+"_L2L3Residual_AK5Calo.txt";
+	string PF_L1    ="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+(fisCHSJets?"_L1FastJet_AK5PFchs.txt"    :"_L1FastJet_AK5PF.txt");
+	string PF_L2    ="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+(fisCHSJets?"_L2Relative_AK5PFchs.txt"   :"_L2Relative_AK5PF.txt");
+	string PF_L3    ="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+(fisCHSJets?"_L3Absolute_AK5PFchs.txt"   :"_L3Absolute_AK5PF.txt");
+	string PF_RES   ="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+(fisCHSJets?"_L2L3Residual_AK5PFchs.txt" :"_L2L3Residual_AK5PF.txt");
 
 	ifstream fileCaloL2  (Calo_L2.c_str());
 	ifstream fileCaloL3  (Calo_L3.c_str());

@@ -21,6 +21,7 @@ public:
   Bool_t   isData;
   Bool_t   isCHSJets;
   Bool_t   isType1MET;
+
   Bool_t   isFastSim;
   Int_t    Run;
   Int_t    Event;
@@ -30,7 +31,7 @@ public:
   Int_t    Jet1Pass;
   Int_t    PassJetID;
   Int_t    PassJet40ID;
-  Int_t    PassJet30ID;
+  Int_t    PassJet30ID;//can probably be deleted soon, again? (common object definition hadronic analyses)
   Float_t  MT2;
   Float_t  MT2jet40;
   Float_t  MCT;
@@ -50,7 +51,7 @@ public:
   Float_t  MinMetBJetDPhi;
   Float_t  QCDPartonicHT;
   Float_t  HT;
-  Float_t  pfHT30;
+  Float_t  pfHT30;//do we need all pfHTs
   Float_t  pfHT35;
   Float_t  pfHT40;
   Float_t  pfHT45;
@@ -68,6 +69,9 @@ public:
   Bool_t   eeBadScFlag;
   Bool_t   EcalDeadCellTriggerPrimitiveFlag;
   Bool_t   EcalLaserCorrFlag;
+  Bool_t   TrackingManyStripClusFlag;
+  Bool_t   TrackingTooManyStripClusFlag;
+  Bool_t   TrackingLogErrorTooManyClustersFlag;
   
   ClassDef(MT2Misc, 36)
 };
@@ -495,17 +499,18 @@ public:
   Float_t HcalIso;
   Float_t SigmaIEtaIEta;
   Float_t HoverE;
+  Float_t HoverE2012;
+  Float_t ChargedHadIso;
+  Float_t NeutralHadIso;
+  Float_t PhotonIso;
   Int_t   MCmatchexitcode;
   Float_t GenJetMinDR;
   Bool_t  JetRemoved;
-  Bool_t  isEGMlooseIso;
-  Bool_t  isEGMlooseRelIso;
-  Bool_t  isEGMtightIso;
-  Bool_t  isEGMlooseID;
-  Bool_t  isEGMtightID;
-  Bool_t  hasPixelSeed;
+  Bool_t  isLooseID;
+  Bool_t  isMediumID;
+  Bool_t  isTightID;
 
-  ClassDef(MT2Photon, 7)
+  ClassDef(MT2Photon, 8)
 };
 
 
@@ -575,19 +580,21 @@ public:
 
   void Reset();
 
-  void SetNJets         (int n);
-  void SetNGenJets      (int n);
-  void SetNJetsIDLoose  (int n);
-  void SetNBJetsCSVM    (int n);
-  void SetNBJetsCSVT    (int n);
-  void SetNBJets40CSVM  (int n);
-  void SetNBJets40CSVT  (int n);
-  void SetNEles         (int n);
-  void SetNMuons        (int n);
-  void SetNMuonsCommonIso(int n);
-  void SetNPhotons      (int n);
-  void SetNTaus         (int n);
-  void SetNTausIDLoose  (int n);
+  void SetNJets            (int n);
+  void SetNGenJets         (int n);
+  void SetNJetsIDLoose     (int n);
+  void SetNBJetsCSVM       (int n);
+  void SetNBJetsCSVT       (int n);
+  void SetNBJets40CSVM     (int n);
+  void SetNBJets40CSVT     (int n);
+  void SetNEles            (int n);
+  void SetNMuons           (int n);
+  void SetNMuonsCommonIso  (int n);
+  void SetNPhotons         (int n);
+  void SetNPhotonsIDLoose25(int n);
+  void SetNTaus            (int n);
+  void SetNTausIDLoose     (int n);
+  void SetNTausIDLoose2    (int n);
   
   // My functions here
   // NJets
@@ -708,10 +715,12 @@ public:
   Int_t   NBJets40CSVT;
   Int_t   NEles;
   Int_t   NMuons;
-  Int_t   NMuonsCommonIso;
+  Int_t   NMuonsCommonIso;//can be probably be deleted soon, again? (common object definition hadronic analyses)
   Int_t   NPhotons;
+  Int_t   NPhotonsIDLoose25;//can be probably be deleted soon, again? (common object definition hadronic analyses)
   Int_t   NTaus;
   Int_t   NTausIDLoose;
+  Int_t   NTausIDLoose2;//can be probably be deleted soon, again? (common object definition hadronic analyses)
   Int_t   NGenLepts;
   Int_t   NPdfs;
   Int_t GenProcessID;

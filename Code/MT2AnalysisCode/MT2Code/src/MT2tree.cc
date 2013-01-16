@@ -173,15 +173,19 @@ void MT2Trigger::Reset(){
 	HLT_PFNoPUHT350_v1 = false;
 	HLT_PFNoPUHT350_v2 = false;
 	HLT_PFNoPUHT350_v3 = false;
+	HLT_PFNoPUHT350_v4 = false;
 	HLT_PFNoPUHT650_v1 = false;
 	HLT_PFNoPUHT650_v2 = false;
 	HLT_PFNoPUHT650_v3 = false;
+	HLT_PFNoPUHT650_v4 = false;
 	HLT_PFNoPUHT700_v1 = false;
 	HLT_PFNoPUHT700_v2 = false;
 	HLT_PFNoPUHT700_v3 = false;
+	HLT_PFNoPUHT700_v4 = false;
 	HLT_PFNoPUHT750_v1 = false;
 	HLT_PFNoPUHT750_v2 = false;
 	HLT_PFNoPUHT750_v3 = false;
+	HLT_PFNoPUHT750_v4 = false;
 
 	// HT/HTMHT dataset
 	HLT_PFHT350_PFMET100_v3     = false;

@@ -172,15 +172,19 @@ public:
 	Bool_t HLT_PFNoPUHT350_v1;
 	Bool_t HLT_PFNoPUHT350_v2;
 	Bool_t HLT_PFNoPUHT350_v3;
+	Bool_t HLT_PFNoPUHT350_v4;
 	Bool_t HLT_PFNoPUHT650_v1;
 	Bool_t HLT_PFNoPUHT650_v2;
 	Bool_t HLT_PFNoPUHT650_v3;
+	Bool_t HLT_PFNoPUHT650_v4;
 	Bool_t HLT_PFNoPUHT700_v1;
 	Bool_t HLT_PFNoPUHT700_v2;
 	Bool_t HLT_PFNoPUHT700_v3;
+	Bool_t HLT_PFNoPUHT700_v4;
 	Bool_t HLT_PFNoPUHT750_v1;
 	Bool_t HLT_PFNoPUHT750_v2;
 	Bool_t HLT_PFNoPUHT750_v3;
+	Bool_t HLT_PFNoPUHT750_v4;
 
 	// HT/HTMHT dataset
 	Bool_t HLT_PFHT350_PFMET100_v3;
@@ -314,7 +318,7 @@ public:
 	Bool_t HLT_SingleEle_DiJet_MET;
 	Bool_t HLT_SingleEle_MET_MT;
 
-	ClassDef(MT2Trigger, 20);
+	ClassDef(MT2Trigger, 21);
 };
 
 // MT2Jet ----------------------------------

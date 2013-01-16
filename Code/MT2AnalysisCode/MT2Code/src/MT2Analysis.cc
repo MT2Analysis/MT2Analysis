@@ -158,15 +158,19 @@ void MT2Analysis::Begin(const char* filename){
 	  fTriggerMap["HLT_PFNoPUHT350_v1"] = &fMT2tree->trigger.HLT_PFNoPUHT350_v1;
 	  fTriggerMap["HLT_PFNoPUHT350_v2"] = &fMT2tree->trigger.HLT_PFNoPUHT350_v2;
 	  fTriggerMap["HLT_PFNoPUHT350_v3"] = &fMT2tree->trigger.HLT_PFNoPUHT350_v3;
+	  fTriggerMap["HLT_PFNoPUHT350_v4"] = &fMT2tree->trigger.HLT_PFNoPUHT350_v4;
 	  fTriggerMap["HLT_PFNoPUHT650_v1"] = &fMT2tree->trigger.HLT_PFNoPUHT650_v1;
 	  fTriggerMap["HLT_PFNoPUHT650_v2"] = &fMT2tree->trigger.HLT_PFNoPUHT650_v2;
 	  fTriggerMap["HLT_PFNoPUHT650_v3"] = &fMT2tree->trigger.HLT_PFNoPUHT650_v3;
+	  fTriggerMap["HLT_PFNoPUHT650_v4"] = &fMT2tree->trigger.HLT_PFNoPUHT650_v4;
 	  fTriggerMap["HLT_PFNoPUHT700_v1"] = &fMT2tree->trigger.HLT_PFNoPUHT700_v1;
 	  fTriggerMap["HLT_PFNoPUHT700_v2"] = &fMT2tree->trigger.HLT_PFNoPUHT700_v2;
 	  fTriggerMap["HLT_PFNoPUHT700_v3"] = &fMT2tree->trigger.HLT_PFNoPUHT700_v3;
+	  fTriggerMap["HLT_PFNoPUHT700_v4"] = &fMT2tree->trigger.HLT_PFNoPUHT700_v4;
 	  fTriggerMap["HLT_PFNoPUHT750_v1"] = &fMT2tree->trigger.HLT_PFNoPUHT750_v1;
 	  fTriggerMap["HLT_PFNoPUHT750_v2"] = &fMT2tree->trigger.HLT_PFNoPUHT750_v2;
 	  fTriggerMap["HLT_PFNoPUHT750_v3"] = &fMT2tree->trigger.HLT_PFNoPUHT750_v3;
+	  fTriggerMap["HLT_PFNoPUHT750_v4"] = &fMT2tree->trigger.HLT_PFNoPUHT750_v4;
 	  
 	  // HT/HTMHT dataset
 	  fTriggerMap["HLT_PFHT350_PFMET100_v3"]     = &fMT2tree->trigger.HLT_PFHT350_PFMET100_v3;

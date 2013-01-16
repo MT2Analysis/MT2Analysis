@@ -306,6 +306,8 @@ void MT2Trigger::Reset(){
 
 	// Photons
 	HLT_SinglePhotons               = false;
+	HLT_SinglePhoton70_HT400        = false;
+	HLT_SinglePhoton70_MET100       = false;
 	// Dileptons
 	HLT_DiElectrons                 = false;
 	HLT_DiMuons                     = false;

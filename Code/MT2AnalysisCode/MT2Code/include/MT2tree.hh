@@ -305,6 +305,8 @@ public:
 
 	// Photon
 	Bool_t HLT_SinglePhotons;
+	Bool_t HLT_SinglePhoton70_HT400;
+	Bool_t HLT_SinglePhoton70_MET100;
 	// Dileptons
 	Bool_t HLT_DiElectrons;
 	Bool_t HLT_DiMuons;

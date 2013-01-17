@@ -561,6 +561,91 @@ void MT2Photon::SetLV(const TLorentzVector v) {
   lv = v;
 }
 
+Bool_t MT2Photon::IsIsolated(int i){//0: loose, 1: medium, 3: tight
+	float pt = lv.Pt();
+	float abseta = fabs(lv.Eta());
+
+	if(i==0){
+	if(abseta<1.442){//EB
+		if(ChargedHadIso >  2.6                ) return false;
+		if(NeutralHadIso > (3.5 + 0.04  * pt)  ) return false;
+		if(PhotonIso     > (1.3 + 0.005 * pt)  ) return false;
+	}
+	if(abseta>1.566){//EE
+		if(ChargedHadIso >  2.3                ) return false;
+		if(NeutralHadIso > (2.9 + 0.04  * pt)  ) return false;
+	}
+	return true;
+	}
+	else if(i==1){
+	if(abseta<1.442){//EB
+		if(ChargedHadIso >  1.5                ) return false;
+		if(NeutralHadIso > (1.0 + 0.04  * pt)  ) return false;
+		if(PhotonIso     > (0.7 + 0.005 * pt)  ) return false;
+	}
+	if(abseta>1.566){//EE
+		if(ChargedHadIso >  1.2                ) return false;
+		if(NeutralHadIso > (1.5 + 0.04  * pt)  ) return false;
+		if(PhotonIso     > (1.0 + 0.005 * pt)  ) return false;
+	}
+	return true;
+	}
+	else if(i==2){
+	if(abseta<1.442){//EB
+		if(ChargedHadIso >  0.7                ) return false;
+		if(NeutralHadIso > (0.4 + 0.04  * pt)  ) return false;
+		if(PhotonIso     > (0.5 + 0.005 * pt)  ) return false;
+	}
+	if(abseta>1.566){//EE
+		if(ChargedHadIso >  0.5                ) return false;
+		if(NeutralHadIso > (1.5 + 0.04  * pt)  ) return false;
+		if(PhotonIso     > (1.0 + 0.005 * pt)  ) return false;
+	}
+	return true;
+	}
+	else return false;
+}
+
+Bool_t MT2Photon::IsID(int i, float minpt, float maxeta){//0: loose, 1: medium, 3: tight
+	float pt = lv.Pt();
+	float abseta = fabs(lv.Eta());
+
+	if( pt < minpt                     ) return false; // pt cut
+	if( abseta> maxeta                 ) return false;
+	if( abseta> 1.4442 && abseta<1.566 ) return false; // veto EB-EE gap
+	if( HoverE2012 < 0                 ) return false; // H/E not calculable due missing matched SC
+	if( HoverE2012> 0.05               ) return false; // H/E cut for 2012
+	// Conversion safe electron veto already preapplied
+	if(i==0){
+	if(abseta<1.442){//EB
+		if(SigmaIEtaIEta > 0.012) return false;
+	}
+	if(abseta>1.566){//EE
+		if(SigmaIEtaIEta > 0.034) return false;
+	}
+	return true;
+	}
+	else if(i==1){
+	if(abseta<1.442){//EB
+		if(SigmaIEtaIEta > 0.011) return false;
+	}
+	if(abseta>1.566){//EE
+		if(SigmaIEtaIEta > 0.033) return false;
+	}
+	return true;
+	}
+	else if(i==2){
+	if(abseta<1.442){//EB
+		if(SigmaIEtaIEta > 0.011) return false;
+	}
+	if(abseta>1.566){//EE
+		if(SigmaIEtaIEta > 0.031) return false;
+	}
+	return true;
+	}
+	else return false;
+}
+
 //MT2Tau ----------------------------------
 MT2Tau::MT2Tau(){
   Reset();
@@ -679,6 +764,7 @@ void MT2tree::Reset() {
   NTausIDLoose     = 0;
   NTausIDLoose2    = 0;
   NPhotons         = 0;
+  NPhotonsIDLoose  = 0;
   NPhotonsIDLoose25= 0;
   NGenLepts        = 0;
   NGenJets         = 0;
@@ -768,6 +854,10 @@ void MT2tree::SetNPhotons(int n) {
 
 void MT2tree::SetNPhotonsIDLoose25(int n) {
   NPhotonsIDLoose25 = n;
+}
+
+void MT2tree::SetNPhotonsIDLoose(int n) {
+  NPhotonsIDLoose = n;
 }
 
 void MT2tree::SetNMuons(int n) {

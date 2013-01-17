@@ -424,7 +424,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 
 	// -----------------------------------------------------------------
 	// Photons
-	int num_phot = 0;
+	int num_phot = 0; int num_phot25 = 0;
 	for(int i=0; i<fPhotons.size(); ++i){
 		fMT2tree->photon[i].lv.SetPtEtaPhiM(fTR->PhoPt[fPhotons[i]], fTR->PhoEta[fPhotons[i]], fTR->PhoPhi[fPhotons[i]], 0.);
 		fMT2tree->photon[i].TrkIso              =fTR->PhoIso04TrkHollow[fPhotons[i]];//should we keep detector isolation variables?
@@ -447,7 +447,8 @@ bool MT2Analysis::FillMT2TreeBasics(){
 				fMT2tree->photon[i].GenJetMinDR= fTR->GenPhotonPartonMindR[index];
 			}
 		}
-		if(IsGoodPhotonEGMLoose(fPhotons[i]) && fTR->PhoPt[fPhotons[i]]>25.) ++num_phot;
+		if(IsGoodPhotonEGMLoose(fPhotons[i]) ) ++num_phot;
+		if(IsGoodPhotonEGMLoose(fPhotons[i]) && fTR->PhoPt[fPhotons[i]]>25.) ++num_phot25;
 		// exit code meaning:  
 		//                     0 = matched to particle that is not a photon -> fake
 		//                     1 = photon  with status 3 quark or gluon as mother (hard scatter) (gluon happens, though gamma does not have color..)
@@ -455,7 +456,8 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		//                     3 = other particle, i.e. showering.. 
 		//                     negative values: no MC match. 
 	}
-	fMT2tree->SetNPhotonsIDLoose25((Int_t)num_phot);
+	fMT2tree->SetNPhotonsIDLoose25((Int_t)num_phot25);
+	fMT2tree->SetNPhotonsIDLoose((Int_t)num_phot);
 
 	
 	
@@ -1360,7 +1362,7 @@ void MT2Analysis::GetLeptonJetIndices(){
 	vector<float> photon_pts;
 	for(int i=0; i<fTR->NPhotons; ++i){
 		if(! IsGoodPhoton(i))                             continue; 
-		if(! IsGoodPhotonEGMLoose(i))                     continue;   // preselection: use only photons passing the loose ID
+	//	if(! IsGoodPhotonEGMLoose(i))                     continue;   // preselection: use only photons passing the loose ID
 		fPhotons.push_back(i);
 		photon_pts.push_back(fTR->PhoPt[i]);
 		fPhotonJetOverlapRemoved.push_back(false);

@@ -498,6 +498,8 @@ public:
 
   void Reset();
   void SetLV(const TLorentzVector v);
+  Bool_t IsIsolated(int i);
+  Bool_t IsID(int i, float minpt, float maxeta);
 
   TLorentzVector lv;
   Float_t TrkIso;
@@ -597,6 +599,7 @@ public:
   void SetNMuons           (int n);
   void SetNMuonsCommonIso  (int n);
   void SetNPhotons         (int n);
+  void SetNPhotonsIDLoose  (int n);
   void SetNPhotonsIDLoose25(int n);
   void SetNTaus            (int n);
   void SetNTausIDLoose     (int n);
@@ -723,6 +726,7 @@ public:
   Int_t   NMuons;
   Int_t   NMuonsCommonIso;//can be probably be deleted soon, again? (common object definition hadronic analyses)
   Int_t   NPhotons;
+  Int_t   NPhotonsIDLoose;
   Int_t   NPhotonsIDLoose25;//can be probably be deleted soon, again? (common object definition hadronic analyses)
   Int_t   NTaus;
   Int_t   NTausIDLoose;

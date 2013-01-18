@@ -43,8 +43,8 @@ mkdir -pv $WORKDIR
 
 ########## Set the CMSSW environment (for ROOT, mainly...)
 source $VO_CMS_SW_DIR/cmsset_default.csh
-setenv SCRAM_ARCH slc5_amd64_gcc434
-cd /shome/pnef/CMSSW/CMSSW_4_2_8/src
+setenv SCRAM_ARCH slc5_amd64_gcc462
+cd /shome/pnef/CMSSW/CMSSW_5_2_5/src
 cmsenv
 # Fix problem with DCache and ROOT
 setenv LD_LIBRARY_PATH /swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
@@ -65,11 +65,21 @@ if ( $SHLIB != "none" ) then
 	cd $WORKDIR
 	cp  $SKIMSCRIPT .
 	mkdir -pv $PREFIX
+
+#	# stupid hack 
+#	rm -rf /scratch/pnef/SHLIBtmp
+#	mkdir -vp /scratch/pnef/SHLIBtmp
+#	mv -v $SHLIB /scratch/pnef/SHLIBtmp
+#	set tmp = `ls -1 /scratch/pnef/SHLIBtmp`
+#	mv -v /scratch/pnef/SHLIBtmp/${tmp} $SHLIB
+#	rm -rf /scratch/pnef/SHLIBtmp
+	
 	set lnewfiles=()
 	foreach i ($lfiles)
 		echo "processing $i ++++++++++++++++++++++++++++++++++++++++++++++++++++"
 		echo "copying file $i to $WORKDIR"
 		dccp "$i" "$WORKDIR"
+		ls -l -h
 		set file = `echo $i | awk -F '/' '{print $(NF)}'`
 		root -l -b -q  $SCRIPT'("'$file'", "'$SHLIB'", "'$PREFIX'")'	
 		set lnewfiles = ($lnewfiles $PREFIX/$file)

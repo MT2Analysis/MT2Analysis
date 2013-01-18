@@ -112,7 +112,7 @@ def MT2PostProcessing():
 		for file in files.splitlines():
 			filelist += file + " " 
 		os.system("rm -rf "+logfile(subdir))
-		cmd = "qsub -q short.q -N "+sample(subdir)+" -o "+logfile(subdir)+" -j y  ./MT2PostProcessing.csh "
+		cmd = "qsub -q short.q -N MT2_"+sample(subdir)+" -o "+logfile(subdir)+" -j y  ./MT2PostProcessing.csh "
 		cmd = cmd + " "+ MT2tag + " "  + production(subdir) +  " "  + sample(subdir) 
 		if(options.shlib!= None):
 			cmd = cmd+ " " + options.shlib

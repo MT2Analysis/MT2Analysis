@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
 	bool isList = false;
 	TString outputdir = "TempOutput/";
 	TString filename  = "MassTree.root";
-	TString setofcuts = "default";
+	TString setofcuts = "nocuts";
 	string  puScenario = "noPU";
   	string  jsonFileName = "";
 	string  data_PileUp = "";

@@ -665,6 +665,10 @@ void MT2Tau::Reset(){
   Isolation     = -9999;
   ElectronRej   = -9999;
   MuonRej       = -9999;
+  Isolation3Hits= -9999;
+  IsolationMVA2 = -9999;
+  ElectronRejMVA3=-9999;
+  MuonRej2      = -9999;
   isLooseID     = 0;
 }
 

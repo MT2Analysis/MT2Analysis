@@ -442,6 +442,10 @@ public:
   Int_t    Isolation;
   Int_t    ElectronRej;
   Int_t    MuonRej;
+  Int_t    Isolation3Hits;
+  Int_t    IsolationMVA2;
+  Int_t    ElectronRejMVA3;
+  Int_t    MuonRej2;
   Bool_t   isLooseID;
   ClassDef(MT2Tau, 5)
 };

@@ -69,6 +69,10 @@ public:
 			         TString xtitle, const int nbins, const double *bins);
 	void GetShapes(TString var, TString cuts, int njets, int nleps, TString selection_name, TString HLT,
 			         TString xtitle, const int nbins, const double min, const double max);
+	void GetShapes(TString var, TString cuts, TString selection_name, TString HLT,
+			         TString xtitle, const int nbins, const double *bins);
+	void GetShapes(TString var, TString cuts, TString selection_name, TString HLT,
+			         TString xtitle, const int nbins, const double min, const double max);
 	int test;
 
 private:

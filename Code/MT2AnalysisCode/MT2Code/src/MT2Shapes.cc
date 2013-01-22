@@ -139,6 +139,24 @@ void MT2Shapes::GetShapes( TString var, TString cuts, int njets, int nleps, TStr
 	GetShapes(var, cuts, njets, nleps, selection_name, HLT, xtitle, nbins, bins);
 }
 
+void MT2Shapes::GetShapes( TString var, TString cuts, TString selection_name, TString HLT,
+		          TString xtitle, const int nbins, const double min, const double max){
+	
+	double bins[nbins];
+	bins[0] = min;
+	for(int i=1; i<=nbins; i++) bins[i] = min+i*(max-min)/nbins;
+	int nleps = -10; // no requirement
+	int njets = -10; // no requirement
+	GetShapes(var, cuts, njets, nleps, selection_name, HLT, xtitle, nbins, bins);
+}
+
+void MT2Shapes::GetShapes(TString var, TString cuts, TString selection_name, TString HLT,
+			  TString xtitle, const int nbins, const double *bins){
+
+	int nleps = -10; // no requirement
+	int njets = -10; // no requirement
+	GetShapes(var, cuts, njets, nleps, selection_name, HLT, xtitle, nbins, bins);
+}
 //________________________________________________________________________
 
 void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TString selection_name, TString HLT,

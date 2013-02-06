@@ -1092,14 +1092,15 @@ void MT2Analysis::FillMT2treeCalculations(){
 					FS = FastSimCorrectionFactor(FSerr,tagger,effflavour,effPt,effEta);//1 fits for all light jets
 				}
 			}
-			if(fMT2tree->misc.isFastSim && (FS>0 && FS<10)){
-				if(FS-FSerr>0) FSup   = SF/(FS-FSerr);
-				else           FSup   = SF/FS;
-				if(FS+FSerr>0) FSdown = SF/(FS+FSerr);
-				else           FSdown = SF/FS;
-				SF     = SF/FS;
-				SFup   = SFup/FS;
-				SFdown = SFdown/FS;
+			if(fMT2tree->misc.isFastSim && (FS>0 && FS<10)){//safety cut for crazy FS
+				//FS is e_full/e_fast --> if e_fast>e_full for Nb>=1 the weight should be smaller and for Nb==0 larger
+				if(FS+FSerr>0) FSup   = SF*(FS+FSerr);//don't allow negative values
+				else           FSup   = SF*FS;
+				if(FS-FSerr>0) FSdown = SF*(FS-FSerr);//don't allow negative values
+				else           FSdown = SF*FS;
+				SF     = SF*FS;//correct other SFup/down by FS factor
+				SFup   = SFup*FS;
+				SFdown = SFdown*FS;
 			}
 			else if(fMT2tree->misc.isFastSim){
 				FSup   = SF;

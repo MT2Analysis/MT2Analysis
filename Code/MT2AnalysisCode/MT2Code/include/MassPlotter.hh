@@ -74,6 +74,8 @@ public:
 	void SetMT2bAnalysis(bool isMT2bAnalysis){fMT2bAnalysis=isMT2bAnalysis;};
 	void SetEventsPerGeV(bool eventspergev){fEventsPerGeV=eventspergev;};
 	void SetPileUpReweight(bool PU){fPUReweight=PU; std::cout << "PU Reweighting =" << fPUReweight << std::endl;};
+	void SetbSFWeights(bool bSF){fbSFReWeight=bSF;};
+
 	
 	struct sample{
 		TString name;
@@ -250,6 +252,7 @@ private:
 	bool fMT2Analysis;
 	bool fEventsPerGeV;
 	bool fPUReweight;
+	bool fbSFReWeight;
 
 	MT2tree* fMT2tree;
 	TTree*   fTree;
@@ -319,7 +322,7 @@ private:
   //Few functions for debugging and ready for .tex printout
   void printYield();
 
-  void AddOverAndUnderFlow(TH1 * Histo);
+  void AddOverAndUnderFlow(TH1 * Histo, bool overflow=true, bool underflow=true);
   void Cout(int k, TH1F * Histo);
   void Cout(int k, TH2F * Histo);
 

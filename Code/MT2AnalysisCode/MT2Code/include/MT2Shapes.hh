@@ -41,6 +41,7 @@ public:
 	void SetDraw(bool draw){fDraw=draw;};
 	void SetWrite(bool write){fWrite=write;};
 	void SetPileUpWeights(bool pileup){fDoPileUpWeights=pileup;};
+	void SetbSFWeights(bool bSF){fbSFReWeight=bSF;};
 	void SetLogStream(std::ostringstream* stream){fLogStream=stream;};
 	void Print();
 
@@ -65,9 +66,9 @@ public:
 	void setVerbose(int v){ fVerbose = v;};
 	void setOutputDir(TString dir){ fOutputDir = Util::MakeOutputDir(dir); };
 	void setOutputFile(TString filename){ fOutputFile = Util::MakeOutputFile(fOutputDir + filename); };
-	void GetShapes(TString var, TString cuts, int njets, int nleps, TString selection_name, TString HLT,
+	void GetShapes(TString var, TString cuts, int njets, int nbjets, int nleps, TString selection_name, TString HLT,
 			         TString xtitle, const int nbins, const double *bins);
-	void GetShapes(TString var, TString cuts, int njets, int nleps, TString selection_name, TString HLT,
+	void GetShapes(TString var, TString cuts, int njets, int nbjets, int nleps, TString selection_name, TString HLT,
 			         TString xtitle, const int nbins, const double min, const double max);
 	void GetShapes(TString var, TString cuts, TString selection_name, TString HLT,
 			         TString xtitle, const int nbins, const double *bins);
@@ -87,13 +88,14 @@ private:
 	bool fWrite;
 	bool fCout;
 	bool fDoPileUpWeights;
+	bool fbSFReWeight;
 	std::ostringstream* fLogStream;
 
 	MT2tree* fMT2tree;
 	TTree*   fTree;
 
 	void DrawHisto(TH1* h_orig, TString canvname,  Option_t *drawopt);
-	void FixOverAndUnderflowBins(TH1D* h);
+	void FixOverAndUnderflowBins(TH1D* h, bool overflow=true, bool underflow=true);
 
 };
 

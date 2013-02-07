@@ -62,6 +62,7 @@ MT2Shapes::MT2Shapes(){
 	fWrite       =true;
 	fCout        =true;
 	fDoPileUpWeights = true;
+	fbSFReWeight =true;
 	fLogStream   =new std::ostringstream();
 // Default constructor, no samples are set
 }
@@ -74,6 +75,7 @@ MT2Shapes::MT2Shapes(TString outputdir){
 	fDraw        =false;
 	fWrite       =true;
 	fDoPileUpWeights = true;
+	fbSFReWeight =true;
 	fCout        =true;
 	fLogStream   =new std::ostringstream();
 }
@@ -88,6 +90,7 @@ MT2Shapes::MT2Shapes(TString outputdir, TString outputfile){
 	fWrite       =true;
 	fCout        =true;
 	fDoPileUpWeights = true;
+	fbSFReWeight =true;
 	fLogStream   =new std::ostringstream();
 }
 //____________________________________________________________________________
@@ -105,6 +108,7 @@ MT2Shapes::MT2Shapes(TString outputdir, TString outputfile, std::ostringstream* 
 	fDraw        =false;
 	fWrite       =true;
 	fDoPileUpWeights = true;
+	fbSFReWeight =true;
 }
 
 
@@ -130,13 +134,13 @@ void MT2Shapes::init(TString filename){
 }
 
 //____________________________________________________________________________
-void MT2Shapes::GetShapes( TString var, TString cuts, int njets, int nleps, TString selection_name, TString HLT,
+void MT2Shapes::GetShapes( TString var, TString cuts, int njets, int nbjets, int nleps, TString selection_name, TString HLT,
 		          TString xtitle, const int nbins, const double min, const double max){
 	
 	double bins[nbins];
 	bins[0] = min;
 	for(int i=1; i<=nbins; i++) bins[i] = min+i*(max-min)/nbins;
-	GetShapes(var, cuts, njets, nleps, selection_name, HLT, xtitle, nbins, bins);
+	GetShapes(var, cuts, njets, nbjets, nleps, selection_name, HLT, xtitle, nbins, bins);
 }
 
 void MT2Shapes::GetShapes( TString var, TString cuts, TString selection_name, TString HLT,
@@ -147,7 +151,8 @@ void MT2Shapes::GetShapes( TString var, TString cuts, TString selection_name, TS
 	for(int i=1; i<=nbins; i++) bins[i] = min+i*(max-min)/nbins;
 	int nleps = -10; // no requirement
 	int njets = -10; // no requirement
-	GetShapes(var, cuts, njets, nleps, selection_name, HLT, xtitle, nbins, bins);
+	int nbjets= -10; // no requirement
+	GetShapes(var, cuts, njets, nbjets, nleps, selection_name, HLT, xtitle, nbins, bins);
 }
 
 void MT2Shapes::GetShapes(TString var, TString cuts, TString selection_name, TString HLT,
@@ -155,21 +160,35 @@ void MT2Shapes::GetShapes(TString var, TString cuts, TString selection_name, TSt
 
 	int nleps = -10; // no requirement
 	int njets = -10; // no requirement
-	GetShapes(var, cuts, njets, nleps, selection_name, HLT, xtitle, nbins, bins);
+	int nbjets= -10; // no requirement
+	GetShapes(var, cuts, njets, nbjets, nleps, selection_name, HLT, xtitle, nbins, bins);
 }
 //________________________________________________________________________
 
-void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TString selection_name, TString HLT,
+void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nbjets, int nleps, TString selection_name, TString HLT,
 			  TString xtitle, const int nbins, const double *bins){
 	if(fVerbose > 1) {
 		*fLogStream << "....................................................................................................." << endl;
 		*fLogStream << "........ GetShapes for " << selection_name << "..............................................................." << endl;
 	}
 
-	// parsiong cuts
-	TString nJets = "NJetsIDLoose";
-	nJets += njets < 0 ? ">=" : "==";
-	nJets += TString::Format("%d",abs(njets));
+	// parsing cuts
+//	TString nJets = "NJetsIDLoose";
+//	nJets += njets < 0 ? ">=" : "==";
+//	nJets += TString::Format("%d",abs(njets));
+
+	TString nJets, nJetsVar = "NJetsIDLoose40";
+	if (njets>=10) {
+	  nJets =  "(" + nJetsVar + TString::Format(">=%d",njets/10);
+	  nJets += "&&"+ nJetsVar + TString::Format("<=%d",njets%10)+")";
+	}
+	else{
+	  nJets = nJetsVar + (njets < 0 ? ">=" : "==");
+	  nJets = njets==-10 ?  nJets + "0" : nJets + TString::Format("%d",abs(njets));
+	}
+	TString nBJets = " && NBJets40CSVM";    // nbjets = -10  --> >=0 b-tags
+	nBJets += nbjets < 0 ? ">=" : "==";
+	nBJets += nbjets==-10 ? "0" : TString::Format("%d",abs(nbjets));
 	TString  nLeps;
 	if     (nleps < 0 )  nLeps = " && (NEles + NMuons) >=";
 	else if(nleps >=0  ) nLeps = " && (NEles + NMuons) ==";
@@ -178,7 +197,7 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 	if     (nleps ==-11) nLeps = " && NEles ==1 && NMuons ==0"; 
 	if     (nleps ==-13) nLeps = " && NEles ==0 && NMuons ==1";
 
-	TString basecuts = nJets + nLeps + "&&" + cuts;
+	TString basecuts = nJets + nBJets + nLeps + "&&" + cuts;
 	if(fVerbose > 1){
 		*fLogStream << "\n---> applied cuts:     " << basecuts           << endl;
 		*fLogStream << "\n---> trigger for data: " << HLT        << "\n" << endl;
@@ -219,14 +238,24 @@ void MT2Shapes::GetShapes(TString var, TString cuts, int njets, int nleps, TStri
 		TString theCuts = basecuts;
 		if(fSamples[i].type=="data" && HLT!="") theCuts += " &&("+HLT+")"; // triggers for data
 
+		TString btagweight = "1.00"; //stored btag weights up to >=3, default is weight==1 to avoid non-existing weights
+		if(nbjets>=0 && nbjets<=3) btagweight = TString::Format("SFWeight.BTagCSV40eq%d",abs(nbjets));
+		else if(nbjets>=-3)        btagweight = TString::Format("SFWeight.BTagCSV40ge%d",abs(nbjets));
+
 		TString selection;
-		if(fSamples[i].type!="data" && fDoPileUpWeights) selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,theCuts.Data());
-		else                                             selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
+		if(     fSamples[i].type!="data" && fDoPileUpWeights && fbSFReWeight) selection = TString::Format("(%.15f*pileUp.Weight*%s) * (%s)",weight, btagweight.Data(), theCuts.Data());
+		else if(fSamples[i].type!="data" && fDoPileUpWeights                ) selection = TString::Format("(%.15f*pileUp.Weight) * (%s)",   weight,                    theCuts.Data());
+		else if(fSamples[i].type!="data" &&                     fbSFReWeight) selection = TString::Format("(%.15f*%s) * (%s)",              weight, btagweight.Data(), theCuts.Data());
+		else                                                                  selection = TString::Format("(%.15f) * (%s)",                 weight,                    theCuts.Data()); 
+	//	TString selection;
+	//	if(fSamples[i].type!="data" && fDoPileUpWeights) selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,theCuts.Data());
+	//	else                                             selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
 		  
 		int nev = fSamples[i].tree->Draw(variable.Data(),selection.Data(),"goff");
 
 		// fix over and underflow bins
-		FixOverAndUnderflowBins(hcurr);
+		//depending on cuts maybe want to set underflow = false (2nd true)
+		FixOverAndUnderflowBins(hcurr, true, true);
 
 		/// n MC events passing the cuts and weigthed event count with errors
 		TH1F * clone = (TH1F*)hcurr->Clone();
@@ -381,15 +410,18 @@ void MT2Shapes::loadSamples(const char* filename){
 }
 
 //______________________________________________________________________________
-void MT2Shapes::FixOverAndUnderflowBins(TH1D*h ){
+void MT2Shapes::FixOverAndUnderflowBins(TH1D*h, bool overflow, bool underflow ){
 		// Add underflow & overflow bins
 		// This failed for older ROOT version when the first(last) bin is empty
 		// and there are underflow (overflow) events --- must check whether this 
 		// is still the case
+		if(underflow){
 		h->SetBinContent(1,                h->GetBinContent(0) + h->GetBinContent(1));
 		h->SetBinError  (1,                sqrt(h->GetBinError(0)*h->GetBinError(0)+h->GetBinError(1)*h->GetBinError(1) ));
+		} if(overflow){
 		h->SetBinContent(h->GetNbinsX(),h->GetBinContent(h->GetNbinsX()  )+ h->GetBinContent(h->GetNbinsX()+1) );
 		h->SetBinError  (h->GetNbinsX(),sqrt(h->GetBinError(h->GetNbinsX()  )*h->GetBinError(h->GetNbinsX()  )+h->GetBinError(h->GetNbinsX()+1)*h->GetBinError(h->GetNbinsX()+1)  ));
+		}
 }
 
 //_______________________________________________________________________________

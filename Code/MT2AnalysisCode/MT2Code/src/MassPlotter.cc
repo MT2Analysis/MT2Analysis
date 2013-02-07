@@ -60,6 +60,7 @@ MassPlotter::MassPlotter(){
 	fSave=true;
 	fisPhoton=false;
 	fPUReweight=true;
+	fbSFReWeight=true;
 // Default constructor, no samples are set
 }
 
@@ -70,6 +71,7 @@ MassPlotter::MassPlotter(TString outputdir){
 	fSave=true;
 	fisPhoton=false;
 	fPUReweight=true;
+	fbSFReWeight=true;
 }
 
 //____________________________________________________________________________
@@ -80,6 +82,7 @@ MassPlotter::MassPlotter(TString outputdir, TString outputfile){
 	fSave=true;
 	fisPhoton=false;
 	fPUReweight=true;
+	fbSFReWeight=true;
 }
 
 //____________________________________________________________________________
@@ -1169,9 +1172,18 @@ void MassPlotter::MakePlot(std::vector<sample> Samples, TString var, TString mai
 		if(basecuts!="") theCuts = theCuts + "&&" + basecuts;
 		if(Samples[i].type=="data" && HLT!="") theCuts += " &&("+HLT+")"; // triggers for data
 
+		TString btagweight = "1.00"; //stored btag weights up to >=3, default is weight==1 to avoid non-existing weights
+		if(nbjets>=0 && nbjets<=3) btagweight = TString::Format("SFWeight.BTagCSV40eq%d",abs(nbjets));
+		else if(nbjets>=-3)        btagweight = TString::Format("SFWeight.BTagCSV40ge%d",abs(nbjets));
+
 		TString selection;
-		if(Samples[i].type!="data" && fPUReweight) selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,theCuts.Data());
-		else                                       selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
+		if(     Samples[i].type!="data" && fPUReweight && fbSFReWeight) selection = TString::Format("(%.15f*pileUp.Weight*%s) * (%s)",weight, btagweight.Data(), theCuts.Data());
+		else if(Samples[i].type!="data" && fPUReweight                ) selection = TString::Format("(%.15f*pileUp.Weight) * (%s)",   weight,                    theCuts.Data());
+		else if(Samples[i].type!="data" &&                fbSFReWeight) selection = TString::Format("(%.15f*%s) * (%s)",              weight, btagweight.Data(), theCuts.Data());
+		else                                                            selection = TString::Format("(%.15f) * (%s)",                 weight,                    theCuts.Data()); 
+	//	TString selection;
+	//	if(Samples[i].type!="data" && fPUReweight) selection      = TString::Format("(%.15f*pileUp.Weight) * (%s)",weight,theCuts.Data());
+	//	else                                       selection      = TString::Format("(%.15f) * (%s)"              ,weight,theCuts.Data()); 
 		  
 		if(fVerbose>2) cout << "  +++++++ Drawing      " << variable  << endl
 				    << "  +++++++ with cuts:   " << setw(40)  << selection << endl;
@@ -3365,7 +3377,7 @@ void MassPlotter::TauContamination(int sample_index, Long64_t nevents, int flag)
   }
 
   for(int j = 0; j < NumberOfSamples; j++){
-     AddOverAndUnderFlow(MT2[j]);
+     AddOverAndUnderFlow(MT2[j], true, true);
   }
   printYield();
 
@@ -3487,16 +3499,19 @@ void MassPlotter::setFlags(int flag){
   }
 
 
-void MassPlotter::AddOverAndUnderFlow(TH1 * Histo){
+void MassPlotter::AddOverAndUnderFlow(TH1 * Histo, bool overflow, bool underflow){
   // Add underflow & overflow bins
   // This failed for older ROOT version when the first(last) bin is empty
   // and there are underflow (overflow) events --- must check whether this 
   // is still the case
+  if(underflow){
   Histo->SetBinContent(1,
 		       Histo->GetBinContent(0) + Histo->GetBinContent(1));
   Histo->SetBinError(1,
 		     sqrt(Histo->GetBinError(0)*Histo->GetBinError(0)+
 			  Histo->GetBinError(1)*Histo->GetBinError(1) ));
+  Histo->SetBinContent(0, 0.0);
+  } if(overflow){
   Histo->SetBinContent(Histo->GetNbinsX(),
 		       Histo->GetBinContent(Histo->GetNbinsX()  )+ 
 		       Histo->GetBinContent(Histo->GetNbinsX()+1) );
@@ -3506,7 +3521,7 @@ void MassPlotter::AddOverAndUnderFlow(TH1 * Histo){
 			  Histo->GetBinError(Histo->GetNbinsX()+1)*
 			  Histo->GetBinError(Histo->GetNbinsX()+1)  ));
   Histo->SetBinContent(Histo->GetNbinsX() + 1, 0.0);
-  Histo->SetBinContent(0, 0.0);
+  }
 }
 
 void MassPlotter::Cout(int k, TH1F * Histo){

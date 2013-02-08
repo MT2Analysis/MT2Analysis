@@ -94,7 +94,7 @@ void MT2Analysis::Begin(const char* filename){
 		btagfile->Close();
 		dir->cd();
 	}else{
-		cout << "No btagfile existing: use b-eff = 0.70, c-eff = 0.17, l-eff = 0.015" << endl;
+		cout << "No btagfile existing: NO bSF weights will be calculated" << endl;
 	}
 	//define btagging files
 	bool existingtau=true;
@@ -109,7 +109,7 @@ void MT2Analysis::Begin(const char* filename){
 		hadtaufile->Close();
 		dir->cd();
 	}else{
-		cout << "No hadtaufile existing: use tau-eff = 0.60, jet-eff = 0.03, ele-eff = 0.18, muo-eff = 0.0002" << endl;
+		cout << "No hadtaufile existing: NO tauSF weights will be calculated" << endl;
 	}
 	// book tree
 	fMT2tree = new MT2tree();
@@ -375,11 +375,11 @@ void MT2Analysis::FillTree(){
 
 bool MT2Analysis::FillMT2TreeBasics(){
 	// check size of jets electrons muons and genleptons
-	if(Jets.size()      > 25) {cout << "ERROR: Jets.size()    > 25: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
-	if(fTaus.size()     > 8 ) {cout << "ERROR: fTaus.size()   >  8: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
-	if(fElecs.size()    > 8 ) {cout << "ERROR: fElecs.size()  >  8: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
-	if(fMuons.size()    > 8 ) {cout << "ERROR: fMuons.size()  >  8: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
-	if(fPhotons.size()  > 8 ) {cout << "ERROR: fPhotons.size()>  8: " << "run " << fTR->Run << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(Jets.size()    > 25) {cout << "ERROR: Jets.size()    >25: run " << fTR->Run << " LS " << fTR->LumiSection << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(fTaus.size()   > 8 ) {cout << "ERROR: fTaus.size()   > 8: run " << fTR->Run << " LS " << fTR->LumiSection << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(fElecs.size()  > 8 ) {cout << "ERROR: fElecs.size()  > 8: run " << fTR->Run << " LS " << fTR->LumiSection << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(fMuons.size()  > 8 ) {cout << "ERROR: fMuons.size()  > 8: run " << fTR->Run << " LS " << fTR->LumiSection << " Event " << fTR->Event << " skip event" << endl; return false;}
+	if(fPhotons.size()> 8 ) {cout << "ERROR: fPhotons.size()> 8: run " << fTR->Run << " LS " << fTR->LumiSection << " Event " << fTR->Event << " skip event" << endl; return false;}
 
 
 	// ---------------------------------------------------------------
@@ -468,7 +468,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	// Fill GenJets
 	for(int i=0; i<fTR->NGenJets; ++i){
 		if(i >= gNGenJets) {
-			cout << "WARNING: Event " << fTR->Event << " Run " << fTR->Run << " has more than " << gNGenJets << " GenJets " << endl;
+			cout << "WARNING: Event " << fTR->Event << " LS " << fTR->LumiSection << " Run " << fTR->Run << " has more than " << gNGenJets << " GenJets " << endl;
 			continue;
 	       	}
 		fMT2tree->genjet[i].lv.SetPtEtaPhiE(fTR->GenJetPt[i], fTR->GenJetEta[i], fTR->GenJetPhi[i], fTR->GenJetE[i]);
@@ -687,7 +687,7 @@ bool MT2Analysis::FillMT2TreeBasics(){
 
 		string singlePhotonHTTriggers[100];
 		int photonHTtriggernumber=0;
-		singlePhotonHTTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFHT400_v2";
+		singlePhotonHTTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFHT400_v2";//CaloIDXL means H/E<0.01(0.01) sigmaietaieta<0.014(0.035) for EB(EE)
 		singlePhotonHTTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFHT400_v3";
 		singlePhotonHTTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFHT400_v4";
 		singlePhotonHTTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFHT400_v5";
@@ -1112,8 +1112,8 @@ void MT2Analysis::FillMT2treeCalculations(){
 			jetEff.push_back(eff);
 			jetEffErr.push_back(efferr);
 			jetSF.push_back(SF);
-			if(fMT2tree->misc.isFastSim && FS==1) std::cout << "FS " << FS << " but it should be 1" << std::endl;
-			if(fMT2tree->misc.isFastSim && FSerr==0) std::cout << "FSerr " << FSerr << " but it should be 0" << std::endl;
+			//if(fMT2tree->misc.isFastSim && FS==1) std::cout << "FS " << FS << " but it should not be 1" << std::endl;
+			//if(fMT2tree->misc.isFastSim && FSerr==0) std::cout << "FSerr " << FSerr << " but it should not be 0" << std::endl;
 			if(effflavour==5||effflavour==4) jetSFBCUp.push_back(  SFup  ); else jetSFBCUp.push_back(  SF    );
 			if(effflavour==5||effflavour==4) jetSFBCDown.push_back(SFdown); else jetSFBCDown.push_back(SF    );
 			if(effflavour==5||effflavour==4) jetSFLUp.push_back(   SF    ); else jetSFLUp.push_back(   SFup  );
@@ -1445,7 +1445,7 @@ bool MT2Analysis::IsSelectedEvent(){
 
 	// Protection against events with NAN-Pt objects
 	if(fIsNANObj) {
-		cout << "WARNING: Event " << fTR->Event << " Lumi " << fTR->LumiSection << " Run " << fTR->Run << " has NAN-Pt Objects!! Skipping Event" << endl;
+		cout << "WARNING: Event " << fTR->Event << " LS " << fTR->LumiSection << " Run " << fTR->Run << " has NAN-Pt Objects!! Skipping Event" << endl;
 		return false;
 	}
 	
@@ -1968,8 +1968,8 @@ bool MT2Analysis::IsGoodPhoton(int i){//new
 	if( fabs(fTR->PhoEta[i])> 2.4                                          ) return false;
 	if( fabs(fTR->PhoEta[i])> 1.442 && fabs(fTR->PhoEta[i])<1.566          ) return false; // veto EB-EE gap
 	float HoverE2012 = SingleTowerHoverE(i);
-	if( HoverE2012 < 0                                                     ) return false; // H/E not calculable due missing matched SC
-	if( HoverE2012> 0.05                                                   ) return false; // H/E cut for 2012
+	if( HoverE2012 < -0.5                                                  ) return false; // H/E not calculable due missing matched SC
+	if( HoverE2012 > 0.05                                                  ) return false; // H/E cut for 2012
 	if(!(fTR->PhoPassConversionVeto[i])                                    ) return false; // Conversion safe electron veto
 	return true;
 }

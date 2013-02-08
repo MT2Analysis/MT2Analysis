@@ -518,9 +518,12 @@ public:
   Int_t   MCmatchexitcode;
   Float_t GenJetMinDR;
   Bool_t  JetRemoved;
-  Bool_t  isLooseID;
-  Bool_t  isMediumID;
-  Bool_t  isTightID;
+  Bool_t  isLooseID;//contains Iso
+  Bool_t  isMediumID;//contains Iso
+  Bool_t  isTightID;//contains Iso
+  Bool_t  isLooseIso;
+  Bool_t  isMediumIso;
+  Bool_t  isTightIso;
 
   ClassDef(MT2Photon, 8)
 };

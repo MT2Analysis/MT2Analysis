@@ -552,9 +552,12 @@ void MT2Photon::Reset() {
   GenJetMinDR     = -999.99;
   MCmatchexitcode = -999;
   JetRemoved      = 0;
-  isLooseID       = 0;
-  isMediumID      = 0;
-  isTightID       = 0;
+  isLooseID       = 0;//contains Iso
+  isMediumID      = 0;//contains Iso
+  isTightID       = 0;//contains Iso
+  isLooseIso      = 0;
+  isMediumIso     = 0;
+  isTightIso      = 0;
 }
 
 void MT2Photon::SetLV(const TLorentzVector v) {
@@ -571,10 +574,11 @@ Bool_t MT2Photon::IsIsolated(int i){//0: loose, 1: medium, 3: tight
 		if(NeutralHadIso > (3.5 + 0.04  * pt)  ) return false;
 		if(PhotonIso     > (1.3 + 0.005 * pt)  ) return false;
 	}
-	if(abseta>1.566){//EE
+	else if(abseta>1.566){//EE
 		if(ChargedHadIso >  2.3                ) return false;
 		if(NeutralHadIso > (2.9 + 0.04  * pt)  ) return false;
 	}
+	else return false;
 	return true;
 	}
 	else if(i==1){
@@ -583,11 +587,12 @@ Bool_t MT2Photon::IsIsolated(int i){//0: loose, 1: medium, 3: tight
 		if(NeutralHadIso > (1.0 + 0.04  * pt)  ) return false;
 		if(PhotonIso     > (0.7 + 0.005 * pt)  ) return false;
 	}
-	if(abseta>1.566){//EE
+	else if(abseta>1.566){//EE
 		if(ChargedHadIso >  1.2                ) return false;
 		if(NeutralHadIso > (1.5 + 0.04  * pt)  ) return false;
 		if(PhotonIso     > (1.0 + 0.005 * pt)  ) return false;
 	}
+	else return false;
 	return true;
 	}
 	else if(i==2){
@@ -596,11 +601,12 @@ Bool_t MT2Photon::IsIsolated(int i){//0: loose, 1: medium, 3: tight
 		if(NeutralHadIso > (0.4 + 0.04  * pt)  ) return false;
 		if(PhotonIso     > (0.5 + 0.005 * pt)  ) return false;
 	}
-	if(abseta>1.566){//EE
+	else if(abseta>1.566){//EE
 		if(ChargedHadIso >  0.5                ) return false;
 		if(NeutralHadIso > (1.5 + 0.04  * pt)  ) return false;
 		if(PhotonIso     > (1.0 + 0.005 * pt)  ) return false;
 	}
+	else return false;
 	return true;
 	}
 	else return false;
@@ -620,27 +626,30 @@ Bool_t MT2Photon::IsID(int i, float minpt, float maxeta){//0: loose, 1: medium, 
 	if(abseta<1.442){//EB
 		if(SigmaIEtaIEta > 0.012) return false;
 	}
-	if(abseta>1.566){//EE
+	else if(abseta>1.566){//EE
 		if(SigmaIEtaIEta > 0.034) return false;
 	}
+	else return false;
 	return true;
 	}
 	else if(i==1){
 	if(abseta<1.442){//EB
 		if(SigmaIEtaIEta > 0.011) return false;
 	}
-	if(abseta>1.566){//EE
+	else if(abseta>1.566){//EE
 		if(SigmaIEtaIEta > 0.033) return false;
 	}
+	else return false;
 	return true;
 	}
 	else if(i==2){
 	if(abseta<1.442){//EB
 		if(SigmaIEtaIEta > 0.011) return false;
 	}
-	if(abseta>1.566){//EE
+	else if(abseta>1.566){//EE
 		if(SigmaIEtaIEta > 0.031) return false;
 	}
+	else return false;
 	return true;
 	}
 	else return false;

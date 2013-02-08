@@ -191,6 +191,9 @@ private:
 	bool IsSelectedEvent();
 	void InitializeEvent();
 	// photons
+	bool IsGoodPhotonIsoLoose(int i);
+	bool IsGoodPhotonIsoMedium(int i);
+	bool IsGoodPhotonIsoTight(int i);
 	bool IsGoodPhotonEGMLoose(int i);
 	bool IsGoodPhotonEGMMedium(int i);
 	bool IsGoodPhotonEGMTight(int i);

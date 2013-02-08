@@ -439,6 +439,9 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->photon[i].isLooseID           = IsGoodPhotonEGMLoose(fPhotons[i]);
 		fMT2tree->photon[i].isMediumID          = IsGoodPhotonEGMMedium(fPhotons[i]);
 		fMT2tree->photon[i].isTightID           = IsGoodPhotonEGMTight(fPhotons[i]);
+		fMT2tree->photon[i].isLooseIso          = IsGoodPhotonIsoLoose(fPhotons[i]);
+		fMT2tree->photon[i].isMediumIso         = IsGoodPhotonIsoMedium(fPhotons[i]);
+		fMT2tree->photon[i].isTightIso          = IsGoodPhotonIsoTight(fPhotons[i]);
 		fMT2tree->photon[i].JetRemoved          =fPhotonJetOverlapRemoved[i];
 		if(!fisData){
 			fMT2tree->photon[i].MCmatchexitcode     =fTR->PhoMCmatchexitcode[fPhotons[i]]; 
@@ -1828,6 +1831,69 @@ const float MT2Analysis::EffArea04(float abseta) {//for cone of 03
 // Photon Selectors
 // see https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedPhotonID2012
 
+bool MT2Analysis::IsGoodPhotonIsoTight(int i){//no sigmaietaieta
+	if(!IsGoodPhoton(i)                        ) return false;
+	float pt = fTR->PhoPt[i];
+	float abseta = fabs(fTR->PhoEta[i]);
+	float chhadiso  = TMath::Max(fTR->PhoNewIsoPFCharged[i] - fTR->Rho * EffAreaChargedHad(abseta),(float)0.);
+	float chneuiso  = TMath::Max(fTR->PhoNewIsoPFNeutral[i] - fTR->Rho * EffAreaNeutralHad(abseta),(float)0.);
+	float photoniso = TMath::Max(fTR->PhoNewIsoPFPhoton[i]  - fTR->Rho * EffAreaPhoton(    abseta),(float)0.);
+	if(abseta<1.442){//EB
+		if(chhadiso  >  0.7                ) return false;
+		if(chneuiso  > (0.4 + 0.04  * pt)  ) return false;
+		if(photoniso > (0.5 + 0.005 * pt)  ) return false;
+	}
+	else if(abseta>1.566){//EE
+		if(chhadiso  >  0.5                ) return false;
+		if(chneuiso  > (1.5 + 0.04  * pt)  ) return false;
+		if(photoniso > (1.0 + 0.005 * pt)  ) return false;
+	}
+	else return false;
+	return true;
+}
+
+bool MT2Analysis::IsGoodPhotonIsoMedium(int i){//no sigmaietaieta
+	if(!IsGoodPhoton(i)                        ) return false;
+	float pt = fTR->PhoPt[i];
+	float abseta = fabs(fTR->PhoEta[i]);
+	float chhadiso  = TMath::Max(fTR->PhoNewIsoPFCharged[i] - fTR->Rho * EffAreaChargedHad(abseta),(float)0.);
+	float chneuiso  = TMath::Max(fTR->PhoNewIsoPFNeutral[i] - fTR->Rho * EffAreaNeutralHad(abseta),(float)0.);
+	float photoniso = TMath::Max(fTR->PhoNewIsoPFPhoton[i]  - fTR->Rho * EffAreaPhoton(    abseta),(float)0.);
+	if(abseta<1.442){//EB
+		if(chhadiso  >  1.5                ) return false;
+		if(chneuiso  > (1.0 + 0.04  * pt)  ) return false;
+		if(photoniso > (0.7 + 0.005 * pt)  ) return false;
+	}
+	else if(abseta>1.566){//EE
+		if(chhadiso  >  1.2                ) return false;
+		if(chneuiso  > (1.5 + 0.04  * pt)  ) return false;
+		if(photoniso > (1.0 + 0.005 * pt)  ) return false;
+	}
+	else return false;
+	return true;
+}
+
+bool MT2Analysis::IsGoodPhotonIsoLoose(int i){//no sigmaietaieta
+	if(!IsGoodPhoton(i)                        ) return false;
+	float pt = fTR->PhoPt[i];
+	float abseta = fabs(fTR->PhoEta[i]);
+	float chhadiso  = TMath::Max(fTR->PhoNewIsoPFCharged[i] - fTR->Rho * EffAreaChargedHad(abseta),(float)0.);
+	float chneuiso  = TMath::Max(fTR->PhoNewIsoPFNeutral[i] - fTR->Rho * EffAreaNeutralHad(abseta),(float)0.);
+	float photoniso = TMath::Max(fTR->PhoNewIsoPFPhoton[i]  - fTR->Rho * EffAreaPhoton(    abseta),(float)0.);
+	if(abseta<1.442){//EB
+		if(chhadiso  >  2.6                ) return false;
+		if(chneuiso  > (3.5 + 0.04  * pt)  ) return false;
+		if(photoniso > (1.3 + 0.005 * pt)  ) return false;
+	}
+	else if(abseta>1.566){//EE
+		if(chhadiso  >  2.3                ) return false;
+		if(chneuiso  > (2.9 + 0.04  * pt)  ) return false;
+		//no photoniso here
+	}
+	else return false;
+	return true;
+}
+
 bool MT2Analysis::IsGoodPhotonEGMTight(int i){
 	if(!IsGoodPhoton(i)                        ) return false;
 	float pt = fTR->PhoPt[i];
@@ -1841,12 +1907,13 @@ bool MT2Analysis::IsGoodPhotonEGMTight(int i){
 		if(chneuiso  > (0.4 + 0.04  * pt)  ) return false;
 		if(photoniso > (0.5 + 0.005 * pt)  ) return false;
 	}
-	if(abseta>1.566){//EE
+	else if(abseta>1.566){//EE
 		if(fTR->PhoSigmaIetaIeta[i] > 0.031) return false;
 		if(chhadiso  >  0.5                ) return false;
 		if(chneuiso  > (1.5 + 0.04  * pt)  ) return false;
 		if(photoniso > (1.0 + 0.005 * pt)  ) return false;
 	}
+	else return false;
 	return true;
 }
 
@@ -1863,12 +1930,13 @@ bool MT2Analysis::IsGoodPhotonEGMMedium(int i){
 		if(chneuiso  > (1.0 + 0.04  * pt)  ) return false;
 		if(photoniso > (0.7 + 0.005 * pt)  ) return false;
 	}
-	if(abseta>1.566){//EE
+	else if(abseta>1.566){//EE
 		if(fTR->PhoSigmaIetaIeta[i] > 0.033) return false;
 		if(chhadiso  >  1.2                ) return false;
 		if(chneuiso  > (1.5 + 0.04  * pt)  ) return false;
 		if(photoniso > (1.0 + 0.005 * pt)  ) return false;
 	}
+	else return false;
 	return true;
 }
 
@@ -1898,10 +1966,10 @@ bool MT2Analysis::IsGoodPhotonEGMLoose(int i){
 bool MT2Analysis::IsGoodPhoton(int i){//new
 	if( fTR->PhoPt[i] < 20                                                 ) return false; // pt cut
 	if( fabs(fTR->PhoEta[i])> 2.4                                          ) return false;
-	if( fabs(fTR->PhoEta[i])> 1.4442 && fabs(fTR->PhoEta[i])<1.566         ) return false; // veto EB-EE gap
-	float HoverE = SingleTowerHoverE(i);
-	if( HoverE < 0                                                         ) return false; // H/E not calculable due missing matched SC
-	if( HoverE> 0.05                                                       ) return false; // H/E cut for 2012
+	if( fabs(fTR->PhoEta[i])> 1.442 && fabs(fTR->PhoEta[i])<1.566          ) return false; // veto EB-EE gap
+	float HoverE2012 = SingleTowerHoverE(i);
+	if( HoverE2012 < 0                                                     ) return false; // H/E not calculable due missing matched SC
+	if( HoverE2012> 0.05                                                   ) return false; // H/E cut for 2012
 	if(!(fTR->PhoPassConversionVeto[i])                                    ) return false; // Conversion safe electron veto
 	return true;
 }

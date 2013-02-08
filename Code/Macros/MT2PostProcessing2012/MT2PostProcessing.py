@@ -112,7 +112,10 @@ def MT2PostProcessing():
 		for file in files.splitlines():
 			filelist += file + " " 
 		os.system("rm -rf "+logfile(subdir))
-		cmd = "qsub -q short.q -N MT2_"+sample(subdir)+" -o "+logfile(subdir)+" -j y  ./MT2PostProcessing.csh "
+		#cmd = "qsub -q short.q -N MT2_"+sample(subdir)+" -o "+logfile(subdir)+" -j y  ./MT2PostProcessing.csh "
+		#MM
+		cmd = "qsub -q all.q -N MT2_"+sample(subdir)+" -o "+logfile(subdir)+" -j y  ./MT2PostProcessing.csh "
+		#MM
 		cmd = cmd + " "+ MT2tag + " "  + production(subdir) +  " "  + sample(subdir) 
 		if(options.shlib!= None):
 			cmd = cmd+ " " + options.shlib
@@ -138,17 +141,27 @@ def logfile(subdir):
 	logname = logname.replace("/","_")
 	logname = logname.strip("_")
 	logname = "logs/"+logname+".log"
+##MM
+        #logname = "logs/"+logname+"_HTcut.log"
+##MM
+	print "   THIS IS THE LOGNAME: " + logname
 	return logname
 
 def production(subdir):
 	production = subdir.split(MT2tag)[1]
 	production = production.strip("/")
 	production = production.split("/")[0]
+	print "   THIS IS THE PRODUCTION: " + production
 	return production
 
 def sample(subdir):
-	sample = subdir.split(production(subdir))[1]
+	#sample = subdir.split(production(subdir))[1]
+	sample = subdir.split(MT2tag)[1]
 	sample = sample.strip("/")
+	sample = sample.split("/")[1]
+	sample = sample.strip("/")
+	print "   THIS IS THE SAMPLE: " + sample
+	print " This is Subdir: " + subdir
 	return sample
 
 if __name__ == "__main__":

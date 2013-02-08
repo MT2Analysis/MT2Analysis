@@ -1,7 +1,8 @@
 #!/bin/tcsh -f
 ##################################################################
 # Script to skim MT2trees on T3 batch system                     #
-# Pascal Nef                             September 18th, 2011    #  
+# Mario Masciovecchio                       February 7h, 2013    # 
+# from Pascal Nef's script MT2PostProcessing.csh                 # 
 # ################################################################
 
 # Avoid wild cards
@@ -28,18 +29,21 @@ endif
 
 set NARGS      = $#argv
 set MT2TAG     = $1
-set PRODUCTION = $2
-set SAMPLE     = $3
-set SHLIB      = $4
-set PREFIX     = $5
-set SCRIPT     = $6
+set SAMPLE     = $2
+set SHLIB      = $3
+set PREFIX     = $4
+set SCRIPT     = $5
+
+# echo $6
+# # set TRIGGER    = $6
 set HOME=`pwd`
-set OUTDIR=/shome/`whoami`/MT2Analysis/MT2trees/$MT2TAG/$PRODUCTION/
+set OUTDIR=/shome/`whoami`/MT2Analysis/MT2trees/$MT2TAG/
 set SKIMSCRIPT=$HOME"/"$SCRIPT
 set TOPWORKDIR=/scratch/`whoami`
-set WORKDIR=/scratch/`whoami`/$PRODUCTION/$SAMPLE
-set MERGED=/scratch/`whoami`/$PRODUCTION/$SAMPLE/$SAMPLE.root
+set WORKDIR=/scratch/`whoami`/$SAMPLE
+set MERGED=/scratch/`whoami`/$SAMPLE/$SAMPLE.root
 mkdir -pv $WORKDIR
+
 
 ########## Set the CMSSW environment (for ROOT, mainly...)
 source $VO_CMS_SW_DIR/cmsset_default.csh
@@ -49,6 +53,8 @@ cmsenv
 # Fix problem with DCache and ROOT
 setenv LD_LIBRARY_PATH /swshare/glite/d-cache/dcap/lib/:$LD_LIBRARY_PATH
 cd -
+
+echo "nargs " $NARGS
 
 #### copy scaples from SE to scratch ###########################################
 set lfiles=()
@@ -66,27 +72,23 @@ if ( $SHLIB != "none" ) then
 	cp  $SKIMSCRIPT .
 	mkdir -pv $PREFIX
 
-#	# stupid hack 
-#	rm -rf /scratch/pnef/SHLIBtmp
-#	mkdir -vp /scratch/pnef/SHLIBtmp
-#	mv -v $SHLIB /scratch/pnef/SHLIBtmp
-#	set tmp = `ls -1 /scratch/pnef/SHLIBtmp`
-#	mv -v /scratch/pnef/SHLIBtmp/${tmp} $SHLIB
-#	rm -rf /scratch/pnef/SHLIBtmp
-	
 	set lnewfiles=()
 	foreach i ($lfiles)
 		echo "processing $i ++++++++++++++++++++++++++++++++++++++++++++++++++++"
 		echo "copying file $i to $WORKDIR"
 		dccp "$i" "$WORKDIR"
+		pwd
 		ls -l -h
 		set file = `echo $i | awk -F '/' '{print $(NF)}'`
-		root -l -b -q  $SCRIPT'("'$file'", "'$SHLIB'", "'$PREFIX'")'	
+		root -l -b -q  $SCRIPT'("'$file'", "'$6'", "'$SHLIB'", "'$4'")'
+		ls -l -h $PREFIX/$file
 		set lnewfiles = ($lnewfiles $PREFIX/$file)
-		if (-e $PREFIX/$file) then
+
+		if ( -e $PREFIX/$file ) then
 			echo "skimming terminated successfully..."
 			rm -fv $file
-			cat ${file}.skim.log >> skim.log		
+			cat ${file}.skim.log >> skim.log
+# 			echo "E ANCHE QUI CI SONO!"
 		else
 			echo "skimming failed!!! "
 			rm -r $WORKDIR 

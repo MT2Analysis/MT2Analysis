@@ -22,6 +22,7 @@ MT2Analysis::MT2Analysis(TreeReader *tr) : UserAnalysisBase(tr){
 	fCut_NLeptons_min                   = 0;
 
 	fRemovePhoton                       = 0;
+	fRemoveZll                          = 0;
 	fID                                 = -1;
 	fbtagFileName                       = "";
 	fhadtauFileName                       = "";
@@ -435,14 +436,15 @@ bool MT2Analysis::FillMT2TreeBasics(){
 		fMT2tree->photon[i].ChargedHadIso       = TMath::Max(fTR->PhoNewIsoPFCharged[fPhotons[i]] - fTR->Rho * EffAreaChargedHad(fabs(fTR->PhoEta[fPhotons[i]])),(float)0.);
 		fMT2tree->photon[i].NeutralHadIso       = TMath::Max(fTR->PhoNewIsoPFNeutral[fPhotons[i]] - fTR->Rho * EffAreaNeutralHad(fabs(fTR->PhoEta[fPhotons[i]])),(float)0.);
 		fMT2tree->photon[i].PhotonIso           = TMath::Max(fTR->PhoNewIsoPFPhoton[fPhotons[i]]  - fTR->Rho * EffAreaPhoton(    fabs(fTR->PhoEta[fPhotons[i]])),(float)0.);
-		fMT2tree->photon[i].HoverE2012          = SingleTowerHoverE(fPhotons[i]);
+	//	fMT2tree->photon[i].HoverE2012          = SingleTowerHoverE(fPhotons[i]);
+		fMT2tree->photon[i].HoverE2012          = fTR->PhoHoverE2012[fPhotons[i]];
 		fMT2tree->photon[i].isLooseID           = IsGoodPhotonEGMLoose(fPhotons[i]);
 		fMT2tree->photon[i].isMediumID          = IsGoodPhotonEGMMedium(fPhotons[i]);
 		fMT2tree->photon[i].isTightID           = IsGoodPhotonEGMTight(fPhotons[i]);
 		fMT2tree->photon[i].isLooseIso          = IsGoodPhotonIsoLoose(fPhotons[i]);
 		fMT2tree->photon[i].isMediumIso         = IsGoodPhotonIsoMedium(fPhotons[i]);
 		fMT2tree->photon[i].isTightIso          = IsGoodPhotonIsoTight(fPhotons[i]);
-		fMT2tree->photon[i].JetRemoved          =fPhotonJetOverlapRemoved[i];
+		fMT2tree->photon[i].JetRemoved          = fPhotonJetOverlapRemoved[i];
 		if(!fisData){
 			fMT2tree->photon[i].MCmatchexitcode     =fTR->PhoMCmatchexitcode[fPhotons[i]]; 
 			if(fTR->PhoMCmatchindex[fPhotons[i]]>=0){
@@ -541,15 +543,59 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	
 		fMT2tree->tau[i].MuonRej= 0;
 		if(fTR->TauLooseMuonRejection[fTaus[i]]  > 0.5)
-		fMT2tree->tau[i].MuonRej= 1;
+		fMT2tree->tau[i].MuonRej = 1;
+		if(fTR->TauMediumMuonRejection[fTaus[i]] > 0.5)
+		fMT2tree->tau[i].MuonRej = 2;
 		if(fTR->TauTightMuonRejection[fTaus[i]]  > 0.5)
-		fMT2tree->tau[i].MuonRej= 3;
+		fMT2tree->tau[i].MuonRej = 3;
 
-		fMT2tree->tau[i].isLooseID = fMT2tree->tau[i].IsGoodTau(20, 2.3, 2, 3, 3);
+		//isolation with slightly smaller efficiency but much smaller fake rate
+		fMT2tree->tau[i].Isolation3Hits = 0;
+		if(fTR->TauLooseCombinedIsoDBSumPtCorr3Hits[fTaus[i]]  > 0.5)
+		  fMT2tree->tau[i].Isolation3Hits = 2;
+		if(fTR->TauMediumCombinedIsoDBSumPtCorr3Hits[fTaus[i]] > 0.5)
+		  fMT2tree->tau[i].Isolation3Hits = 3;
+		if(fTR->TauTightCombinedIsoDBSumPtCorr3Hits[fTaus[i]]  > 0.5)
+		  fMT2tree->tau[i].Isolation3Hits = 4;
+
+		//isolation based on (improved) mva
+		fMT2tree->tau[i].IsolationMVA2 = 0;
+		if(fTR->TauLooseIsolationMVA2[fTaus[i]]  > 0.5)
+		  fMT2tree->tau[i].IsolationMVA2 = 2;
+		if(fTR->TauMediumIsolationMVA2[fTaus[i]] > 0.5)
+		  fMT2tree->tau[i].IsolationMVA2 = 3;
+		if(fTR->TauTightIsolationMVA2[fTaus[i]]  > 0.5)
+		  fMT2tree->tau[i].IsolationMVA2 = 4;
+
+		//electron rej based on MVA, not recommended for vetoing taus
+		fMT2tree->tau[i].ElectronRejMVA3= 0;
+		if(fTR->TauLooseElectronMVA3Rejection[fTaus[i]]  > 0.5)
+		fMT2tree->tau[i].ElectronRejMVA3= 1;
+		if(fTR->TauMediumElectronMVA3Rejection[fTaus[i]] > 0.5)
+		fMT2tree->tau[i].ElectronRejMVA3= 2;
+		if(fTR->TauTightElectronMVA3Rejection[fTaus[i]]  > 0.5)
+		fMT2tree->tau[i].ElectronRejMVA3= 3;
+		if(fTR->TauVTightElectronMVA3Rejection[fTaus[i]] > 0.5)
+		fMT2tree->tau[i].ElectronRejMVA3= 4;
+
+		//muon rej , fixed
+		fMT2tree->tau[i].MuonRej2= 0;
+		if(fTR->TauLooseMuon2Rejection[fTaus[i]]  > 0.5)
+		fMT2tree->tau[i].MuonRej2= 1;
+		if(fTR->TauMediumMuon2Rejection[fTaus[i]] > 0.5)
+		fMT2tree->tau[i].MuonRej2= 2;
+		if(fTR->TauTightMuon2Rejection[fTaus[i]]  > 0.5)
+		fMT2tree->tau[i].MuonRej2= 3;
+
+		//note: switched from tight elerej to loose elerej due to recommendation (all except loose have eta cut on eta crack)
+		fMT2tree->tau[i].isLooseID      = fMT2tree->tau[i].IsGoodTau(20, 2.3,   2, 1, -3);
+		fMT2tree->tau[i].isLooseID3Hits = fMT2tree->tau[i].IsGoodTau(20, 2.3,  -2, 1, -3);
+		fMT2tree->tau[i].isLooseIDMVA   = fMT2tree->tau[i].IsGoodTau(20, 2.3, -12, 1, -3);
 	}
-	fMT2tree->SetNTausIDLoose  (fMT2tree->GetNTaus(20,2.3,2,3,3));
-	fMT2tree->SetNTausIDLoose2 (fMT2tree->GetNTaus(20,2.1,2,3,3));
-
+	fMT2tree->SetNTausIDLoose     (fMT2tree->GetNTaus(20,2.3,  2,1,-3));
+	fMT2tree->SetNTausIDLoose3Hits(fMT2tree->GetNTaus(20,2.3, -2,1,-3));
+	fMT2tree->SetNTausIDLooseMVA  (fMT2tree->GetNTaus(20,2.3,-12,1,-3));
+	fMT2tree->SetNTausIDLoose2    (fMT2tree->GetNTaus(20,2.1,  2,3, 3));//common object.
 
 	// ---------------------------------------------------------------
 	// GenMET	
@@ -920,6 +966,9 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	fMT2tree->misc.eeBadScFlag                         = fTR->eeBadScFilter                     ? 0:1;
 	fMT2tree->misc.EcalDeadCellTriggerPrimitiveFlag    = fTR->EcalDeadCellTriggerPrimitiveFilter? 0:1;
 	fMT2tree->misc.EcalLaserCorrFlag                   = fTR->ecalLaserCorrFilter               ? 0:1;
+	fMT2tree->misc.TrackingManyStripClusFlag           = fTR->manystripclus53X;       //defined oppossite to upper ones, NO ? 0:1
+	fMT2tree->misc.TrackingTooManyStripClusFlag        = fTR->toomanystripclus53X;    //defined oppossite to upper ones, NO ? 0:1
+	fMT2tree->misc.TrackingLogErrorTooManyClustersFlag = fTR->logErrorTooManyClusters;//defined oppossite to upper ones, NO ? 0:1
 	fMT2tree->misc.CrazyHCAL                           = fCrazyHCAL;                 
 	fMT2tree->misc.NegativeJEC                         = fNegativeJEC;
 	
@@ -1632,9 +1681,9 @@ bool MT2Analysis::IsGoodMT2Muon(const int index){
 	// Hits
 	if ( !(fTR->MuNChi2[index] < 10) )         return false;   //  muon.globalTrack()->normalizedChi2()
 //	The two lines below are wrong - we want //  muon.globalTrack()->hitPattern().numberOfValidMuonHits()
-//	not in ETHntuples: for now we choose fTR->MuNGlHits[index], as SS does!!
 //	if ( !(fTR->MuNMuHits[index] > 0) )        return false;   //  muon.outerTrack()->hitPattern().numberOfValidHits()
-	if ( !(fTR->MuNGlHits[index] > 0) )        return false;   //  muon.globalTrack()->hitPattern().numberOfValidHits()
+//	if ( !(fTR->MuNGlHits[index] > 0) )        return false;   //  muon.globalTrack()->hitPattern().numberOfValidHits()
+	if ( !(fTR->MuNGlMuHits[index] > 0) )      return false;
 	if ( !(fTR->MuNPxHits[index] > 0) )        return false;   //  muon.innerTrack()->hitPattern().numberOfValidPixelHits()
 //	if ( !(fTR->MuNMatches[index]>1) )         return false;   //  numberOfMatches()
 	if ( !(fTR->MuNMatchedStations[index]>1) ) return false;   // muon.numberOfMatchedStations()       
@@ -1967,9 +2016,10 @@ bool MT2Analysis::IsGoodPhoton(int i){//new
 	if( fTR->PhoPt[i] < 20                                                 ) return false; // pt cut
 	if( fabs(fTR->PhoEta[i])> 2.4                                          ) return false;
 	if( fabs(fTR->PhoEta[i])> 1.442 && fabs(fTR->PhoEta[i])<1.566          ) return false; // veto EB-EE gap
-	float HoverE2012 = SingleTowerHoverE(i);
-	if( HoverE2012 < -0.5                                                  ) return false; // H/E not calculable due missing matched SC
-	if( HoverE2012 > 0.05                                                  ) return false; // H/E cut for 2012
+	if( fTR->PhoHoverE2012[i] > 0.05                                       ) return false;
+//	float HoverE2012 = SingleTowerHoverE(i);
+//	if( HoverE2012 < -0.5                                                  ) return false; // H/E not calculable due missing matched SC
+//	if( HoverE2012 > 0.05                                                  ) return false; // H/E cut for 2012
 	if(!(fTR->PhoPassConversionVeto[i])                                    ) return false; // Conversion safe electron veto
 	return true;
 }
@@ -2041,7 +2091,7 @@ bool MT2Analysis::IsGoodTau(int i){
        if(fTR->TauDecayModeFinding[i]            < 0.5          ) return false;  
        if(fTR->TauLooseElectronRejection[i]      < 0.5          ) return false;  
        if(fTR->TauLooseMuonRejection[i]          < 0.5          ) return false;  
-       if(fTR->TauLooseCombinedIsoDBSumPtCorr[i] < 0.5          ) return false;
+       if(fTR->TauLooseCombinedIsoDBSumPtCorr[i] < 0.5          ) return false;//should contain also the "3hits" ones
        return true;
 }
 
@@ -2124,7 +2174,28 @@ TLorentzVector MT2Analysis::MET(){
 			trueMET.SetPtEtaPhiM((fisType1MET?fTR->PFType1MET:fTR->PFMET), 0., (fisType1MET?fTR->PFType1METphi:fTR->PFMETphi), 0);
 			photon .SetPtEtaPhiM(fTR->PhoPt[fPhotons[0]], 0., fTR->PhoPhi[fPhotons[0]],   0);
 			MET    = photon + trueMET; 
-		}else{
+		} else if(fRemoveZll && ((fElecs.size()==2&&fMuons.size()==0) || (fElecs.size()==0&&fMuons.size()==2)) ){//select only Z+jets
+			TLorentzVector trueMET(0,0,0,0), Zll(0,0,0,0), Z0(0,0,0,0), Z1(0,0,0,0);
+			trueMET.SetPtEtaPhiM((fisType1MET?fTR->PFType1MET:fTR->PFMET), 0., (fisType1MET?fTR->PFType1METphi:fTR->PFMETphi), 0);
+			int charge0(0), charge1(0);
+			if(fElecs.size()==2){
+				Z0.SetPtEtaPhiE(fTR->ElPt [fElecs[0]], fTR->ElEta[fElecs[0]], fTR->ElPhi[fElecs[0]], fTR->ElE  [fElecs[0]]);
+				Z1.SetPtEtaPhiE(fTR->ElPt [fElecs[1]], fTR->ElEta[fElecs[1]], fTR->ElPhi[fElecs[1]], fTR->ElE  [fElecs[1]]);
+				charge0 = fTR->ElCharge[fElecs[0]]; charge1 = fTR->ElCharge[fElecs[1]]; 
+			}
+			else if(fMuons.size()==2){
+				Z0.SetPtEtaPhiM(fTR->MuPt [fMuons[0]], fTR->MuEta[fMuons[0]], fTR->MuPhi[fMuons[0]], 0.106);
+				Z1.SetPtEtaPhiM(fTR->MuPt [fMuons[1]], fTR->MuEta[fMuons[1]], fTR->MuPhi[fMuons[1]], 0.106);
+				charge0 = fTR->MuCharge[fMuons[0]]; charge1 = fTR->MuCharge[fMuons[1]]; 
+			}
+			bool isZll = true;
+			if(Z0.Pt()<10 || fabs(Z0.Eta())>2.4)    isZll = false;
+			if(Z1.Pt()<10 || fabs(Z1.Eta())>2.4)    isZll = false;
+			if(charge0==charge1)                    isZll = false;
+			if( (Z0+Z1).M()< 71 || (Z0+Z1).M()>111) isZll = false;
+			if(isZll) Zll.SetPtEtaPhiM((Z0 + Z1).Pt(), 0., (Z0 + Z1).Phi(), 0);
+			MET    = Zll + trueMET;
+		} else{
 			MET.SetPtEtaPhiM((fisType1MET?fTR->PFType1MET:fTR->PFMET), 0., (fisType1MET?fTR->PFType1METphi:fTR->PFMETphi), 0);
 		}
 		return MET;

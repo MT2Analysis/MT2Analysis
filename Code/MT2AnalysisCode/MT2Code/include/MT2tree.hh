@@ -447,6 +447,8 @@ public:
   Int_t    ElectronRejMVA3;
   Int_t    MuonRej2;
   Bool_t   isLooseID;
+  Bool_t   isLooseID3Hits;
+  Bool_t   isLooseIDMVA;
   ClassDef(MT2Tau, 5)
 };
 
@@ -610,6 +612,8 @@ public:
   void SetNPhotonsIDLoose25(int n);
   void SetNTaus            (int n);
   void SetNTausIDLoose     (int n);
+  void SetNTausIDLoose3Hits(int n);
+  void SetNTausIDLooseMVA  (int n);
   void SetNTausIDLoose2    (int n);
   
   // My functions here
@@ -737,6 +741,8 @@ public:
   Int_t   NPhotonsIDLoose25;//can be probably be deleted soon, again? (common object definition hadronic analyses)
   Int_t   NTaus;
   Int_t   NTausIDLoose;
+  Int_t   NTausIDLoose3Hits;
+  Int_t   NTausIDLooseMVA;
   Int_t   NTausIDLoose2;//can be probably be deleted soon, again? (common object definition hadronic analyses)
   Int_t   NGenLepts;
   Int_t   NPdfs;

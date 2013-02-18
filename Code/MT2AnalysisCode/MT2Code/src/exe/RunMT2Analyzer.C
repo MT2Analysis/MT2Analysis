@@ -84,6 +84,7 @@ int main(int argc, char* argv[]) {
 	int maxEvents=-1;
 	int ID       =-1;
     	bool removePhoton = false;
+    	bool removeZll    = false;
 	string photon = "";
 	string pdf = "";
 
@@ -132,6 +133,7 @@ int main(int argc, char* argv[]) {
 	else if (type=="scan"  ) isScan =true;
 	else    usage(-1);
 	if      (photon == "photon") removePhoton=true;
+	if      (photon == "Zll"   ) removeZll   =true;
 	if      (type=="data" && puScenario!="noPU"){ cout << "ERROR: this is data. don't run PUreweighting" << endl; exit(-1);}
 	if      (type=="mc"   && (data_PileUp.length()==0 || mc_PileUp.length()==0) && puScenario!="noPU") {
 		cout << "ERROR: need puScenario" << puScenario << " required input files."  << endl; exit(-1);
@@ -189,6 +191,9 @@ int main(int argc, char* argv[]) {
 	if(removePhoton){
 	cout << "WARNING: Photon is added to MET and jet/ele match to photon is removed!!" << endl;
 	}
+	if(removeZll   ){
+	cout << "WARNING: leptons from Z decay are added to MET (jet overlap already removed)" << endl;
+	}
 	if(pdf=="pdf"){  cout << "Creating PDF weights" << endl; 
 	}
 	cout << "--------------" << endl;
@@ -206,6 +211,7 @@ int main(int argc, char* argv[]) {
 	tA->SetFastSim(isFastSim);
 	tA->isScan = isScan;
 	tA->removePhoton = removePhoton;
+	tA->removeZll    = removeZll;
 	if(pdf=="pdf") tA->doPDF=true;
 	else tA->doPDF=false;
   	if (jsonFileName!="") tA->ReadJSON(jsonFileName.c_str());

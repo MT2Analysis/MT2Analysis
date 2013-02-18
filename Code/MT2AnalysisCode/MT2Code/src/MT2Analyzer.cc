@@ -11,6 +11,7 @@ MT2Analyzer::MT2Analyzer(std::vector<std::string>& fileList)
 	fMT2Analysis             = new MT2Analysis(fTR);
 	Util::SetStyle();
 	removePhoton =false;
+	removeZll    =false;
 	fID          =-1;  //default process ID
 	fbtagFileName="";
 	fhadtauFileName="";
@@ -85,6 +86,7 @@ void MT2Analyzer::BeginJob(TString filename, TString setofcuts, bool isData, str
 	fMT2Analysis                    ->fVerbose        = fVerbose;
 	fMT2Analysis                    ->SetJEC(JEC);
         fMT2Analysis                    ->fRemovePhoton = removePhoton;
+        fMT2Analysis                    ->fRemoveZll    = removeZll;
 	fMT2Analysis                    ->SetProcessID(fID);
 	fMT2Analysis                    ->SetBTagEfficiency(fbtagFileName);
 	fMT2Analysis                    ->SetHadTauEfficiency(fhadtauFileName);

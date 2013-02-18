@@ -74,8 +74,9 @@ public:
   	//is a fastsim sample?
   	bool fisFastSim;
 
-  	// remove Photon
+  	// remove Photon / Z->ll
   	bool fRemovePhoton;
+  	bool fRemoveZll;
 
 	// CHSjets
 	bool fisType1MET;

@@ -679,6 +679,8 @@ void MT2Tau::Reset(){
   ElectronRejMVA3=-9999;
   MuonRej2      = -9999;
   isLooseID     = 0;
+  isLooseID3Hits= 0;
+  isLooseIDMVA  = 0;
 }
 
 void MT2Tau::SetLV(const TLorentzVector v) {
@@ -691,9 +693,23 @@ Bool_t MT2Tau::IsGoodTau(float minJPt, float maxJEta, int iso, int elerej, int m
   if( pt < minJPt )               return false; // need to do this first, before getting lv.Eta();
   float eta = lv.Eta();
   if( fabs(eta) > maxJEta)        return false;
+  if(iso>=0){//normal: 1 to 4
   if(Isolation<iso)               return false;
+  } else if(iso<-10){//mva: -12 to -14
+  if(IsolationMVA2<(-iso-10))     return false;
+  } else{//3hits: -2 to -4
+  if(Isolation3Hits<(-iso))       return false;
+  }
+  if(elerej>=0){
   if(ElectronRej<elerej)          return false;
+  } else{//mva3
+  if(ElectronRejMVA3<(-elerej))   return false;
+  }
+  if(muorej>=0){
   if(MuonRej<muorej)              return false;
+  } else{
+  if(MuonRej2<(-muorej))          return false;
+  }
 
   return true;
 }
@@ -889,6 +905,14 @@ void MT2tree::SetNTausIDLoose(int n) {
   NTausIDLoose = n;
 }
 
+void MT2tree::SetNTausIDLoose3Hits(int n) {
+  NTausIDLoose3Hits = n;
+}
+
+void MT2tree::SetNTausIDLooseMVA(int n) {
+  NTausIDLooseMVA = n;
+}
+
 void MT2tree::SetNTausIDLoose2(int n) {
   NTausIDLoose2 = n;
 }
@@ -969,12 +993,29 @@ Int_t MT2tree::GetNTaus(float minJPt, float maxJEta, int iso, int elerej, int mu
   int ntaus=0;
   for(int i=0; i<NTaus; ++i){
 	float pt = tau[i].lv.Pt();
-	if( pt < minJPt )               continue; // need to do this first, before getting lv.Eta();
+	if( pt < minJPt )                            continue; // need to do this first, before getting lv.Eta();
 	float eta = tau[i].lv.Eta();
-	if( fabs(eta) > maxJEta)        continue;
-	if(tau[i].Isolation<iso)        continue;
-	if(tau[i].ElectronRej<elerej)   continue;
-	if(tau[i].MuonRej<muorej)       continue;
+	if( fabs(eta) > maxJEta)                     continue;
+	if(iso>=0){//normal: 1 to 4
+		if(tau[i].Isolation<iso)             continue;
+	} else if(iso<-10){//mva: -12 to -14
+		if(tau[i].IsolationMVA2<(-iso-10))   continue;
+	} else{//3hits: -2 to -4
+		if(tau[i].Isolation3Hits<(-iso))     continue;
+	}
+	if(elerej>=0){
+		if(tau[i].ElectronRej<elerej)        continue;
+	} else{//mva3
+		if(tau[i].ElectronRejMVA3<(-elerej)) continue;
+	}
+	if(muorej>=0){
+		if(tau[i].MuonRej<muorej)            continue;
+	} else{
+		if(tau[i].MuonRej2<(-muorej))        continue;
+	}
+	//if(tau[i].Isolation<iso)        continue;
+	//if(tau[i].ElectronRej<elerej)   continue;
+	//if(tau[i].MuonRej<muorej)       continue;
 	//if(tau[i].IsGoodTau(minJPt, maxJEta, iso, elerej, muorej)==false) continue;
 	ntaus++;
   }

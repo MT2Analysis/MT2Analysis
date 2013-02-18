@@ -26,6 +26,7 @@ public:
 	void SetCHSJets(bool CHSJets){fCHSJets = CHSJets;};
 	void SetFastSim(bool FastSim){fisFastSim = FastSim;};
 	bool removePhoton;
+	bool removeZll;
         bool doPDF;
         bool isScan;
         bool fisFastSim;

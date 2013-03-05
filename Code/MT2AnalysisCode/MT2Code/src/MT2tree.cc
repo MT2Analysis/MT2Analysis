@@ -2236,6 +2236,21 @@ Int_t MT2tree::GenNumLeptFromW(int pid, float pt, float eta, bool includeTau){
 	return good;	
 }
 
+Int_t MT2tree::GenNumLeptFromMID(int mid, int pid, float pt, float eta, bool includeTau){
+	int good(0);
+	for(int i=0; i<NGenLepts; ++i){
+		if(pid==1113 && (abs(genlept[i].ID)!=11 && abs(genlept[i].ID)!=13 ))//either electon or muon
+			continue;
+		if(pid!=1113 && abs(genlept[i].ID) !=pid            ) continue;
+		if( (!includeTau) && abs(genlept[i].MID) !=mid       ) continue;
+		if(   includeTau  && !((abs(genlept[i].MID)==15 && abs(genlept[i].GMID)==mid ) || abs(genlept[i].MID)==mid)) continue;
+		if(genlept[i].lv.Pt()       < pt                    ) continue;
+		if(fabs(genlept[i].lv.Eta())>eta                    ) continue;
+		++good;
+	}
+	return good;	
+}
+
 Float_t MT2tree::GetLeptPt(int index){
 	if(NEles + NMuons ==0) return -999;
 	float pt_0 =0;
@@ -2409,11 +2424,14 @@ Int_t MT2tree::WDecayMode(){
 	// 0 not recognized
 	// 1= ele (not incl. tau decays)
 	// 2= muo (not incl. tau decays)
+	// 3= ele muo
 	// 4= tau
 	// 8= tau stable (i.e. problem in MC sample)
 	//12= tau_had
 	//13= tau_ele
 	//14= tau_muo
+	//15 = ele-tau_muo
+	//15 = tau_ele-tau_muo
 	Int_t result =0;
 	for(int i=0; i<NGenLepts; ++i){
 		if( abs(genlept[i].ID)==11 && abs(genlept[i].MID)==24 )                               {result = result | 1;} 

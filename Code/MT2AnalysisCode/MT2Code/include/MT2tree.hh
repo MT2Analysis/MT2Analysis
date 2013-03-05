@@ -688,6 +688,7 @@ public:
   Int_t   GetGenLeptIndex2(int which, int pid, int mother, int gmother, float pt, float eta);
   Bool_t  GenLeptFromW(int pid, float pt, float eta, bool includeTaus);
   Int_t   GenNumLeptFromW(int pid, float pt, float eta, bool includeTaus);
+  Int_t   GenNumLeptFromMID(int mid, int pid, float pt, float eta, bool includeTaus);
   Float_t GetLeptPt(int index);
   Float_t ElClosestJet();
   Int_t   WDecayMode();

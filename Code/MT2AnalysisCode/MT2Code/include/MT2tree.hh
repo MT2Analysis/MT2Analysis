@@ -42,6 +42,8 @@ public:
 
   Float_t  LeadingJPt;
   Float_t  SecondJPt;
+  Float_t  J3Pt;
+  Float_t  J4Pt;
   Float_t  Vectorsumpt;
   Float_t  MinMetJetDPhi;       // use all jets
   Float_t  MinMetJetDPhi4;      // use first 4 jets
@@ -73,7 +75,7 @@ public:
   Bool_t   TrackingTooManyStripClusFlag;
   Bool_t   TrackingLogErrorTooManyClustersFlag;
   
-  ClassDef(MT2Misc, 36)
+  ClassDef(MT2Misc, 37)
 };
 
 
@@ -252,6 +254,8 @@ public:
         Bool_t HLT_QuadJet60_DiJet20_v6;
         Bool_t HLT_QuadJet50_v1;
         Bool_t HLT_QuadJet50_v2;
+        Bool_t HLT_QuadJet50_v3;
+        Bool_t HLT_QuadJet50_v5;
         Bool_t HLT_QuadJet70_v1;
         Bool_t HLT_QuadJet70_v2;
         Bool_t HLT_QuadJet70_v3;
@@ -320,7 +324,7 @@ public:
 	Bool_t HLT_SingleEle_DiJet_MET;
 	Bool_t HLT_SingleEle_MET_MT;
 
-	ClassDef(MT2Trigger, 21);
+	ClassDef(MT2Trigger, 22);
 };
 
 // MT2Jet ----------------------------------

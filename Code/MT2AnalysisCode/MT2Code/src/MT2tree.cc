@@ -46,6 +46,8 @@ void MT2Misc::Reset() {
   METPhi                  = -99999.99;
   LeadingJPt              = -99999.99;
   SecondJPt               = -99999.99;
+  J3Pt                    = -99999.99;
+  J4Pt                    = -99999.99;
   Vectorsumpt		  = -99999.99;
   HT			  = -99999.99;
   QCDPartonicHT		  = -99999.99;
@@ -253,6 +255,8 @@ void MT2Trigger::Reset(){
         HLT_QuadJet60_DiJet20_v6           = false;
         HLT_QuadJet50_v1                   = false;
         HLT_QuadJet50_v2                   = false;
+        HLT_QuadJet50_v3                   = false;
+        HLT_QuadJet50_v5                   = false;
         HLT_QuadJet70_v1                   = false;
         HLT_QuadJet70_v2                   = false;
         HLT_QuadJet70_v3                   = false;

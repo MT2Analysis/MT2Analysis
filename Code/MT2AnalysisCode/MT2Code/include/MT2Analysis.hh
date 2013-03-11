@@ -14,6 +14,7 @@
 #include "helper/Davismt2.h"
 #include "helper/TMctLib.h"
 #include "helper/Hemisphere.hh"
+#include "helper/EventFilterFromListStandAlone.h"
 #include "BTagSFWeight.hh"
 #include "MT2tree.hh"
 #include <TLorentzVector.h>
@@ -90,7 +91,6 @@ public:
   	//SUSY subprocess histos
   	TH2F *fH_mSugraSubProcEvents[11];
 
-
 private:
 	// files and trees ----------------------------------------------------------------
 	// file for histograms:
@@ -115,6 +115,9 @@ private:
 	TH1F  *hjeteff;
 	TH1F  *heleeff;
 	TH1F  *hmuoeff;
+
+        // HCAL Laser standalone filter
+         EventFilterFromListStandAlone *myFilter;
 
 	// data members-----------------------------------------
 	bool fisData;

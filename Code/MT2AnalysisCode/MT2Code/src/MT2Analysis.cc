@@ -83,6 +83,9 @@ void MT2Analysis::Begin(const char* filename){
 	fHistFile = new TFile(fOutputDir + TString(filename), "RECREATE");
 	TDirectory *dir = gDirectory;
 
+
+	myFilter = new EventFilterFromListStandAlone("data/HCALLaser2012AllDatasets.txt.gz");
+
 	//define btagging files
 	bool existing=true;
 	std::ifstream ifile(fbtagFileName.c_str() );
@@ -239,6 +242,8 @@ void MT2Analysis::Begin(const char* filename){
 	  fTriggerMap["HLT_QuadJet60_DiJet20_v6"]           = &fMT2tree->trigger.HLT_QuadJet60_DiJet20_v6;
 	  fTriggerMap["HLT_QuadJet50_v1"]                   = &fMT2tree->trigger.HLT_QuadJet50_v1;
 	  fTriggerMap["HLT_QuadJet50_v2"]                   = &fMT2tree->trigger.HLT_QuadJet50_v2;
+	  fTriggerMap["HLT_QuadJet50_v3"]                   = &fMT2tree->trigger.HLT_QuadJet50_v3;
+	  fTriggerMap["HLT_QuadJet50_v5"]                   = &fMT2tree->trigger.HLT_QuadJet50_v5;
 	  fTriggerMap["HLT_QuadJet70_v1"]                   = &fMT2tree->trigger.HLT_QuadJet70_v1;
 	  fTriggerMap["HLT_QuadJet70_v2"]                   = &fMT2tree->trigger.HLT_QuadJet70_v2;
 	  fTriggerMap["HLT_QuadJet70_v3"]                   = &fMT2tree->trigger.HLT_QuadJet70_v3;
@@ -956,6 +961,8 @@ bool MT2Analysis::FillMT2TreeBasics(){
 
 	fMT2tree->misc.LeadingJPt          = (fMT2tree->NJets > 0) ? fMT2tree->jet[0].lv.Pt() : 0;
 	fMT2tree->misc.SecondJPt           = (fMT2tree->NJets > 1) ? fMT2tree->jet[1].lv.Pt() : 0;
+	fMT2tree->misc.J3Pt                = (fMT2tree->NJets > 2) ? fMT2tree->jet[2].lv.Pt() : 0;
+	fMT2tree->misc.J4Pt                = (fMT2tree->NJets > 3) ? fMT2tree->jet[3].lv.Pt() : 0;
 	
 	// noise filters    // store bad events as "true"
 	
@@ -1491,6 +1498,9 @@ bool MT2Analysis::IsSelectedEvent(){
 	// Run
 	if(fTR->Run < fCut_Run_min ) {return false;}
 	if(fTR->Run > fCut_Run_max ) {return false;}
+
+	// HCAL laser filter
+	if ( !myFilter->filter(fTR->Run,fTR->LumiSection,fTR->Run) ) {return false;}
 
 	// Protection against events with NAN-Pt objects
 	if(fIsNANObj) {

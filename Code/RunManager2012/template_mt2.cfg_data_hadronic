@@ -1,7 +1,0 @@
-ReleasePath /shome/haweber/CMSSW_5_3_6
-Executable /shome/haweber/MT2Analysis_8TeV/Code/MT2AnalysisCode/MT2Code/RunMT2Analyzer
-NameOfConf myScript.sh
-NameOfSource configuration.cfg_mt2data_hadronic
-SrmPath SUSY/MassTrees/MT2_V02-02-00/20121218_data_nocuts_MC_2jets_type1_CHS/
-WorkPath /shome/haweber/MT2Analysis_8TeV/Code/RunManager2012/MT2_V02-02-00/20121218_data_nocuts_MC_2jets_type1_CHS/data_v1/
-HPName haweber

@@ -83,8 +83,8 @@ void MT2Analysis::Begin(const char* filename){
 	fHistFile = new TFile(fOutputDir + TString(filename), "RECREATE");
 	TDirectory *dir = gDirectory;
 
-
-	myFilter = new EventFilterFromListStandAlone("data/HCALLaser2012AllDatasets.txt.gz");
+	if (fisData )
+	  myFilter = new EventFilterFromListStandAlone("data/HCALLaser2012AllDatasets.txt.gz");
 
 	//define btagging files
 	bool existing=true;
@@ -1500,7 +1500,7 @@ bool MT2Analysis::IsSelectedEvent(){
 	if(fTR->Run > fCut_Run_max ) {return false;}
 
 	// HCAL laser filter
-	if ( !myFilter->filter(fTR->Run,fTR->LumiSection,fTR->Run) ) {return false;}
+	if ( fisData && !myFilter->filter(fTR->Run,fTR->LumiSection,fTR->Event) ) {return false;}
 
 	// Protection against events with NAN-Pt objects
 	if(fIsNANObj) {

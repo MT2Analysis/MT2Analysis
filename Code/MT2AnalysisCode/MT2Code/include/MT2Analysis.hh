@@ -242,8 +242,13 @@ private:
 	JetCorrectorParameters* fJecPFL2;   
 	JetCorrectorParameters* fJecPFL3;   
 	JetCorrectorParameters* fJecPFRES;  
+	JetCorrectorParameters* fJecrawPFL1;   
+	JetCorrectorParameters* fJecrawPFL2;   
+	JetCorrectorParameters* fJecrawPFL3;   
+	JetCorrectorParameters* fJecrawPFRES;  
 
 	FactorizedJetCorrector* fJetCorrectorPF;
+	FactorizedJetCorrector* fMetCorrectorPF;
 	FactorizedJetCorrector* fJetCorrectorCalo;
 
 };

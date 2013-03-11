@@ -46,8 +46,13 @@ MT2Analysis::~MT2Analysis(){
 	delete fJecPFL2;   
 	delete fJecPFL3;   
 	delete fJecPFRES;  
+	delete fJecrawPFL1;   
+	delete fJecrawPFL2;   
+	delete fJecrawPFL3;   
+	delete fJecrawPFRES;  
 
 	delete fJetCorrectorPF;
+	delete fMetCorrectorPF;
 	delete fJetCorrectorCalo;
 
 }
@@ -314,7 +319,12 @@ void MT2Analysis::Begin(const char* filename){
 	        fJecPFL2          =NULL; 
 	        fJecPFL3          =NULL;
 	        fJecPFRES         =NULL;
+	        fJecrawPFL1       =NULL;
+	        fJecrawPFL2       =NULL; 
+	        fJecrawPFL3       =NULL;
+	        fJecrawPFRES      =NULL;
 	        fJetCorrectorPF   =NULL;
+	        fMetCorrectorPF   =NULL;
 	        fJetCorrectorCalo =NULL;
 	}
 	if(fDoJESUncertainty && fJEC.length()==0){
@@ -647,13 +657,52 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	// --------------------------------------------------------------------
 	// MET 
 	fMT2tree->pfmet[0]=MET();
-	// raw, uncorrected and not modified pfmet
-	fMT2tree->rawpfmet[0].SetPtEtaPhiM(fTR->PFMET, 0, fTR->PFMETphi, 0);
-	// type1corrected pfMET
-	fMT2tree->type1pfmet[0].SetPtEtaPhiM(fTR->PFType1MET, 0, fTR->PFType1METphi, 0);
 	// raw calomet
 	fMT2tree->misc.CaloMETRaw = fTR->RawMET;
 	fMT2tree->misc.CaloMETMuJesCorr = fTR->MuJESCorrMET;
+	// raw, uncorrected and not modified pfmet
+	fMT2tree->rawpfmet[0].SetPtEtaPhiM(fTR->PFMET, 0, fTR->PFMETphi, 0);
+	// type1corrected pfMET
+	if(fJEC.length()==0){
+		fMT2tree->type1pfmet[0].SetPtEtaPhiM(fTR->PFType1MET, 0, fTR->PFType1METphi, 0);
+	} else if (fisType1MET){//type1met already recomputed via MET()
+		fMT2tree->type1pfmet[0] = MET();
+	} else {
+		float corrMetx = fTR->PFMETpx;
+		float corrMety = fTR->PFMETpy;
+		float Type1CorPx(0.), Type1CorPy(0.);
+		for(int i = 0; i<fTR->JMetCorrRawEta.size(); ++i){
+			if (fTR->JMetCorrEMF[i] > 0.9) continue;
+		
+			fMetCorrectorPF->setJetPt(fTR->JMetCorrRawPt[i]);
+			fMetCorrectorPF->setJetEta(fTR->JMetCorrRawEta[i]);
+			fMetCorrectorPF->setJetA(fTR->JMetCorrArea[i]);
+			fMetCorrectorPF->setRho(fTR->Rho);
+		
+			vector<float> corrections = fMetCorrectorPF->getSubCorrections();
+		
+			float l1corrpt   = fTR->JMetCorrNoMuPt[i]*corrections[0]; // l1fastjet corrections were pushed pack first
+			float fullcorrpt;
+			// convention for correction factors as follows: 0->L1, 1->L1L2, 2->L1L2L3, 3->L1L2L3Res
+			//residual corrections only on data
+			if(fisData) fullcorrpt = fTR->JMetCorrNoMuPt[i]*corrections[3];  // full corrections are the last in the vector
+			else        fullcorrpt = fTR->JMetCorrNoMuPt[i]*corrections[2];  // full corrections are the last in the vector
+	
+			if (fullcorrpt < 10.) continue;        // skip all jets that have corrected pt below 10 GeV
+		
+			float corrpx = (l1corrpt - fullcorrpt)* TMath::Cos(fTR->JMetCorrPhi[i]);
+			float corrpy = (l1corrpt - fullcorrpt)* TMath::Sin(fTR->JMetCorrPhi[i]);
+			Type1CorPx += corrpx;
+			Type1CorPy += corrpy;
+		}
+		corrMetx += Type1CorPx;
+		corrMety += Type1CorPy;
+		fMT2tree->type1pfmet[0].SetPxPyPzE(corrMetx, corrMety, 0.,0.);
+	}
+	//cout << "old pfmet "    << fTR->PFMET << " Phi " << fTR->PFMETphi << endl;
+	//cout << "new type1   Px " << fMT2tree->type1pfmet[0].Px() << " Py " << fMT2tree->type1pfmet[0].Py() << endl;
+	//cout << "std type1   Px " << fTR->PFType1METpx << " Py " << fTR->PFType1METpy << endl;
+	//cout << "std MET     Px " << fMT2tree->pfmet[0].Px() << " Py " << fMT2tree->pfmet[0].Py() << endl;
 
 //	//pdf weights // FIXME
 //	if(doPDF){
@@ -2099,9 +2148,9 @@ bool MT2Analysis::IsGoodTau(int i){
        if(fTR->TauPt[i]                          < 15.0         ) return false;    
        if(fabs(fTR->TauEta[i])                   > 2.3          ) return false;
        if(fTR->TauDecayModeFinding[i]            < 0.5          ) return false;  
-       if(fTR->TauLooseElectronRejection[i]      < 0.5          ) return false;  
-       if(fTR->TauLooseMuonRejection[i]          < 0.5          ) return false;  
-       if(fTR->TauLooseCombinedIsoDBSumPtCorr[i] < 0.5          ) return false;//should contain also the "3hits" ones
+       if(fTR->TauLooseElectronRejection[i]      < 0.5          ) return false;//have to take this as we apply tau veto
+       if(fTR->TauLooseMuonRejection[i]          < 0.5          ) return false;//loose WP is the same for '2' version, no problem
+       if(fTR->TauLooseCombinedIsoDBSumPtCorr[i] < 0.5          ) return false;//should contain also the "3hits" ones, small inefficiency for MVA2.
        return true;
 }
 
@@ -2133,6 +2182,10 @@ void MT2Analysis::Initialize_JetEnergyCorrection(){
 	string PF_L2    ="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+(fisCHSJets?"_L2Relative_AK5PFchs.txt"   :"_L2Relative_AK5PF.txt");
 	string PF_L3    ="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+(fisCHSJets?"_L3Absolute_AK5PFchs.txt"   :"_L3Absolute_AK5PF.txt");
 	string PF_RES   ="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+(fisCHSJets?"_L2L3Residual_AK5PFchs.txt" :"_L2L3Residual_AK5PF.txt");
+	string rawPF_L1 ="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+"_L1FastJet_AK5PF.txt";
+	string rawPF_L2 ="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+"_L2Relative_AK5PF.txt";
+	string rawPF_L3 ="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+"_L3Absolute_AK5PF.txt";
+	string rawPF_RES="/shome/haweber/MT2Analysis_8TeV/Code/JetEnergyCorrection/"+fJEC+"/"+fJEC+"_L2L3Residual_AK5PF.txt";
 
 	ifstream fileCaloL2  (Calo_L2.c_str());
 	ifstream fileCaloL3  (Calo_L3.c_str());
@@ -2141,6 +2194,10 @@ void MT2Analysis::Initialize_JetEnergyCorrection(){
 	ifstream filePFL2    (PF_L2.c_str());
 	ifstream filePFL3    (PF_L3.c_str());
 	ifstream filePFRES   (PF_RES.c_str());
+	ifstream filerawPFL1 (rawPF_L1.c_str());
+	ifstream filerawPFL2 (rawPF_L2.c_str());
+	ifstream filerawPFL3 (rawPF_L3.c_str());
+	ifstream filerawPFRES(rawPF_RES.c_str());
 	if(! filePFL1   ) {cout << "ERROR: cannot open file " << PF_L1     << endl; exit(1); }
 	else              {cout << "  using file "            << PF_L1     << endl;          }
 	if(! filePFL2   ) {cout << "ERROR: cannot open file " << PF_L2     << endl; exit(1); }
@@ -2149,12 +2206,20 @@ void MT2Analysis::Initialize_JetEnergyCorrection(){
 	else              {cout << "  using file "            << PF_L3     << endl;          }
 	if(! filePFRES  ) {cout << "ERROR: cannot open file " << PF_RES    << endl; exit(1); }
 	else              {cout << "  using file "            << PF_RES    << endl;          }
+	if(! filerawPFL1) {cout << "ERROR: cannot open file " << rawPF_L1     << endl; exit(1); }
+	else              {cout << "  using file "            << rawPF_L1     << endl;          }
+	if(! filerawPFL2) {cout << "ERROR: cannot open file " << rawPF_L2     << endl; exit(1); }
+	else              {cout << "  using file "            << rawPF_L2     << endl;          }
+	if(! filerawPFL3) {cout << "ERROR: cannot open file " << rawPF_L3     << endl; exit(1); }
+	else              {cout << "  using file "            << rawPF_L3     << endl;          }
+	if(! filerawPFRES){cout << "ERROR: cannot open file " << rawPF_RES    << endl; exit(1); }
+	else              {cout << "  using file "            << rawPF_RES    << endl;          }
 	if(! fileCaloL2 ) {cout << "ERROR: cannot open file " << Calo_L2   << endl; exit(1); }
 	else              {cout << "  using file "            << Calo_L2   << endl;          } 
 	if(! fileCaloL3 ) {cout << "ERROR: cannot open file " << Calo_L3   << endl; exit(1); }
 	else              {cout << "  using file "            << Calo_L3   << endl;          } 
-	if(! fileCaloRES) {cout << "ERROR: cannot open file " << Calo_RES   << endl; exit(1); }
-	else              {cout << "  using file "            << Calo_RES   << endl;          } 
+	if(! fileCaloRES) {cout << "ERROR: cannot open file " << Calo_RES   << endl; exit(1);}
+	else              {cout << "  using file "            << Calo_RES   << endl;         } 
 
 	fJecCaloL2  = new JetCorrectorParameters(Calo_L2);
 	fJecCaloL3  = new JetCorrectorParameters(Calo_L3);
@@ -2163,14 +2228,22 @@ void MT2Analysis::Initialize_JetEnergyCorrection(){
 	fJecPFL2    = new JetCorrectorParameters(PF_L2); 
 	fJecPFL3    = new JetCorrectorParameters(PF_L3); 
 	fJecPFRES   = new JetCorrectorParameters(PF_RES); 
+	fJecrawPFL1 = new JetCorrectorParameters(rawPF_L1); 
+	fJecrawPFL2 = new JetCorrectorParameters(rawPF_L2); 
+	fJecrawPFL3 = new JetCorrectorParameters(rawPF_L3); 
+	fJecrawPFRES= new JetCorrectorParameters(rawPF_RES); 
 
 	vector<JetCorrectorParameters> JecPF;
+	vector<JetCorrectorParameters> JecrawPF;
 	vector<JetCorrectorParameters> JecCalo;
 	// ATTENTION: order matters here!
-	JecPF.push_back(*fJecPFL1);     JecPF.push_back(*fJecPFL2);     JecPF.push_back(*fJecPFL3);     JecPF.push_back(*fJecPFRES);
-	JecCalo.push_back(*fJecCaloL2); JecCalo.push_back(*fJecCaloL3); JecCalo.push_back(*fJecCaloRES); 
+	JecPF.push_back(*fJecPFL1);       JecPF.push_back(*fJecPFL2);       JecPF.push_back(*fJecPFL3);       JecPF.push_back(*fJecPFRES);
+	JecCalo.push_back(*fJecCaloL2);   JecCalo.push_back(*fJecCaloL3);   JecCalo.push_back(*fJecCaloRES); 
+	JecrawPF.push_back(*fJecrawPFL1); JecrawPF.push_back(*fJecrawPFL2); JecrawPF.push_back(*fJecrawPFL3);
+	if(fisData) JecrawPF.push_back(*fJecrawPFRES);
 	
 	fJetCorrectorPF   = new FactorizedJetCorrector(JecPF);
+	fMetCorrectorPF   = new FactorizedJetCorrector(JecrawPF);
 	fJetCorrectorCalo = new FactorizedJetCorrector(JecCalo);
 }
 
@@ -2205,8 +2278,41 @@ TLorentzVector MT2Analysis::MET(){
 			if( (Z0+Z1).M()< 71 || (Z0+Z1).M()>111) isZll = false;
 			if(isZll) Zll.SetPtEtaPhiM((Z0 + Z1).Pt(), 0., (Z0 + Z1).Phi(), 0);
 			MET    = Zll + trueMET;
-		} else{
+		} else if(fJEC.length()==0){ //not redoing PFMET
 			MET.SetPtEtaPhiM((fisType1MET?fTR->PFType1MET:fTR->PFMET), 0., (fisType1MET?fTR->PFType1METphi:fTR->PFMETphi), 0);
+		} else if(fisType1MET){
+			float corrMetx = fTR->PFMETpx;
+			float corrMety = fTR->PFMETpy;
+			float Type1CorPx(0.), Type1CorPy(0.);
+			for(int i = 0; i<fTR->JMetCorrRawEta.size(); ++i){
+				if (fTR->JMetCorrEMF[i] > 0.9) continue;
+			
+				fMetCorrectorPF->setJetPt(fTR->JMetCorrRawPt[i]);
+				fMetCorrectorPF->setJetEta(fTR->JMetCorrRawEta[i]);
+				fMetCorrectorPF->setJetA(fTR->JMetCorrArea[i]);
+				fMetCorrectorPF->setRho(fTR->Rho);
+			
+				vector<float> corrections = fMetCorrectorPF->getSubCorrections();
+			
+				float l1corrpt   = fTR->JMetCorrNoMuPt[i]*corrections[0]; // l1fastjet corrections were pushed pack first
+				float fullcorrpt;
+				// convention for correction factors as follows: 0->L1, 1->L1L2, 2->L1L2L3, 3->L1L2L3Res
+				//residual corrections only on data
+				if(fisData) fullcorrpt = fTR->JMetCorrNoMuPt[i]*corrections[3];  // full corrections are the last in the vector
+				else        fullcorrpt = fTR->JMetCorrNoMuPt[i]*corrections[2];  // full corrections are the last in the vector
+		
+				if (fullcorrpt < 10.) continue;        // skip all jets that have corrected pt below 10 GeV
+			
+				float corrpx = (l1corrpt - fullcorrpt)* TMath::Cos(fTR->JMetCorrPhi[i]);
+				float corrpy = (l1corrpt - fullcorrpt)* TMath::Sin(fTR->JMetCorrPhi[i]);
+				Type1CorPx += corrpx;
+				Type1CorPy += corrpy;
+			}
+			corrMetx += Type1CorPx;
+			corrMety += Type1CorPy;
+			MET.SetPxPyPzE(corrMetx, corrMety, 0.,0.);
+		} else {//standard pfmet
+			MET.SetPtEtaPhiM(fTR->PFMET, 0., fTR->PFMETphi, 0);
 		}
 		return MET;
 	} else{

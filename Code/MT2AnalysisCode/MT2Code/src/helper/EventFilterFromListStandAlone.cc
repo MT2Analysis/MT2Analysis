@@ -19,7 +19,8 @@ void EventFilterFromListStandAlone::addEventString(const string & eventString)
 {
   int run=0;
   unsigned int ls=0;
-  unsigned int event=0;
+  //unsigned int event=0;
+  int event=0;
   // Check that event list object is in correct form
   size_t found = eventString.find(":");  // find first colon
   if (found!=std::string::npos)
@@ -57,6 +58,11 @@ void EventFilterFromListStandAlone::addEventString(const string & eventString)
   if (minRunInFile>run) minRunInFile=run;
   if (maxRunInFile<run) maxRunInFile=run;
   // Now add event to Event List
+  if (event<0) {  // protection against potential negative events numbers
+    std::stringstream thisevent;
+    thisevent <<run<<":"<<ls<<":"<<event;
+    EventList_.push_back(thisevent.str());
+  }
   EventList_.push_back(eventString);
 }
 

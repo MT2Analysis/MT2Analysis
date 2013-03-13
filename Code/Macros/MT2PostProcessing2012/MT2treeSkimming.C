@@ -27,8 +27,8 @@ void MT2treeSkimming(string sample, string shlib, string prefix) {
 	// cuts --------------------------------------------
   	std::ostringstream cutStream;
 	cutStream       << " " 	  
-         //  << "misc.HT>450 && misc.HT<750"                                       << "&&"  // low-HT selection
-           << "misc.HT>750"                                                      << "&&"  // high-HT selection
+           << "misc.HT>450 && misc.HT<750"                                       << "&&"  // low-HT selection
+         //  << "misc.HT>750"                                                      << "&&"  // high-HT selection
            << "misc.MET>=30"                                                     << "&&"
            << "NJetsIDLoose40>=2"                                                << "&&"
            << "misc.PassJet40ID==1"                                              << "&&"

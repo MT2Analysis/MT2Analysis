@@ -27,80 +27,20 @@ void MT2treeSkimming(string sample, string shlib, string prefix) {
 	// cuts --------------------------------------------
   	std::ostringstream cutStream;
 	cutStream       << " " 	  
-/*
-//	  << "misc.Event%3==0";
-//	  << "misc.MT2>=50"                                      << "&&" 
-	  << "misc.MET>=30"                                      << "&&"
-	  << "misc.Jet0Pass ==1"                                 << "&&"
-	  << "misc.Jet1Pass ==1"                                 << "&&"
-//	  << "misc.SecondJPt  >100"                              << "&&"
-	  << "misc.PassJetID ==1"                                << "&&"
-	  << "misc.Vectorsumpt < 70"                             << "&&"
-	  << "(NJetsIDLoose40 +NEles +NMuons)>=2"                << "&&"
-//	  << "((misc.MinMetJetDPhi >0.3&&NBJets==0)||NBJets>=1)" << "&&"
-//	  << "misc.MinMetJetDPhi4 >0.3"                          << "&&"
-// Lepton Veto
-//	  << "(NEles+NMuons)==0"                                 << "&&"
-//	  << "(NEles==0 || ele[0].lv.Pt()<10)"                   << "&&"
-//	  << "(NMuons==0 || muo[0].lv.Pt()<10)"                  << "&&"
-// Lepton Skim
-//	  << "(ele[0].lv.Pt()>10 || muo[0].lv.Pt()>10)"          << "&&"
-// LowMT2 ----------------------------
-//	  << "misc.LeadingJPt >150"                              << "&&"
-//	  << "NBJets >0"                                         << "&&"
-//	  << "NJetsIDLoose >=4"                                  << "&&"
-// -----------------------------------
-// Signal Veto -----------------------
-//	   << "misc.ProcessID!=10"                               << "&&"
-// MT2 signal regions ----------------
-//	  << "misc.HT>=750&&misc.MET>=30"                        << "&&"//HTskim
-//	  << "misc.HT>=450&&misc.HT<=750&&misc.MET>=200"         << "&&"//METskim
-	  << "((misc.HT>=450&&misc.HT<=750&&misc.MET>=200)||(misc.HT>=750&&misc.MET>=30))" << "&&"//HT or MET skim
-// Stop Skim -------------------------
-//	  << "NJetsIDLoose40 >=2"                                << "&&"
-//	  << "GetNjets(60,2.4,1) >=4"                            << "&&"
-//	  << "(NEles+NMuons) >=2"                                << "&&"
-//	  << "NBJetsCSVM     >=1"                                << "&&"
-//	  << "NJetsIDLoose40 >=3"                                << "&&"
-// Stop Selection -------------------
-//	   << "(misc.ProcessID!=10 || Susy.MassLSP>=50)"         << "&&"
-//	   << "(misc.ProcessID!=10 || Susy.MassChi<=750)"        << "&&"
-//	   << "(misc.ProcessID!=10 || Susy.MassLSP==125)"        << "&&"
-//	   << "(misc.ProcessID!=10 || Susy.MassChi==400)"        << "&&"
-// Photons
-//	  << "(GenDiLeptPt(0,10,0,1000,false)>=100||GenPhoton[0].Pt()>=100)"  << "&&"
-//	  << "(RecoOSDiLeptPt(10,10,0,10000)>=100 ||photon[0].lv.Pt()>=100)"  << "&&"
-//	  << "NPhotons >0"  
-// Noise -- first 6 are official filters
-//	  << "(misc.isFastSim || misc.HBHENoiseFlag == 0)"       << "&&"
-//	  << "(misc.isFastSim || misc.CSCTightHaloIDFlag == 0)"  << "&&"
-//	  << "(misc.isFastSim || misc.hcalLaserEventFlag == 0)"  << "&&"
-*/
-	  << "(misc.ProcessID==10 || misc.HBHENoiseFlag == 0)"       << "&&"
-	  << "(misc.ProcessID==10 || misc.CSCTightHaloIDFlag == 0)"  << "&&"
-	  << "(misc.ProcessID==10 || misc.hcalLaserEventFlag == 0)"  << "&&"
-	  << "misc.trackingFailureFlag == 0"                     << "&&"
-	  << "misc.eeBadScFlag == 0"                             << "&&"
-	  << "misc.EcalDeadCellTriggerPrimitiveFlag == 0"
-	<< "&&" << "trigger.HLT_SingleMu==1"
-// ;
-// ;//        
-<< "&&"
-<< "misc.CrazyHCAL==0"
-<< "&&"
-<< "NMuons >=1"
-<< "&&"
-<< "(Sum$(muo.lv.Pt()>18&&abs(muo.lv.Eta())<1.6)) >=1"
-	  //MM
-			<< "&&"<<"misc.HT>450."
-	  //MM
-;
+           << "misc.HT>450 && misc.HT<750"                                       << "&&"  // low-HT selection
+         //  << "misc.HT>750"                                                      << "&&"  // high-HT selection
+           << "misc.MET>=30"                                                     << "&&"
+           << "NJetsIDLoose40>=2"                                                << "&&"
+           << "misc.PassJet40ID==1"                                              << "&&"
+           << "misc.Vectorsumpt<70"                                              << "&&"
+           << "(misc.ProcessID==10 || misc.HBHENoiseFlag==0)"                    << "&&"
+           << "(misc.ProcessID==10 || misc.CSCTightHaloIDFlag==0)"               << "&&"
+           << "(misc.ProcessID==10 || misc.trackingFailureFlag==0)"              << "&&"
+           << "(misc.ProcessID==10 || misc.eeBadScFlag==0)"                      << "&&"
+           << "(misc.ProcessID==10 || misc.EcalDeadCellTriggerPrimitiveFlag==0)" << "&&"
+           << "(misc.ProcessID==10 || misc.EcalLaserCorrFlag==0)"                << "&&"
+           << "misc.CrazyHCAL==0";
 
-// 	//JZB
-// 	  << "NJetsIDLoose40 >=3"                                << "&&"
-// 	  << "(NEles+NMuons) >=2"                                << "&&"
-// 	  << "rawpfmet[0].Pt()>=95"				 << "&&"
-// 	  << "(Sum$(ele.lv.Pt()>18&&abs(ele.lv.Eta())<1.6)+Sum$(muo.lv.Pt()>18&&abs(muo.lv.Eta())<1.6)) >=2";
 
 	TString basecut = cutStream.str();
 	string  SEL= "("+basecut+")";

@@ -137,6 +137,9 @@ private:
 	vector<bool>fPhotonJetOverlapRemoved;
 	// Jets
 	vector<MT2AnalysisJet> Jets;
+	// needed for MET uncertainty
+	TLorentzVector js_original;
+	TLorentzVector js_uncertscaled;
 	
 	// MT2 and hemisphere
 	Davismt2 *fMT2;

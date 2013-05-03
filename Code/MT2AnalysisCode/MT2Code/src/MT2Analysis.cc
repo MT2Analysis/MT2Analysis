@@ -665,8 +665,6 @@ bool MT2Analysis::FillMT2TreeBasics(){
 	// type1corrected pfMET
 	if(fJEC.length()==0){
 		fMT2tree->type1pfmet[0].SetPtEtaPhiM(fTR->PFType1MET, 0, fTR->PFType1METphi, 0);
-	} else if (fisType1MET){//type1met already recomputed via MET()
-		fMT2tree->type1pfmet[0] = MET();
 	} else {
 		float corrMetx = fTR->PFMETpx;
 		float corrMety = fTR->PFMETpy;
@@ -1466,6 +1464,8 @@ void MT2Analysis::GetLeptonJetIndices(){
 	fPhotons.clear();
 	fPhotonJetOverlapRemoved.clear();
 	Jets.clear();
+	js_original.SetPtEtaPhiE(0.,0.,0.,0.);
+	js_uncertscaled.SetPtEtaPhiE(0.,0.,0.,0.);
 	
 	// Photons -----------------
 	vector<float> photon_pts;
@@ -2316,14 +2316,22 @@ TLorentzVector MT2Analysis::MET(){
 		}
 		return MET;
 	} else{
-		if      (fJESUpDown==1){
-    			MET.SetPtEtaPhiM((fisType1MET?fTR->PFType1MET:fTR->PFMET)*1.05, 0., (fisType1MET?fTR->PFType1METphi:fTR->PFMETphi), 0);
-		}else if(fJESUpDown==-1){
-			MET.SetPtEtaPhiM((fisType1MET?fTR->PFType1MET:fTR->PFMET)*0.95, 0., (fisType1MET?fTR->PFType1METphi:fTR->PFMETphi), 0);
-		}else{
-			cout << " something wrong in met scaling" << endl; exit(1);
-		}		
-      	return MET;
+	//	this is wrong!
+	//	if      (fJESUpDown==1){
+    	//		MET.SetPtEtaPhiM((fisType1MET?fTR->PFType1MET:fTR->PFMET)*1.05, 0., (fisType1MET?fTR->PFType1METphi:fTR->PFMETphi), 0);
+	//	}else if(fJESUpDown==-1){
+	//		MET.SetPtEtaPhiM((fisType1MET?fTR->PFType1MET:fTR->PFMET)*0.95, 0., (fisType1MET?fTR->PFType1METphi:fTR->PFMETphi), 0);
+	//	}else{
+	//		cout << " something wrong in met scaling" << endl; exit(1);
+	//	}	
+		TLorentzVector trueMET(0.,0.,0.,0.);
+		trueMET.SetPtEtaPhiM((fisType1MET?fTR->PFType1MET:fTR->PFMET), 0., (fisType1MET?fTR->PFType1METphi:fTR->PFMETphi), 0);
+		TLorentzVector originalMHT = -js_original;
+		TLorentzVector uncscaledMHT= -js_uncertscaled;
+		TLorentzVector newMET = trueMET-originalMHT+uncscaledMHT;
+		MET = newMET;
+		//unclustered MET needs to be varied independently as uncorrelated
+		return MET;	
 	}
 }
 
@@ -2448,12 +2456,19 @@ TLorentzVector MT2AnalysisJet::PFJetScaled(TLorentzVector jraw, float area, floa
 	// get new correction factor from DB dumpled txt files
 	float scale = GetPFJEC(jraw.Pt(), jraw.Eta(), area, rho, level); 
 
-	TLorentzVector j_scaled(0.,0.,0.,0);
+	TLorentzVector j_scaled(0.,0.,0.,0.);
 	j_scaled.SetPtEtaPhiM(jraw.Pt()*scale, jraw.Eta(), jraw.Phi(), jraw.M());
+	TLorentzVector j_orig = j_scaled;
 
 	// optionally up or downscale jet: JES uncertainty is a function of corrected Pt
 	if(fAna->fJESUpDown== 1) j_scaled.SetPtEtaPhiM(j_scaled.Perp()*(1+GetJECUncertPF(j_scaled.Pt(),j_scaled.Eta())), j_scaled.Eta(), j_scaled.Phi(), j_scaled.M());
 	if(fAna->fJESUpDown==-1) j_scaled.SetPtEtaPhiM(j_scaled.Perp()*(1-GetJECUncertPF(j_scaled.Pt(),j_scaled.Eta())), j_scaled.Eta(), j_scaled.Phi(), j_scaled.M());
+
+	TLorentzVector to(0.,0.,0.,0.); to.SetPtEtaPhiM(j_orig.Pt(),   0., j_orig.Phi(),  0.);
+	TLorentzVector ts(0.,0.,0.,0.); ts.SetPtEtaPhiM(j_scaled.Pt(), 0., j_scaled.Phi(),0.);
+	if(j_orig.Pt()  >20. && fabs(j_orig.Eta())  <2.4) fAna->js_original  += to;
+	if(j_scaled.Pt()>20. && fabs(j_scaled.Eta())<2.4) fAna->js_uncertscaled += ts;
+
 	return j_scaled;
 }
 
@@ -2461,12 +2476,19 @@ TLorentzVector MT2AnalysisJet::CAJetScaled(TLorentzVector jraw, int level){
 	// get new correction factor from DB dumpled txt files
 	float scale = GetCaloJEC(jraw.Pt(), jraw.Eta(), level);
 
-	TLorentzVector j_scaled(0.,0.,0.,0);
+	TLorentzVector j_scaled(0.,0.,0.,0.);
 	j_scaled.SetPtEtaPhiM(jraw.Pt()*scale, jraw.Eta(), jraw.Phi(), jraw.M());
+	TLorentzVector j_orig = j_scaled;
 
 	// optionally up or downscale jet: JES uncertainty is a function of corrected Pt
 	if(fAna->fJESUpDown== 1) j_scaled.SetPtEtaPhiM(j_scaled.Perp()*(1+GetJECUncertCalo(j_scaled.Pt(),j_scaled.Eta())), j_scaled.Eta(), j_scaled.Phi(), j_scaled.M());
 	if(fAna->fJESUpDown==-1) j_scaled.SetPtEtaPhiM(j_scaled.Perp()*(1-GetJECUncertCalo(j_scaled.Pt(),j_scaled.Eta())), j_scaled.Eta(), j_scaled.Phi(), j_scaled.M());
+
+	TLorentzVector to(0.,0.,0.,0.); to.SetPtEtaPhiM(j_orig.Pt(),   0., j_orig.Phi(),  0.);
+	TLorentzVector ts(0.,0.,0.,0.); ts.SetPtEtaPhiM(j_scaled.Pt(), 0., j_scaled.Phi(),0.);
+	if(j_orig.Pt()  >20. && fabs(j_orig.Eta())  <2.4) fAna->js_original  += to;
+	if(j_scaled.Pt()>20. && fabs(j_scaled.Eta())<2.4) fAna->js_uncertscaled += ts;
+
 	return j_scaled;
 }
 

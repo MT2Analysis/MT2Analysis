@@ -20,6 +20,7 @@ MT2Analysis::MT2Analysis(TreeReader *tr) : UserAnalysisBase(tr){
 	fJESUpDown                          = 0;
 	fCut_NJets40_min                    = 0;
 	fCut_NLeptons_min                   = 0;
+	fCut_NPhotons_min                   = 0;//NEW W.R.T. previous release
 
 	fRemovePhoton                       = 0;
 	fRemoveZll                          = 0;
@@ -1625,6 +1626,9 @@ bool MT2Analysis::IsSelectedEvent(){
 	if(fCut_NLeptons_min > 0){
 		if(fElecs.size() + fMuons.size()<fCut_NLeptons_min) {return false;}
 	}
+	if(fCut_NPhotons_min > 0){//NEW W.R.T. previous release
+		if(fPhotons.size()<fCut_NPhotons_min) {return false;}
+	}
 	if(fCut_NJets40_min > 0){
 	int NJets40_min=0;
 	for(int j=0; j<Jets.size(); ++j){
@@ -1694,6 +1698,9 @@ void MT2Analysis::ReadCuts(const char* SetofCuts="MT2_cuts/default.dat"){
 		} 
 		else if( !strcmp(ParName, "NJets40_min")){
 			fCut_NJets40_min         = int(ParValue); ok = true;
+		} 
+		else if( !strcmp(ParName, "NPhotons_min")){//NEW W.R.T. previous release
+			fCut_NPhotons_min         = int(ParValue); ok = true;
 		} 
 		//only electrons and muons
 		else if( !strcmp(ParName, "NLeptons_min")){

@@ -177,6 +177,7 @@ private:
 	int   fJESUpDown;
   	int   fCut_NJets40_min;
 	int   fCut_NLeptons_min;//only muons and electrons
+        int   fCut_NPhotons_min;//NEW W.R.T. previous release
 
 
 	// ---- required and vetoed triggers ----

@@ -786,13 +786,14 @@ bool MT2Analysis::FillMT2TreeBasics(){
 
 		string singlePhotonHTTriggers[100];
 		int photonHTtriggernumber=0;
-		singlePhotonHTTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFHT400_v2";//CaloIDXL means H/E<0.01(0.01) sigmaietaieta<0.014(0.035) for EB(EE)
-		singlePhotonHTTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFHT400_v3";
-		singlePhotonHTTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFHT400_v4";
-		singlePhotonHTTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFHT400_v5";
-		singlePhotonHTTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFNoPUHT400_v1";
-		singlePhotonHTTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFNoPUHT400_v3";
-		singlePhotonHTTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFNoPUHT400_v4";
+		singlePhotonHTTriggers[photonHTtriggernumber++] = "HLT_Photon70_CaloIdXL_PFHT400_v2";//CaloIDXL means H/E<0.01(0.01) sigmaietaieta<0.014(0.035) for EB(EE)
+		singlePhotonHTTriggers[photonHTtriggernumber++] = "HLT_Photon70_CaloIdXL_PFHT400_v3";
+		singlePhotonHTTriggers[photonHTtriggernumber++] = "HLT_Photon70_CaloIdXL_PFHT400_v4";
+		singlePhotonHTTriggers[photonHTtriggernumber++] = "HLT_Photon70_CaloIdXL_PFHT400_v5";
+		singlePhotonHTTriggers[photonHTtriggernumber++] = "HLT_Photon70_CaloIdXL_PFNoPUHT400_v1";
+		singlePhotonHTTriggers[photonHTtriggernumber++] = "HLT_Photon70_CaloIdXL_PFNoPUHT400_v3";
+		singlePhotonHTTriggers[photonHTtriggernumber++] = "HLT_Photon70_CaloIdXL_PFNoPUHT400_v4";
+		singlePhotonHTTriggers[photonHTtriggernumber++] = "HLT_Photon70_CaloIdXL_PFNoPUHT400_v5";
 
 		bool SinglePhotHTFired(false);
 		for(int i=0; i<photonHTtriggernumber; ++i){
@@ -802,12 +803,12 @@ bool MT2Analysis::FillMT2TreeBasics(){
 
 		string singlePhotonMETTriggers[100];
 		int photonMETtriggernumber=0;
-		singlePhotonMETTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFMET100_v2";
-		singlePhotonMETTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFMET100_v3";
-		singlePhotonMETTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFMET100_v4";
-		singlePhotonMETTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFMET100_v5";
-		singlePhotonMETTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFMET100_v6";
-		singlePhotonMETTriggers[photontriggernumber++] = "HLT_Photon70_CaloIdXL_PFMET100_v7";
+		singlePhotonMETTriggers[photonMETtriggernumber++] = "HLT_Photon70_CaloIdXL_PFMET100_v2";
+		singlePhotonMETTriggers[photonMETtriggernumber++] = "HLT_Photon70_CaloIdXL_PFMET100_v3";
+		singlePhotonMETTriggers[photonMETtriggernumber++] = "HLT_Photon70_CaloIdXL_PFMET100_v4";
+		singlePhotonMETTriggers[photonMETtriggernumber++] = "HLT_Photon70_CaloIdXL_PFMET100_v5";
+		singlePhotonMETTriggers[photonMETtriggernumber++] = "HLT_Photon70_CaloIdXL_PFMET100_v6";
+		singlePhotonMETTriggers[photonMETtriggernumber++] = "HLT_Photon70_CaloIdXL_PFMET100_v7";
 
 		bool SinglePhotMETFired(false);
 		for(int i=0; i<photonMETtriggernumber; ++i){

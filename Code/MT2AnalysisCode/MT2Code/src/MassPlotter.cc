@@ -2873,7 +2873,7 @@ void MassPlotter::loadSamples(const char* filename){
 			IN.getline(buffer, 200, '\n');
 			sscanf(buffer, "Color\t%f", &ParValue);
 			s.color = ParValue;
-
+			if(s.type!="data"){
 			TH1F *h_PUWeights = (TH1F*) s.file->Get("h_PUWeights");
 			TH1F *h_Events    = (TH1F*) s.file->Get("h_Events");
 			if(h_PUWeights==0 || h_Events==0){
@@ -2882,15 +2882,18 @@ void MassPlotter::loadSamples(const char* filename){
 			}
 			s.type!="data" ? s.PU_avg_weight = h_PUWeights->GetMean()    : s.PU_avg_weight =1;
 			s.type!="data" ? s.nevents       = h_Events   ->GetEntries() : s.nevents       =1;
-
+			delete h_PUWeights;
+			delete h_Events;
+			} else{
+			s.PU_avg_weight =1;
+			s.nevents       =1;
+			}
 			// DON'T DO THIS AT HOME !!!!
 			if ( s.name == "T1tttt_mGlu-1000_mLSP-400" ) s.nevents = 20000;
 			if ( s.name.Contains("T2bb") ) s.nevents = 10000;
 			if ( s.name.Contains("T2tt") ) s.nevents = 50000;
 			// DON'T DO THAT AT HOME !!!!
 
-			delete h_PUWeights;
-			delete h_Events;
 			if(fVerbose > 0){
 				cout << " ---- " << endl;
 				cout << "  New sample added: " << s.name << endl;

@@ -375,6 +375,7 @@ void MT2Shapes::loadSamples(const char* filename){
 			sscanf(buffer, "Color\t%f", &ParValue);
 			s.color = ParValue;
 
+			if(s.type!="data"){
 			TH1F *h_PUWeights = (TH1F*) s.file->Get("h_PUWeights");
 			TH1F *h_Events    = (TH1F*) s.file->Get("h_Events");
 			if(h_PUWeights==0 || h_Events==0){
@@ -385,6 +386,10 @@ void MT2Shapes::loadSamples(const char* filename){
 			s.type!="data" ? s.nevents       = h_Events   ->GetEntries() : s.nevents       =1;
 			delete h_PUWeights;
 			delete h_Events;
+			} else{
+			s.PU_avg_weight =1;
+			s.nevents       =1;
+			}
 			if(fVerbose > 3){
 				*fLogStream << " ---- " << endl;
 				*fLogStream << "  New sample added: " << s.name << endl;

@@ -17,68 +17,75 @@
 using namespace std;
 using namespace RooFit ;
 
-//run via root -l -b -q run_GammaJetsToZnunu.C
+//run via root -l -b -q cracked_GammaJetsToZnunu.C
 
+//note that there won't much documentation
+//all this is a 'cracked' version of run_GammaJetsToZnunu.C
+//to predict not Z(nunu) but Z(ll) data
+//this was done to do checks on 'ISR reweighting' and debugging purposes
+//this is NOT suited for any kind of prediction
 
 // User Input:  ----------------------------------------------
 // -----
-//TString fSamplesRemovedPhotons     ="samples/samples_1g_GEst_MET_filter.dat";        // samples with photons added to MET - low HT region
-//TString fSamplesHadronic           ="samples/samples_had_GEst_MET_filter.dat";       // hadronic selection                - low HT region
-TString fSamplesRemovedPhotons     ="samples/samples_1g_GEst_HT_filter.dat";           // samples with photons added to MET - medium HT region
-TString fSamplesHadronic           ="samples/samples_had_GEst_HT_filter.dat";          // hadronic selection                - medium HT region
-//TString fSamplesRemovedPhotons     ="samples/samples_1g_GEst_extremeHT_filter.dat";  // samples with photons added to MET - high HT region (note that all sample types QCD/Gamma/Other need some entries for the fitting)
-//TString fSamplesHadronic           ="samples/samples_had_GEst_extremeHT_filter.dat"; // hadronic selection                - high HT selection
+//TString fSamplesRemovedPhotons     ="samples/samples_1g_GEst_MET.dat";     
+//TString fSamplesHadronic           ="samples/samples_2l_GEst_MET_2.dat";    
+TString fSamplesRemovedPhotons     ="samples/samples_1g_GEst_HT.dat";     
+TString fSamplesHadronic           ="samples/samples_2l_GEst_HT_2.dat";    
+//TString fSamplesRemovedPhotons     ="samples/samples_1g_GEst_extremeHT.dat";
+//TString fSamplesHadronic           ="samples/samples_2l_GEst_HT.dat";    
 // stearing ------------
-Bool_t  fSeparateEBEE              = true;  // set to false if EE and EB should not be separated in purity measurement of sigmaietaieta fit, default = true
-Bool_t  fDoPhotonSigmaIEtaIEta     = true;  // set to "true" to perfom sigmaIetaIeta fit to obtain QCD normalization, default = true
-Bool_t  fDoPhotonSignalRegion      = true; // get shapes for photons in signal region <-- needed for background prediction, default = true
-Bool_t  fDoHadronicSignalRegion    = true; // get shapes for hadronic signal region <-- needed for background prediction, default = true
-Bool_t  fDoPrediction              = true; // calculate the Znunu background from photon sample, needs fDoPhotonSignalRegion,fDoHadronicSignalRegion to be true, default = true
-Bool_t  fPrintBrunoTable           = true; // gay printout - not needed anymore - NOTE: you should implement a way to directly store the result into histograms to make hardcoded stuff of ZinvVisualization obsolete
-Bool_t  fDoVariableMT2bins         = true;  // variable MT2bins - needs to be true
-Bool_t  fDoPileUpWeights           = true;  // apply PU weights - default = true
-Bool_t  fbSFReWeight               = true;  // apply BTV SF weights --> need to adjust fNBJets = {-10,[-3,3]}, default = true
-Bool_t  fMrennaHack                = true;  // Steve Mrenna Status 2 parton jets - prompt photon dR - this is used to remove overlap of gamma MC and QCD MC
-Bool_t  fUseConstantZToGammaR      = false; // Constant Z/gamma ratio: see analysis note!! - this should be always false
-Bool_t  fUseConstZToGammaRdynamic  = true; // Constant Z/gamma ratio: see analysis note!! <-- from fMinMT2forConstR on, before Z/gamma is bin-by-bin - default = true
-Float_t fMinMT2forConstR           = 350;   // min MT2 value after which a constant Z/gamma ratio is used, needs fUseConstZToGammaRdynamic = true, default = 350 for 8 TeV
+Bool_t  fSeparateEBEE              = true; 
+Bool_t  fDoPhotonSigmaIEtaIEta     = true; 
+Bool_t  fDoPhotonSignalRegion      = true; 
+Bool_t  fDoHadronicSignalRegion    = true; 
+Bool_t  fDoPrediction              = true; 
+Bool_t  fPrintBrunoTable           = true; 
+Bool_t  fDoVariableMT2bins         = true; 
+Bool_t  fDoPileUpWeights           = true; 
+Bool_t  fbSFReWeight               = true; 
+Bool_t  fMrennaHack                = true; 
+Bool_t  fEnforceAbsIso             = false;
+Bool_t  fUseConstantZToGammaR      = false;
+Bool_t  fUseConstantZToGammaRdynamic=true; 
+Float_t fMinMT2forConstR           = 260;  
 // uncertainty
-Bool_t  fAddFitIntrinsicUncert     = false; // if you'd like to add an intrinsic uncertainty to the template fit
+Bool_t  fAddFitIntrinsicUncert     = false; 
 Float_t fFitIntrinsicUncert        = 0.0;
-Bool_t  fAddRMCUncertainty         = true;  // systematic uncertainty on Z/gamma ratio
-Float_t fRMCUncertainty            = 0.3;   // 0.3 for MT2 > 275, otherwise 0.2 (see AN) - NOTE: find a way to implement this dynamically
+Bool_t  fAddRMCUncertainty         = true;  
+Float_t fRMCUncertainty            = 0.3;   
 // options ---------------
-TString fOutDir                    = "../Results/Filtered/GammaJetsPrediction/20130617_0b1b_test/";    // directory where shapes will be saved
-Int_t   fVerbose                   = 9; 
-Bool_t  fSaveResults               = true;  // default = true
-Bool_t  fSaveZnunuToGammaRatio     = true;  // default = true
-Bool_t  fDraw                      = true;  // draw histos or simply save them
-Bool_t  fWriteToFile               = false; // writes couts to file, otherwise just prints it to terminal, default = false
-//the 4 numbers below are a relict from 7 TeV analysis, but are used if fUseConstantZToGammaR = true, which might be interesting for debugging isues
-Float_t fConstantZToGammaR_LowHT   = 0.458; // 750 < HT < 950
-Float_t fConstantZToGammaErr_LowHT = 0.057; // abs uncertainty on fConstantZToGammaR the relative uncertainty fRMCUncertainty is added in quadrature if fAddRMCUncertainty==true
-Float_t fConstantZToGammaR_HighHT  = 0.628; // HT > 950
-Float_t fConstantZToGammaErr_HighHT= 0.120; // abs uncertainty on fConstantZToGammaR 
-// cut imput for HT, NBJets, NJets, fSR
-Float_t fHTmin                     = 750;    // cuts for low HT, medium HT, high HT
-Float_t fHTmax                     = 1E+8;   /// DID YOU CHECK fHT, fMET - need to set separately
-Float_t fMT2min                    = 0;      //default = 0
-Float_t fMT2max                    = 1E+8;   //default = 1E+8
-Int_t   fNBJets                    = 0;      //-10 means no requirement on NBJets
-Int_t   fNJets                     = -2;     //negative values means >=NJets, positive values means ==NJets, two digit numbers XY mean X<=NJets<=Y
-Int_t   fSR                        = -1;     //will be set via fNBJets, fNJets
-//NOTE: some parts of the above (or the use of it) are really hard-coded below - need to change this later
-//NOTE: find a way to do all calculations for all signal regions (within a triggerstream) at once.
+TString fOutDir                    = "../cracked/GammaJetsPrediction/20130514_test/";    
+Int_t   fVerbose                   = 6; 
+Bool_t  fSaveResults               = true;  
+Bool_t  fSaveZnunuToGammaRatio     = true;  
+Bool_t  fDraw                      = true;  
+Bool_t  fWriteToFile               = false; 
+// -- specify constant Z/gamma ratio
+// pileup weights 4.7 fb-1: new Lumi        
+Float_t fConstantZToGammaR_LowHT   = 0.458; 
+Float_t fConstantZToGammaErr_LowHT = 0.057; 
+Float_t fConstantZToGammaR_HighHT  = 0.628; 
+Float_t fConstantZToGammaErr_HighHT= 0.120; 
+// MT2b specific --------
+Bool_t  fMT2b                      = false; 
+Bool_t  fDoBRatioCorrection        = true;  
+Float_t fRB_MCtoData               = 1.23;  
+Float_t fRB_MCtoDataErr            = 0.27;  
+Bool_t  fBTagforMLFit              = true;  
+Bool_t  fUseFlatMCBRatio           = true;  
+//Float_t fFlatMCBRatio              = 
+// -------
+Float_t fHTmin                     = 750;   
+Float_t fHTmax                     = 1200;
+Float_t fMT2min                    = 0;
+Float_t fMT2max                    = 1E+8;
+Int_t   fNBJets                    = 0;
+Int_t   fNJets                     = 35;
+Int_t   fSR                        = -1;
 // ------
-Bool_t  fHT                        = true;   //run over HT dataset
-Bool_t  fMET                       = false;  //run over single photon dataset
-Bool_t  fISRreweight               = false;  //apply an effective ISR weight (effective means not reweight gen-photon/Z but observed distribution), default = false
-Bool_t  fReScaleAfterMT2           = false;  //rescales MC histograms to fit data normalization - as histograms are with MT2 cut, this means renormalizating after applying MT2 cut, default = false
-Bool_t  fdontRescaleRatio          = true;   //keep this true, for Z/gamma calculation use photon MC not normalized to data in sigmaietaieta fit - idea is that both the gamma MC and Z MC should ne on equal footing
-Double_t fGammakFactor             = 0.8;    //this is the kFaktor to gamma MC from the samples.dat, needed to have correct Z/G ratio for now it's a dummy - it will be set in the beginning of test_GammaJetsToZnunu()
-Double_t modtablescale = 0.0937533; Double_t modtablescaleerr = 0.0120557;//defined below at beginning of test_GammaJetsToZnunu() - see there for explanation
-
-//at the moment cannot use the below in one go
+Bool_t  fHT                        = true;
+Bool_t  fMET                       = false;
+Bool_t  fISRreweight               = true;
 // ------
 /// high HT (HT>1200)
 //    int gNMT2bins_2j0b                  = 6;
@@ -138,11 +145,10 @@ Double_t modtablescale = 0.0937533; Double_t modtablescaleerr = 0.0120557;//defi
 //     const int gNMT2bins_3b_lHT                        = 2;
 //     double  gMT2bins_3b_lHT  [gNMT2bins_3b_lHT+1]     = {200, 280, 400};
 
-//need to define this here stupidly, try to implement a loop for everything later
 const int gNMT2bins = 9;
-    double  gMT2bins[gNMT2bins+1]   = {125, 150, 180, 220, 270, 325, 425, 580, 780, 1000};
-
-// Some Global Variables ------------------------------------
+    double  gMT2bins[gNMT2bins+1]   = {160, 185, 215, 250, 300, 370, 480, 640, 800, 1000};
+fMinMT2forConstR           = 270;
+// Global Variables ------------------------------------
 std::ostringstream  fTriggerStream;
 std::ostringstream  fTriggerStreamPhotons;
 std::ostringstream  fCutStreamPhotons;
@@ -150,27 +156,25 @@ std::ostringstream  fCutStreamPhotonsMT2;
 std::ostringstream  fCutStreamSignal;
 std::ostringstream* fLogStream     = 0;
 
-// this function calls all Cut Streams - needed as function to separate fHT/fMET cases
+// Cut Streams
 void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 	// Trigger Stream ---------------------------------------------------------------
 	//
 	if(fHT){
-	fTriggerStream << "( ("
+	fTriggerStream << "( ( "
                        << "trigger.HLT_PFHT650_v5 == 1 || trigger.HLT_PFHT650_v6 == 1 || trigger.HLT_PFHT650_v7 == 1 || "
                        << "trigger.HLT_PFHT650_v8 == 1 || trigger.HLT_PFHT650_v9 == 1 || "
-                       << "trigger.HLT_PFNoPUHT650_v1 == 1 || trigger.HLT_PFNoPUHT650_v3 == 1 || trigger.HLT_PFNoPUHT650_v4 == 1)"
-                       << "&&TOBTECTagger<=8&&ExtraBeamHaloFilter==0)";
+                       << "trigger.HLT_PFNoPUHT650_v1 == 1 || trigger.HLT_PFNoPUHT650_v3 == 1 || trigger.HLT_PFNoPUHT650_v4 == 1) &&TOBTECTagger<=8&&ExtraBeamHaloFilter==0)";
 	fTriggerStreamPhotons << "( ("
                               << "trigger.HLT_PFHT650_v5 == 1 || trigger.HLT_PFHT650_v6 == 1 || trigger.HLT_PFHT650_v7 == 1 || "
                               << "trigger.HLT_PFHT650_v8 == 1 || trigger.HLT_PFHT650_v9 == 1 || "
-                              << "trigger.HLT_PFNoPUHT650_v1 == 1 || trigger.HLT_PFNoPUHT650_v3 == 1 || trigger.HLT_PFNoPUHT650_v4 == 1)"
-                              << "&&TOBTECTagger<=8&&ExtraBeamHaloFilter==0)";
+                              << "trigger.HLT_PFNoPUHT650_v1 == 1 || trigger.HLT_PFNoPUHT650_v3 == 1 || trigger.HLT_PFNoPUHT650_v4 == 1)&&TOBTECTagger<=8&&ExtraBeamHaloFilter==0)";
 	}
 	if(fMET){
   	fTriggerStream << "( ("
                        << "trigger.HLT_PFMET150_v2 == 1 || trigger.HLT_PFMET150_v3 == 1 || trigger.HLT_PFMET150_v4 == 1 || "
                        << "trigger.HLT_PFMET150_v5 == 1 || trigger.HLT_PFMET150_v6 == 1 || trigger.HLT_PFMET150_v7 == 1 )&&TOBTECTagger<=8&&ExtraBeamHaloFilter==0)";
-	fTriggerStreamPhotons << "(trigger.HLT_SinglePhotons == 1&&TOBTECTagger<=8&&ExtraBeamHaloFilter==0)";
+	fTriggerStreamPhotons << "(trigger.HLT_SinglePhotons == 1 &&TOBTECTagger<=8&&ExtraBeamHaloFilter==0)";
 	}
 
 	// CutStream for SigmaIEtaIEta ------------------------------------------
@@ -191,7 +195,7 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 	  << "photon[0].HoverE2012<=0.05"                                  << "&&"
 	  << "type1pfmet[0].Pt()<100"                                      << "&&"
 	  // Noise
-	  << "(misc.HBHENoiseFlag == 0 || misc.ProcessID==10)"             << "&&" // for fastsim samples
+	  << "(misc.HBHENoiseFlag == 0 || misc.ProcessID==10)"             << "&&" // for rare SM samples
 	  << "misc.CSCTightHaloIDFlag == 0"                                << "&&"
 	  << "misc.trackingFailureFlag==0"                                 << "&&"
 	  << "misc.eeBadScFlag==0"                                         << "&&"
@@ -200,11 +204,10 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 	  << "misc.TrackingTooManyStripClusFlag==0"                        << "&&"
 	  << "misc.TrackingLogErrorTooManyClustersFlag==0"                 << "&&"
           << "misc.CrazyHCAL==0"
-	  << "&&(type1pfmet[0].Pt()<30||type1pfmet[0].Pt()/misc.CaloMETRaw<=2.)";
+	  << "&&(type1pfmet[0].Pt()>30||type1pfmet[0].Pt()/misc.CaloMETRaw<=2.)";
 	if(fMET){
-		fCutStreamPhotons << "&& photon[0].lv.Pt()>=180 ";
+		fCutStreamPhotons << "&& photon[0].lv.Pt()>=200 ";//&& misc.MET>200&&misc.MT2>=200";//need misc.MET??
 	}
-	//NOTE: Improve fNBJets, fNJets usage (there are 3 cutstreams where this appears)
 	if(fNBJets==0){//improve
 		fCutStreamPhotons << "&&NBJets40CSVM==0";
 	} else if(fNBJets==1) fCutStreamPhotons << "&&NBJets40CSVM==1";
@@ -219,14 +222,16 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 		<< "(misc.ProcessID!=6||(photon[0].MCmatchexitcode!=1||photon[0].GenJetMinDR<0.3))"           << "&&"
 		<< "(misc.ProcessID!=5||(photon[0].GenJetMinDR>0.3))";
 	}
+	if(fEnforceAbsIso){
+		fCutStreamPhotons << "&&"	
+		<< "photon[0].isEGMlooseIso==1";
+	}
 	if(fNJets==35){
 		fCutStreamPhotons << "&&NJetsIDLoose40>=3&&NJetsIDLoose40<=5";
 	} else if(fNJets==2){
 		fCutStreamPhotons << "&&NJetsIDLoose40==2";
 	} else if(fNJets==-6){
 		fCutStreamPhotons << "&&NJetsIDLoose40>=6";
-	} else if(fNJets==-2){
-		fCutStreamPhotons << "&&NJetsIDLoose40>=2";
 	}
 
 	// CutStream for Photon Signal Region ------------------------------------------ 
@@ -248,7 +253,7 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 	  << "photon[0].isLooseID==1"                                      << "&&"//id and iso
 	  << "type1pfmet[0].Pt()<100"                                      << "&&"
 	  // Noise
-	  << "(misc.HBHENoiseFlag == 0 || misc.ProcessID==10)"             << "&&" // for fastsim samples
+	  << "(misc.HBHENoiseFlag == 0 || misc.ProcessID==10)"             << "&&" // for rare SM samples
 	  << "misc.CSCTightHaloIDFlag == 0"                                << "&&"
 	  << "misc.trackingFailureFlag==0"                                 << "&&"
 	  << "misc.eeBadScFlag==0"                                         << "&&"
@@ -257,9 +262,9 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 	  << "misc.TrackingTooManyStripClusFlag==0"                        << "&&"
 	  << "misc.TrackingLogErrorTooManyClustersFlag==0"                 << "&&"
           << "misc.CrazyHCAL==0"
-	  << "&&(type1pfmet[0].Pt()<30||type1pfmet[0].Pt()/misc.CaloMETRaw<=2.)";
+	  << "&&(type1pfmet[0].Pt()>30||type1pfmet[0].Pt()/misc.CaloMETRaw<=2.)";
 	if(fMET){
-		fCutStreamPhotonsMT2 << "&& photon[0].lv.Pt()>=180 && misc.MET>200";
+		fCutStreamPhotonsMT2 << "&& photon[0].lv.Pt()>=200 && misc.MET>200";//&&misc.MT2>=200";
 	}
 	if(fNBJets==0){//improve
 		fCutStreamPhotonsMT2 << "&&NBJets40CSVM==0";
@@ -275,33 +280,33 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 		<< "(misc.ProcessID!=6||(photon[0].MCmatchexitcode!=1||photon[0].GenJetMinDR<0.3))"           << "&&"
 		<< "(misc.ProcessID!=5||(photon[0].GenJetMinDR>0.3))";
 	}
+	if(fEnforceAbsIso){
+		fCutStreamPhotonsMT2<< "&&"	
+		<< "photon[0].isEGMlooseIso==1";
+	}
 	if(fNJets==35){
 		fCutStreamPhotonsMT2 << "&&NJetsIDLoose40>=3&&NJetsIDLoose40<=5";
 	} else if(fNJets==2){
 		fCutStreamPhotonsMT2 << "&&NJetsIDLoose40==2";
 	} else if(fNJets==-6){
 		fCutStreamPhotonsMT2 << "&&NJetsIDLoose40>=6";
-	} else if(fNJets==-2){
-		fCutStreamPhotons << "&&NJetsIDLoose40>=2";
 	}
 
 	// CutStream for Hadronic Signal Region ----------------------------------------------
 	fCutStreamSignal << " " 
+	  << "(NEles+NMuons)==2"                                           << "&&"//it's not hadronic but dileptonic region
+	  << "GetDiLeptonPt(0,1,0,10,76,106)>=20"                          << "&&"
+	  << "ZllRecalculate()&&"
 	  << "misc.MT2>=" << gMT2bins[0]                                   << "&&"
 	  << "misc.MET>=30"                                                << "&&"
 	  << "misc.HT >=" << HTmin  << " && misc.HT <=" << HTmax           << "&&"
-	  << "misc.MT2>=" << MT2min << " && misc.MT2<=" << MT2max          << "&&"
-	  << "NEles==0"                                                    << "&&"
-	  << "NMuons==0"                                                   << "&&"
 	  << "NTausIDLoose3Hits==0"                                        << "&&"
 	  << "misc.Jet0Pass ==1"                                           << "&&"
 	  << "misc.Jet1Pass ==1"                                           << "&&"
 	  << "misc.PassJet40ID ==1"                                        << "&&"
 	  << "NJetsIDLoose40 >=2"                                          << "&&"
-	  << "misc.MinMetJetDPhi4Pt40 >0.3"                                << "&&"
-	  << "misc.Vectorsumpt < 70"                                       << "&&"
 	  // Noise
-	  << "(misc.HBHENoiseFlag == 0 || misc.ProcessID==10)"             << "&&" // for fastsim samples
+	  << "(misc.HBHENoiseFlag == 0 || misc.ProcessID==10)"             << "&&" // for rare SM samples
 	  << "misc.CSCTightHaloIDFlag == 0"                                << "&&"
 	  << "misc.trackingFailureFlag==0"                                 << "&&"
 	  << "misc.eeBadScFlag==0"                                         << "&&"
@@ -312,7 +317,7 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
           << "misc.CrazyHCAL==0"
 	  << "&&misc.MET/misc.CaloMETRaw<=2.";
 	if(fMET){
-		fCutStreamSignal << "&& misc.MET>200";
+		fCutStreamSignal << "&& misc.MET>200";//&&misc.MT2>=200";
 	}
 	if(fNBJets==0){//improve
 		fCutStreamSignal << "&&NBJets40CSVM==0";
@@ -326,59 +331,23 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 		fCutStreamSignal << "&&NJetsIDLoose40==2";
 	} else if(fNJets==-6){
 		fCutStreamSignal << "&&NJetsIDLoose40>=6";
-	} else if(fNJets==-2){
-		fCutStreamSignal << "&&NJetsIDLoose40>=2";
 	}
 
 }
 
-// *********************** run_GammaJetsToZnunu: this is the main function calling also other functions ********************************
-//this function calls all functions needed to do the Z(nunu) estimate from photon data sample, note that there is a lot of user input at the beginning
-void run_GammaJetsToZnunu(){
+// *********************************** run_GammaJetsToZnunu: specify user input here *************************************************
+void cracked_GammaJetsToZnunu(){
 	gSystem->Load("libPhysics");
 	gSystem->Load("libRooFit") ;
-	gSystem->CompileMacro("../MT2Code/src/MT2Shapes.cc", "k");//needed to efficiently get the shapes for MC and data along sigmaietaieta or MT2
-
-	//at the moment samples.dat are hardcoded
-	if(fMET && fHTmin==450&&fHTmax==750 ) fSamplesRemovedPhotons     ="samples/samples_1g_GEst_MET_filter.dat";
-	if(fMET && fHTmin==450&&fHTmax==750 ) fSamplesHadronic           ="samples/samples_had_GEst_MET_filter.dat";
-	if(fHT  && fHTmin==750              ) fSamplesRemovedPhotons     ="samples/samples_1g_GEst_HT_filter.dat";
-	if(fHT  && fHTmin==750              ) fSamplesHadronic           ="samples/samples_had_GEst_HT_filter.dat";
-	if(fHT  && fHTmin==1200             ) fSamplesRemovedPhotons     ="samples/samples_1g_GEst_extremeHT_filter.dat";
-	if(fHT  && fHTmin==1200             ) fSamplesHadronic           ="samples/samples_had_GEst_extremeHT_filter.dat";
-	cout << "your samples are " << endl;
-	cout << "    " << fSamplesRemovedPhotons << endl;
-	cout << "    " << fSamplesHadronic << endl;
-
-	//for fMET we need singlephotons with pT>180 GeV. There sigmaietaieta is not discriminant - don't do the fit - in samples.dat the kFactor are the 'hardcoded' normalization
-	if(fMET) fDoPhotonSigmaIEtaIEta = false;
-	if(!fDoPhotonSigmaIEtaIEta) cout << "YOUR ARE NOT DOING fDoPhotonSigmaIEtaIEta " << endl;
-	//adjust k factor - for fHT the k factor of gamma is different as for fMET
-	if(fMET)      fGammakFactor = 0.9;
-	else if (fHT) fGammakFactor = 0.8;
-	cout << "photonMC k factor is " << fGammakFactor << endl;
+	gSystem->CompileMacro("../MT2Code/src/MT2Shapes.cc", "k");
+	
 	// logStream
 	fLogStream = new std::ostringstream();
-
-	//we make two prediction tables - NOTE: need to improve this
-	//the second table uses the 0 b estimate and scales it with the Zll(1b)/Zll(0b) ratio obtained with functions like GammaVsZllStudies.C GammaVsZllStudiesRatios.C
-	//the corresponding ratios and their uncertainties are hard-coded here
-	if(fNJets==2  && fHTmin==450 ) { modtablescale = 0.0937533; modtablescaleerr = 0.0224717;}//2j,lowHT	- 24%
-	if(fNJets==35 && fHTmin==450 ) { modtablescale = 0.16062;   modtablescaleerr = 0.0238675;}//35j,lowHT	- 15%
-	if(fNJets==-6 && fHTmin==450 ) { modtablescale = 0.2693407; modtablescaleerr = 0.167893; }//6j,lowHT	- 62%
-	if(fNJets==2  && fHTmin==750 ) { modtablescale = 0.0937533; modtablescaleerr = 0.0503878;}//2j,medHT	- 54%
-	if(fNJets==35 && fHTmin==750 ) { modtablescale = 0.16062;   modtablescaleerr = 0.0181368;}//35j,medHT	- 11%
-	if(fNJets==-6 && fHTmin==750 ) { modtablescale = 0.2693407; modtablescaleerr = 0.142773; }//6j,medHT	- 53%
-	if(fNJets==2  && fHTmin==1200) { modtablescale = 0.0937533; modtablescaleerr = 0.0597187;}//2j,highHT	- 64%
-	if(fNJets==35 && fHTmin==1200) { modtablescale = 0.16062;   modtablescaleerr = 0.0303366;}//35j,highHT	- 19%
-	if(fNJets==-6 && fHTmin==1200) { modtablescale = 0.2693407; modtablescaleerr = 0.201307; }//6j,highHT	- 75%
-
+	
 	// define cutsteams
 	DefineCutStreams(fHTmin, fHTmax, fMT2min, fMT2max);
 
 	// fix output dir
-	if(fReScaleAfterMT2)  fOutDir= TString::Format("%s_%s",       "RescaledMT2",   fOutDir.Data());
-	if(fISRreweight)      fOutDir= TString::Format("%s_%s",       "ISRreweighted", fOutDir.Data());
 	if(fNJets <0)         fOutDir= TString::Format("%s_ge%dj",     fOutDir.Data(), abs(fNJets));
 	else                  fOutDir= TString::Format("%s_%dj",       fOutDir.Data(), fNJets);
 	if(fNBJets>=0)        fOutDir= TString::Format("%s_%db",       fOutDir.Data(), fNBJets);
@@ -388,8 +357,11 @@ void run_GammaJetsToZnunu(){
 	else                  fOutDir= TString::Format("%s_%d_HT_%s",  fOutDir.Data(), abs(fHTmin),  "Inf");
 	if(fMT2max<10000)     fOutDir= TString::Format("%s_%d_MT2_%d", fOutDir.Data(), abs(fMT2min), abs(fMT2max));
 	else                  fOutDir= TString::Format("%s_%d_MT2_%s", fOutDir.Data(), abs(fMT2min), "Inf");
+	if(fISRreweight)      fOutDir= TString::Format("%s_%s",       "ISRreweighted", fOutDir.Data());
 	
-	//set topological region depending on NJets/NBJets
+	if(!fMT2b || !fDoBRatioCorrection){
+		fRB_MCtoData=1; fRB_MCtoDataErr=0;
+	}
 	if(fNBJets== 0 && fNJets== 2) fSR = 0;
 	if(fNBJets==-1 && fNJets== 2) fSR = 1;
 	if(fNBJets== 0 && fNJets==35) fSR = 2;
@@ -405,9 +377,13 @@ void run_GammaJetsToZnunu(){
 	*fLogStream << "+++ new Znunu with Gamma+jets prediction                                                     +++" << endl;
 	*fLogStream << "+++ outputdir: " << fOutDir <<                                                              "+++" << endl; 
 	*fLogStream << "------------------------------------------------------------------------------------------------" << endl;
+	if(fMT2b){
+	*fLogStream << "+++ using Photon+jets MC to data b-tag correction: " << fRB_MCtoData << " pm " << fRB_MCtoDataErr << "+++" << endl;
+	*fLogStream << "------------------------------------------------------------------------------------------------" << endl;
+	}
 
-	//NOTE: Here might be a good place to make the loop to run over several topological and possibly HT regions
-	// new prediction class ------------------------------------------------------
+
+	// new prediction ------------------------------------------------------
 	Prediction* prediction = new Prediction();
 	prediction->fVerbose=fVerbose;
 	prediction->fSave   =fSaveResults;
@@ -415,12 +391,15 @@ void run_GammaJetsToZnunu(){
 
 
 	// SigmaIEtaIEta Fit *********************************************************************
-	// Get Photon Normalization: EB or EB+EE
+	// Get Photon Normalization: EB
 	if(fDoPhotonSigmaIEtaIEta){
 		std::ostringstream cutStreamPhotons_EB;
 		std::ostringstream cutStreamPhotons_EE;
 		if(fSeparateEBEE){
-			cutStreamPhotons_EB << fCutStreamPhotons.str() << "&&abs(photon[0].lv.Eta())<1.4442";
+			//idea: add here MT2 bin with for loop
+			//then: run loop; get MLRes_EB/EE --> set a normalization histogram
+			//i.e. MLRes class --> add histogram for every float --> initialize histogram (here) --> run code with additional MT2 cuts --> take floats of result and fill histogram bin
+			cutStreamPhotons_EB << fCutStreamPhotons.str() << "&&abs(photon[0].lv.Eta())<1.4442";//&&misc.MT2>binloweredge&&misc.MT2<=binupperedge
 			cutStreamPhotons_EE << fCutStreamPhotons.str() << "&&abs(photon[0].lv.Eta())>1.566";
 		} else{
 			cutStreamPhotons_EB << fCutStreamPhotons.str() ;
@@ -436,24 +415,22 @@ void run_GammaJetsToZnunu(){
 		prediction->GetPhotonNormalization(prediction->PhotonSigmaIEtaIEta_EB, prediction->MLRes_EB);
 
 		// Get Photon Normalization: EE
-		prediction->PhotonSigmaIEtaIEta_EE = new Channel("SigmaIEtaIEta_EE", "photon[0].SigmaIEtaIEta", 
-								 cutStreamPhotons_EE.str().c_str(), fTriggerStreamPhotons.str().c_str(),fSamplesRemovedPhotons);
-		prediction->PhotonSigmaIEtaIEta_EE->fVerbose =prediction->fVerbose;
-		prediction->PhotonSigmaIEtaIEta_EE->fOutputDir=prediction->fOutputDir;
-		prediction->PhotonSigmaIEtaIEta_EE->fAddMCPedestal = true; // set this to avoid
-		prediction->PhotonSigmaIEtaIEta_EE->fRootFile="SigmaIEtaIEta_EE_Shapes.root";
-		prediction->PhotonSigmaIEtaIEta_EE->GetShapes("SigmaIEtaIEta_EE", "SigmaIEtaIEta", 30, 0, 0.08);
-		prediction->GetPhotonNormalization(prediction->PhotonSigmaIEtaIEta_EE, prediction->MLRes_EE);
-		delete prediction->PhotonSigmaIEtaIEta_EE;
+			prediction->PhotonSigmaIEtaIEta_EE = new Channel("SigmaIEtaIEta_EE", "photon[0].SigmaIEtaIEta", 
+									 cutStreamPhotons_EE.str().c_str(), fTriggerStreamPhotons.str().c_str(),fSamplesRemovedPhotons);
+			prediction->PhotonSigmaIEtaIEta_EE->fVerbose =prediction->fVerbose;
+			prediction->PhotonSigmaIEtaIEta_EE->fOutputDir=prediction->fOutputDir;
+			prediction->PhotonSigmaIEtaIEta_EE->fAddMCPedestal = true; // set this to avoid
+			prediction->PhotonSigmaIEtaIEta_EE->fRootFile="SigmaIEtaIEta_EE_Shapes.root";
+			prediction->PhotonSigmaIEtaIEta_EE->GetShapes("SigmaIEtaIEta_EE", "SigmaIEtaIEta", 30, 0, 0.08);
+			prediction->GetPhotonNormalization(prediction->PhotonSigmaIEtaIEta_EE, prediction->MLRes_EE);
+			delete prediction->PhotonSigmaIEtaIEta_EE;
 		delete prediction->PhotonSigmaIEtaIEta_EB;
 	}
 	else {
-		//use hard-coded normalization
 		prediction->SetPhotonNormalizationStupid(prediction->MLRes_EB);
 		prediction->SetPhotonNormalizationStupid(prediction->MLRes_EE);
 	}
 
-	// Get Photon signal yield (in data and MC)
 	// Photon Signal Region ******************************************************************************************
 	if(fDoPhotonSignalRegion){	
 		// Get Photon Selection Signal Region: EB
@@ -480,7 +457,6 @@ void run_GammaJetsToZnunu(){
 		
 	}
 
-	// get hadronic Znunu yield - note: you should modify the samples.dat to contain only Znunu MC, as rest is not needed
 	// Hadronic Signal Region ********************************************************************************************* 
 	if(fDoHadronicSignalRegion){
 		prediction->HadronicSignalRegion = new Channel("HadronicSignalRegion","misc.MT2", fCutStreamSignal.str().c_str(), 
@@ -490,7 +466,6 @@ void run_GammaJetsToZnunu(){
 		prediction->HadronicSignalRegion->fOutputDir=prediction->fOutputDir;
 		if(fDoVariableMT2bins) prediction->HadronicSignalRegion->GetShapes("HadronicRegion", "MT2 (GeV)", gNMT2bins, gMT2bins );
 		else                   prediction->HadronicSignalRegion->GetShapes("HadronicRegion", "MT2 (GeV)", 30, 0, 800);
-
 		// compute MC Znunu/Photon ratio --------------------------------------------------
 		prediction->GetMCZnunuToPhotonRatio();
 		if(fDoPrediction)  {
@@ -499,6 +474,7 @@ void run_GammaJetsToZnunu(){
 		}
 	}
 	
+
 	if(fWriteToFile){
 		TString logname =fOutDir + ".log"; 
 		ofstream f_log (logname.Data(), ios::app);
@@ -512,7 +488,6 @@ void run_GammaJetsToZnunu(){
 
 
 // ****************************************** Definition of classes and methods *********************************************************
-// class to contain results of maximum likelihood fit to sigmaietaieta variable
 class MLResult {
 public:
 	MLResult();
@@ -535,7 +510,6 @@ public:
 MLResult::MLResult(){};
 MLResult::~MLResult(){};
 
-//channels are sigmaietaieta region, photon signal region, hadronic region (x2 for EE and EB)
 class Channel {
 public:
 	Channel(TString name, TString variable, TString cuts, TString trigger, TString samples);
@@ -590,8 +564,8 @@ Channel::Channel(TString name, TString variable, TString cuts, TString trigger, 
 }
 Channel::~Channel(){};
 
-//get shapes is used to obtain the shapes along sigmaietaieta or MT2 for given selection and binning
 void Channel::GetShapes(TString SelectionName, TString xtitle, const int nbins, const double *bins ){ 
+	if(SelectionName!="HadronicRegion"||fHT){//for fHT no statistics?
 	MT2Shapes *tA;
 	if(fWriteToFile) tA = new MT2Shapes(fOutputDir, fRootFile, fLogStream);
 	else             tA = new MT2Shapes(fOutputDir, fRootFile);
@@ -603,6 +577,7 @@ void Channel::GetShapes(TString SelectionName, TString xtitle, const int nbins, 
 	tA->SetPileUpWeights(fDoPileUpWeights);
 	tA->SetbSFWeights(fbSFReWeight);
   
+
 //                    variable,    cuts,    njet, nbjets,  nlep, selection_name,      HLT,    xtitle   nbins  bins   
         tA->GetShapes(fVariable,  fCuts,    fNJets,  fNBJets, -10  , SelectionName,    fTrigger , xtitle , nbins, bins);
 
@@ -613,17 +588,39 @@ void Channel::GetShapes(TString SelectionName, TString xtitle, const int nbins, 
 		else if (name.Contains("PhotonsJets_")){hPhotons     = (TH1D*) tA->fh_shapes[i]->Clone(tA->fh_shapes[i]->GetName()); hPhotons->SetDirectory(0);}
 		else if (name.Contains("Data_"))       {hData        = (TH1D*) tA->fh_shapes[i]->Clone(tA->fh_shapes[i]->GetName()); hData->SetDirectory(0);}
 		else if (name.Contains("WJets_"))      {hWJets       = (TH1D*) tA->fh_shapes[i]->Clone(tA->fh_shapes[i]->GetName()); hWJets->SetDirectory(0);}
+		else if (name.Contains("ZJetsToNuNu_")){cout << "yeah" << endl; hZJetsToNuNu = (TH1D*) tA->fh_shapes[i]->Clone(tA->fh_shapes[i]->GetName());cout << hZJetsToNuNu->Integral() << endl; hZJetsToNuNu->SetDirectory(0);  }
 		else if (name.Contains("ZJetsToLL_"))  {hZJetsToLL   = (TH1D*) tA->fh_shapes[i]->Clone(tA->fh_shapes[i]->GetName()); hZJetsToLL->SetDirectory(0);}
-		else if (name.Contains("ZJetsToNuNu_")){hZJetsToNuNu = (TH1D*) tA->fh_shapes[i]->Clone(tA->fh_shapes[i]->GetName()); hZJetsToNuNu->SetDirectory(0);}
 		else if (name.Contains("Top_"))        {hTop         = (TH1D*) tA->fh_shapes[i]->Clone(tA->fh_shapes[i]->GetName()); hTop->SetDirectory(0);}
 		else if (name.Contains("Signal_"))     {hSignal      = (TH1D*) tA->fh_shapes[i]->Clone(tA->fh_shapes[i]->GetName()); hSignal->SetDirectory(0);}
 		else if (name.Contains("Other_"))      {hOther       = (TH1D*) tA->fh_shapes[i]->Clone(tA->fh_shapes[i]->GetName()); hOther->SetDirectory(0);}
 	}
 	delete tA;
+} else {
+//if use Zll 
+	MT2Shapes *tA;
+	if(fWriteToFile) tA = new MT2Shapes(fOutputDir, fRootFile, fLogStream);
+	else             tA = new MT2Shapes(fOutputDir, fRootFile);
+	tA->setVerbose(fVerbose);
+	tA->init(fSamples);
+	tA->SetPrintSummary(true);
+	tA->SetDraw(false);
+	tA->SetWrite(false);
+	tA->SetPileUpWeights(fDoPileUpWeights);
+	tA->SetbSFWeights(fbSFReWeight);
+	TString cutsA = fCuts + "&&((NEles==2&&ele[0].lv.Pt()>20&&ele[1].lv.Pt()>20&&ele[0].IDLoose&&ele[1].IDLoose&&NMuons==2)||(NMuons==2&&NEles==0&&muo[0].lv.Pt()>20&&muo[1].lv.Pt()>20))";
+	TString triggerA = "trigger.HLT_DiElectrons==1";
+      tA->GetShapes(fVariable,  cutsA,    fNJets,  fNBJets, -10  , SelectionName,    triggerA , xtitle , nbins, bins);
+	for(int i=0; i<tA->GetNShapes(); ++i){
+		TString name =tA->fh_shapes[i]->GetName();
+		if (name.Contains("ZJetsToNuNu_")){cout << "yeah" << endl; hZJetsToNuNu = (TH1D*) tA->fh_shapes[i]->Clone(tA->fh_shapes[i]->GetName());cout << hZJetsToNuNu->Integral() << endl; hZJetsToNuNu->SetDirectory(0);  }
+	}
+}
+
 	fGotShapes=true;
 
-	if(fISRreweight){
-		//reweight only photon jets and Znunu via an effective scaling - this is stupidly coded as not important
+	if(fISRreweight){//hadronic region here is MC
+		cout << "am here1" << endl;
+		//reweight only photon jets and Znunu
 		TFile *f = TFile::Open("ZGammaISRCorrectionsHistos.root");
 		string sig_reg = "";
 		string g_reg, z_reg;
@@ -652,15 +649,11 @@ void Channel::GetShapes(TString SelectionName, TString xtitle, const int nbins, 
 		}
 		TH1D *hZ = (TH1D*)f->Get(z_reg.c_str());
 		TH1D *hG = (TH1D*)f->Get(g_reg.c_str());
-		//NOTE: make maybe an if close to surpress this output
-		for(int nbin = 1; nbin<=hPhotons->GetNbinsX(); ++nbin){//do it like that in order to not change the error
-			cout << "Photon " << hPhotons->GetBinContent(nbin) << " Zinv " << hZJetsToNuNu->GetBinContent(nbin) << endl;
-			cout << "SF G   " << hG->GetBinContent(nbin) << " SF Z " << hZ->GetBinContent(nbin) << endl;
-			hPhotons->SetBinContent(nbin, hPhotons->GetBinContent(nbin)*hG->GetBinContent(nbin));
-			hPhotons->SetBinError(  nbin, hPhotons->GetBinError(  nbin)*hG->GetBinContent(nbin));
-			hZJetsToNuNu->SetBinContent(nbin, hZJetsToNuNu->GetBinContent(nbin)*hZ->GetBinContent(nbin));
-			hZJetsToNuNu->SetBinError(  nbin, hZJetsToNuNu->GetBinError(  nbin)*hZ->GetBinContent(nbin));
-			cout << "Photon " << hPhotons->GetBinContent(nbin) << " Zinv " << hZJetsToNuNu->GetBinContent(nbin) << endl;
+		for(int nbin = 1; nbin<=hZJetsToNuNu->GetNbinsX(); ++nbin){//do it like that in order to not change the error
+			if(hPhotons!=0)     hPhotons->SetBinContent(nbin, hPhotons->GetBinContent(nbin)*hG->GetBinContent(nbin));
+			if(hPhotons!=0)     hPhotons->SetBinError(  nbin, hPhotons->GetBinError(  nbin)*hG->GetBinContent(nbin));
+			if(hZJetsToNuNu!=0) hZJetsToNuNu->SetBinContent(nbin, hZJetsToNuNu->GetBinContent(nbin)*hZ->GetBinContent(nbin));
+			if(hZJetsToNuNu!=0) hZJetsToNuNu->SetBinError(  nbin, hZJetsToNuNu->GetBinError(  nbin)*hZ->GetBinContent(nbin));
 		}
 		f->Close();
 	}
@@ -697,7 +690,6 @@ void Channel::GetShapes(TString SelectionName, TString xtitle, const int nbins, 
 	}
 	delete tA;
 }
-//help function if binning is given differently
 void Channel::GetShapes(TString SelectionName, TString xtitle, const int nbins, float binmin, float binmax){ 
 	double bins[nbins];
 	bins[0] = binmin;
@@ -705,7 +697,6 @@ void Channel::GetShapes(TString SelectionName, TString xtitle, const int nbins, 
 	GetShapes(SelectionName, xtitle, nbins, bins);
 }
 
-//this class is there to really do the predictions - combines channels, fit results and important functions
 class Prediction {
 public:
 	Prediction();
@@ -720,7 +711,6 @@ public:
 	float GetZnunuPreditionErrorStat(TH1D* hData);
 	TH1D* GetScaledHisto(TH1D* histo, float scale_fact, float scale_fact_err);
 	TH1D* GetScaledHisto(TH1D* histo, float scale_fact, float scale_fact_err, int ngroup);
-	TH1D* RescaleHisto(TH1D* histMC1, TH1D* histMC2, TH1D* hist_data_EB, TH1D* hist_data_EE);
 	Channel* HadronicSignalRegion;
 	Channel* PhotonicSignalRegion_EE;
 	Channel* PhotonicSignalRegion_EB;
@@ -748,8 +738,6 @@ Prediction::Prediction(){
 	MLRes_EE = new MLResult();
 }
 Prediction::~Prediction(){}
-
-//this function gets the photon normalization (performs sigmaietaieta fit) by using the sigmaietaieta channels and filling results in MLResult
 void Prediction::GetPhotonNormalization(Channel* channel, MLResult* MLRes){
 	if (channel->fGotShapes=false)                        {cerr << "GetPhotonNormalization: need to get Shapes first!"  << endl; exit(-1);}
 	if (    channel->hQCD==0  || channel->hPhotons==0 
@@ -761,7 +749,6 @@ void Prediction::GetPhotonNormalization(Channel* channel, MLResult* MLRes){
 	TH1D *hPhotons = (TH1D*)channel->hPhotons->Clone("Photons");
 	TH1D *hData    = (TH1D*)channel->hData->Clone("Data");
 	TH1D *hOther   = (TH1D*)channel->hOther->Clone("Other");
-	//NOTE: think of modifying hOthers if it is completely empty, like saying hOther = hQCD clone that is rescaled to have small entries like normalized to 1 or so
 
 	if(channel->fAddMCPedestal){ // Add Pedestal to QCD MC PDF in order to avoid bins in PDF with zero entries
 		                     // but data in same bin! this causes problems!
@@ -796,6 +783,7 @@ void Prediction::GetPhotonNormalization(Channel* channel, MLResult* MLRes){
 	// if I'm not mistaken: SumW2==false is the right option, as mc-histos already contain proper weights. 
 	// SumW2Error == true would be needed if input comes from a TTree with (observable, weight) for each entry. 
 	// then, data.setWeightVar(y) would also be needed. 
+
 
 	// make plot
 	TCanvas* canv = new TCanvas(channel->fName,"", 0, 0, 500, 500 );
@@ -868,15 +856,12 @@ void Prediction::GetPhotonNormalization(Channel* channel, MLResult* MLRes){
 
 }
 
-//if sigmaietaieta fit is not performed hardcode all scale factors
-//values obtained by an extrapolation - i.e. this might change for 13 TeV
 void Prediction::SetPhotonNormalizationStupid(MLResult* MLRes){
 
-	//these are the necessary information for the prediction
-	MLRes->fMLPhotonScaleFactor    = 1.2;
+	MLRes->fMLPhotonScaleFactor    = 1;
 	MLRes->fMLPhotonScaleFactorErr = 0.05;
-	MLRes->fMLQCDScaleFactor       = 1.3;
-	MLRes->fMLQCDScaleFactorErr    = 1.3;
+	MLRes->fMLQCDScaleFactor       = 1;
+	MLRes->fMLQCDScaleFactorErr    = 0.1;
 	MLRes->fMLOtherScaleFactor     = 1;
 	MLRes->fMLOtherScaleFactorErr  = 0;
 
@@ -896,8 +881,9 @@ void Prediction::SetPhotonNormalizationStupid(MLResult* MLRes){
 
 }
 
-// compute MC Znunu/Photon ratio
+
 void Prediction::GetMCZnunuToPhotonRatio(){
+	// compute MC Znunu/Photon ratio
 	// for this PhotonicSignalRegion->fGotShapes==1 and HadronicSignalRegion->fGotShapes==1 is required!
 	if(PhotonicSignalRegion_EE->fGotShapes==false || PhotonicSignalRegion_EB->fGotShapes==false || HadronicSignalRegion->fGotShapes==false){
 		cerr << "ERROR in GetMCZnunuToPhotonRatio: fGotShape found to be false" << endl;
@@ -905,7 +891,7 @@ void Prediction::GetMCZnunuToPhotonRatio(){
 	}
 	*fLogStream << "------------------------------------------------------------------------" << endl;
 	*fLogStream << "GetMCZnunuToPhotonRatio: Computing MC Znunu to Photon Ratio             " << endl;           
-	if(fUseConstantZToGammaR){//dummy thing to do - but might be useful for debugging reasons
+	if(fUseConstantZToGammaR){
 		Float_t fConstantZToGammaR   = 0;
 		Float_t fConstantZToGammaErr = 0;
 		if(fHTmin == 750 && fHTmax == 950){
@@ -932,43 +918,25 @@ void Prediction::GetMCZnunuToPhotonRatio(){
 		}
 		*fLogStream << "Ratio: " << fMCZnunuPhotonRatio << " pm " << fMCZnunuPhotonRatioErr << endl;
 		*fLogStream << "------------------------------------------------------------------------" << endl;
-	}else{  //this is the important part of this function - get ratio from photon MC and Znunu MC
+	}else{
 		if(PhotonicSignalRegion_EB->hPhotons==0 || PhotonicSignalRegion_EE->hPhotons==0 || HadronicSignalRegion->hZJetsToNuNu==0){
 			cout << "GetMCZnunuToPhotonRatio: received 0 pointer!" << endl;
 			exit(-1);
 		}
 
-		// GetScaled histos with only one bin and propagated errors: stat error and error on scale factor
-		double rescaleGammaEB = MLRes_EB->fMLPhotonScaleFactor; double rescaleGammaEBerr = MLRes_EB->fMLPhotonScaleFactorErr;
-		double rescaleGammaEE = MLRes_EE->fMLPhotonScaleFactor; double rescaleGammaEEerr = MLRes_EE->fMLPhotonScaleFactorErr;
-		double rescaleQCDEB   = MLRes_EB->fMLQCDScaleFactor;    double rescaleQCDEBerr   = MLRes_EB->fMLQCDScaleFactorErr;
-		double rescaleQCDEE   = MLRes_EE->fMLQCDScaleFactor;    double rescaleQCDEEerr   = MLRes_EE->fMLQCDScaleFactorErr;
-		if(fdontRescaleRatio){
-			rescaleGammaEB = 1./fGammakFactor; rescaleGammaEBerr = 0.;
-			rescaleGammaEE = 1./fGammakFactor; rescaleGammaEEerr = 0.;
-			rescaleQCDEB   = 1.; rescaleQCDEBerr   = 0.;
-			rescaleQCDEE   = 1.; rescaleQCDEEerr   = 0.;
-		}
-		//the GetScaledHisto2 keeps the binning and scales the histogram with a factor (which here is obtained from the sigmaietaieta fit)
-		TH1D *currPhotons= GetScaledHisto2(PhotonicSignalRegion_EB->hPhotons , rescaleGammaEB, rescaleGammaEBerr); // EB
-		currPhotons->Add(  GetScaledHisto2(PhotonicSignalRegion_EE->hPhotons , rescaleGammaEE, rescaleGammaEEerr)); //EE
-		if(fReScaleAfterMT2){
-			TH1D *currQCD= GetScaledHisto2(PhotonicSignalRegion_EB->hQCD , rescaleQCDEB, rescaleQCDEBerr); // EB
-			currQCD->Add(  GetScaledHisto2(PhotonicSignalRegion_EE->hQCD , rescaleQCDEE, rescaleQCDEEerr)); //EE
-			currPhotons = RescaleHisto(currPhotons, currQCD, PhotonicSignalRegion_EB->hData, PhotonicSignalRegion_EE->hData);
-		}
+		// GetScaled histos with only one bin and probagated errors: stat error and error on scale factor
+		TH1D *currPhotons= GetScaledHisto2(PhotonicSignalRegion_EB->hPhotons , MLRes_EB->fMLPhotonScaleFactor, MLRes_EB->fMLPhotonScaleFactorErr); // EB
+		currPhotons->Add(  GetScaledHisto2(PhotonicSignalRegion_EE->hPhotons , MLRes_EE->fMLPhotonScaleFactor, MLRes_EE->fMLPhotonScaleFactorErr)); //EE
 		TH1D *currZnunu  = GetScaledHisto2(HadronicSignalRegion->hZJetsToNuNu, 1                   , 0);
+		if(fUseConstantZToGammaRdynamic) currPhotons = RefillRatioHisto(currPhotons,fMinMT2forConstR);
+		if(fUseConstantZToGammaRdynamic) currZnunu   = RefillRatioHisto(currZnunu  ,fMinMT2forConstR);
 
-		//constant Z/G ratio for high MT2 is achieved by setting the bins of the input histograms with fMinMT2forConstR to the sum of those bins
-		if(fUseConstZToGammaRdynamic) currPhotons = RefillRatioHisto(currPhotons,fMinMT2forConstR);
-		if(fUseConstZToGammaRdynamic) currZnunu   = RefillRatioHisto(currZnunu  ,fMinMT2forConstR);
-
-		//get the ratio
 		TH1D *ratio = (TH1D*) currZnunu->Clone("Znunu_To_Photon_ratio");
 		ratio->Divide(currPhotons);
 		fMCZnunuPhotonRatio    = ratio->GetBinContent(1);
 		fMCZnunuPhotonRatioErr = ratio->GetBinError(1);
 		fMCZnunuPhotonRatioHisto = (TH1D*)ratio->Clone("Znunu_To_Photon_ratio_histo");
+
 
 		if(fAddRMCUncertainty){
 		*fLogStream << "------------------------------------------------------------------------------" << endl;
@@ -983,15 +951,8 @@ void Prediction::GetMCZnunuToPhotonRatio(){
 		*fLogStream << "------------------------------------------------------------------------" << endl;
 
 		if(fSaveZnunuToGammaRatio){
-			//the GetScaledHisto2 keeps the binning and scales the histogram with a factor (which here is obtained from the sigmaietaieta fit)
-			TH1D *currPhotons2= GetScaledHisto2(PhotonicSignalRegion_EB->hPhotons , rescaleGammaEB, rescaleGammaEBerr); // EB
-			currPhotons2->Add(  GetScaledHisto2(PhotonicSignalRegion_EE->hPhotons , rescaleGammaEE, rescaleGammaEEerr)); //EE
-			if(fReScaleAfterMT2){
-				TH1D *currQCD= GetScaledHisto2(PhotonicSignalRegion_EB->hQCD , rescaleQCDEB, rescaleQCDEBerr); // EB
-				currQCD->Add(  GetScaledHisto2(PhotonicSignalRegion_EE->hQCD , rescaleQCDEE, rescaleQCDEEerr)); //EE
-				currPhotons2 = RescaleHisto(currPhotons2, currQCD, PhotonicSignalRegion_EB->hData, PhotonicSignalRegion_EE->hData);
-			}
-			//this GetScaledHisto rebins histogram by nothing(dummy) and scales the histogram with a factor (which here is obtained from the sigmaietaieta fit)
+			TH1D *currPhotons2= GetScaledHisto(PhotonicSignalRegion_EB->hPhotons , MLRes_EB->fMLPhotonScaleFactor, MLRes_EB->fMLPhotonScaleFactorErr, 1); // EB
+			currPhotons2->Add(  GetScaledHisto(PhotonicSignalRegion_EE->hPhotons , MLRes_EE->fMLPhotonScaleFactor, MLRes_EE->fMLPhotonScaleFactorErr, 1)); //EE
 			TH1D *currZnunu2  = GetScaledHisto(HadronicSignalRegion->hZJetsToNuNu, 1                               , 0                              , 1);
 			TH1D *ratio2 = (TH1D*) currZnunu2->Clone("Znunu_To_Photon_Ratio");
 			ratio2->Divide(currPhotons2);
@@ -1012,10 +973,10 @@ void Prediction::GetMCZnunuToPhotonRatio(){
 	}
 }
 
-//after obtaining all normalizations and the Z/G ratio can perform final prediction
 void Prediction::MakePrediction(){
 	if(fMCZnunuPhotonRatio==0)        {*fLogStream << "ERROR in MakePrediction: fMCZnunuPhotonRatio==0"        << endl; exit(-1); }
 	*fLogStream << "******************************* Prediction ****************************************" << endl;
+
 	*fLogStream << "Photonic Region where EB Normalization was extracted: (ML-fit result) ------------" << endl;
 	*fLogStream << "  NData: "    << MLRes_EB->fMLNumData    << " pm " << MLRes_EB->fMLNumDataErr       << endl;
 	*fLogStream << "  NPhotons: " << MLRes_EB->fMLNumPhotons << " pm " << MLRes_EB->fMLNumPhotonsErr    << endl;
@@ -1027,7 +988,6 @@ void Prediction::MakePrediction(){
 	*fLogStream << "  NOther: "   << MLRes_EE->fMLNumOther   << " pm " << MLRes_EE->fMLNumOtherErr      << endl;
 	*fLogStream << "  NQCD: "     << MLRes_EE->fMLNumQCD	 << " pm " << MLRes_EE->fMLNumQCDErr        << endl;
 	
-	//the GetScaledHisto2 keeps the binning and scales the histogram with a factor (which here is obtained from the sigmaietaieta fit)
 	// EB
 	TH1D *hPhotons_EB = GetScaledHisto2(PhotonicSignalRegion_EB->hPhotons, MLRes_EB->fMLPhotonScaleFactor, MLRes_EB->fMLPhotonScaleFactorErr);
 	TH1D *hOther_EB   = GetScaledHisto2(PhotonicSignalRegion_EB->hOther  , MLRes_EB->fMLOtherScaleFactor , MLRes_EB->fMLOtherScaleFactorErr);
@@ -1044,29 +1004,23 @@ void Prediction::MakePrediction(){
 	TH1D* hQCD     = hQCD_EB->Clone("hQCD");         hQCD    ->Add(hQCD_EE);
 	TH1D* hData    = hData_EB->Clone("hData");       hData   ->Add(hData_EE);
 
-	if(fReScaleAfterMT2){
-		//this is discouraged - meaning  see at the beginning at fReScaleAfterMT2 setting
-		TH1D *temp = hPhotons->Clone("hPhotons_Clone");
-		hPhotons = RescaleHisto(hPhotons, hQCD, PhotonicSignalRegion_EB->hData, PhotonicSignalRegion_EE->hData);
-		hQCD     = RescaleHisto(hQCD    , temp, PhotonicSignalRegion_EB->hData, PhotonicSignalRegion_EE->hData);
-	}
 
-	*fLogStream << "Photonic Signal Region: event yields (only first bin(:-------------------" << endl;
+	*fLogStream << "Photonic Signal Region: event yields:-------------------" << endl;
 	*fLogStream << "EB:                                                     " << endl;
-	*fLogStream << "  NData:    "    << hData_EB   ->GetBinContent(1) << " pm " << hData_EB   ->GetBinError(1)  << endl;
+	*fLogStream << "  NData:    "    << hData_EB->GetBinContent(1)    << " pm " << hData_EB   ->GetBinError(1)  << endl;
 	*fLogStream << "  NPhotons: "    << hPhotons_EB->GetBinContent(1) << " pm " << hPhotons_EB->GetBinError(1)  << endl;
-	*fLogStream << "  NQCD:     "    << hQCD_EB    ->GetBinContent(1) << " pm " << hQCD_EB    ->GetBinError(1)  << endl;
-	*fLogStream << "  NOther:   "    << hOther_EB  ->GetBinContent(1) << " pm " << hOther_EB  ->GetBinError(1)  << endl;
+	*fLogStream << "  NQCD:     "    << hQCD_EB->GetBinContent(1)     << " pm " << hQCD_EB    ->GetBinError(1)  << endl;
+	*fLogStream << "  NOther:   "    << hOther_EB->GetBinContent(1)   << " pm " << hOther_EB  ->GetBinError(1)  << endl;
 	*fLogStream << "EE:                                                     " << endl;
-	*fLogStream << "  NData:    "    << hData_EE   ->GetBinContent(1) << " pm " << hData_EE   ->GetBinError(1)  << endl;
+	*fLogStream << "  NData:    "    << hData_EE->GetBinContent(1)    << " pm " << hData_EE   ->GetBinError(1)  << endl;
 	*fLogStream << "  NPhotons: "    << hPhotons_EE->GetBinContent(1) << " pm " << hPhotons_EE->GetBinError(1)  << endl;
-	*fLogStream << "  NQCD:     "    << hQCD_EE    ->GetBinContent(1) << " pm " << hQCD_EE    ->GetBinError(1)  << endl;
-	*fLogStream << "  NOther:   "    << hOther_EE  ->GetBinContent(1) << " pm " << hOther_EE  ->GetBinError(1)  << endl;
+	*fLogStream << "  NQCD:     "    << hQCD_EE->GetBinContent(1)     << " pm " << hQCD_EE    ->GetBinError(1)  << endl;
+	*fLogStream << "  NOther:   "    << hOther_EE->GetBinContent(1)   << " pm " << hOther_EE  ->GetBinError(1)  << endl;
 	*fLogStream << "total:                                                  " << endl;
-	*fLogStream << "  NData:    "    << hData   ->GetBinContent(1)    << " pm " << hData   ->GetBinError(1)  << endl;
-	*fLogStream << "  NPhotons: "    << hPhotons->GetBinContent(1)    << " pm " << hPhotons->GetBinError(1)  << endl;
-	*fLogStream << "  NQCD:     "    << hQCD    ->GetBinContent(1)    << " pm " << hQCD    ->GetBinError(1)  << endl;
-	*fLogStream << "  NOther:   "    << hOther  ->GetBinContent(1)    << " pm " << hOther  ->GetBinError(1)  << endl;
+	*fLogStream << "  NData:    "    << hData->GetBinContent(1)    << " pm " << hData   ->GetBinError(1)  << endl;
+	*fLogStream << "  NPhotons: "    << hPhotons->GetBinContent(1) << " pm " << hPhotons->GetBinError(1)  << endl;
+	*fLogStream << "  NQCD:     "    << hQCD->GetBinContent(1)     << " pm " << hQCD    ->GetBinError(1)  << endl;
+	*fLogStream << "  NOther:   "    << hOther->GetBinContent(1)   << " pm " << hOther  ->GetBinError(1)  << endl;
 	*fLogStream << "where the following scale factors were used:            " << endl;
 	*fLogStream << "EB:                                                     " << endl;
 	*fLogStream << "  Photon Scale Factor: " << MLRes_EB->fMLPhotonScaleFactor << " pm " << MLRes_EB->fMLPhotonScaleFactorErr            << endl;
@@ -1077,31 +1031,34 @@ void Prediction::MakePrediction(){
 	*fLogStream << "  QCD    Scale Factor: " << MLRes_EE->fMLQCDScaleFactor    << " pm " << MLRes_EE->fMLQCDScaleFactorErr               << endl;
 	*fLogStream << "  Other  Scake Factor: " << MLRes_EE->fMLOtherScaleFactor  << " pm " << MLRes_EE->fMLOtherScaleFactorErr             << endl;
 	
+	
 	*fLogStream << "MC Znunu To Photon ratio ----------------------------------- " << endl;
 	if(fUseConstantZToGammaR){
 	*fLogStream << " >> ---------- using constant ratio ---------------- <<      " << endl;
 	}
 	*fLogStream << fMCZnunuPhotonRatio  << " pm " << fMCZnunuPhotonRatioErr        << endl;	
 	
+	if(fMT2b && fDoBRatioCorrection){
+	*fLogStream << "MC to Data Photon+jets B-tag correction: " << fRB_MCtoData << " pm " << fRB_MCtoDataErr << endl;
+	}
 
-	//obtain the predicted yields - Pascal's style (only first bin)
-	float PredictedZnunu                = fMCZnunuPhotonRatio*(hData->GetBinContent(1)-hOther->GetBinContent(1)-hQCD->GetBinContent(1));
+	float PredictedZnunu                = fRB_MCtoData*fMCZnunuPhotonRatio*(hData->GetBinContent(1)-hOther->GetBinContent(1)-hQCD->GetBinContent(1));
+
+
 	float PredictedZnunu_ErrSys         = GetZnunuPreditionErrorSys (hData, hOther, hQCD);
 	float PredictedZnunu_ErrSysClosure  = GetZnunuPreditionErrorSysClosure (hPhotons);
 	float PredictedZnunu_ErrStat        = GetZnunuPreditionErrorStat(hData);
 
-	//obtained the predicted yields along MT2
 	vector<int> htbin, mt2bin;
-	vector<double> znunugen, znunupred, znunuprederr, znunuprederrstat, znunuprederrsyst, ZGratio, ZGratioerr, mt2low, mt2up, ndata, ndataerr, nqcd, nqcderr, nother, nothererr, ngamma, ngammaerr;
-	htbin.clear(), mt2bin.clear(), znunugen.clear(), znunupred.clear(), znunuprederr.clear(), znunuprederrstat.clear(), znunuprederrsyst.clear(), ZGratio.clear(), ZGratioerr.clear(), mt2low.clear(), mt2up.clear(), ndata.clear(), ndataerr.clear(), nqcd.clear(), nqcderr.clear(), nother.clear(), nothererr.clear(), ngamma.clear(), ngammaerr.clear();
+	vector<double> znunugen, znunupred, znunuprederr, znunuprederrstat, znunuprederrsyst, ZGratio, ZGratioerr, mt2low, mt2up, ndata, ndataerr, nqcd, nqcderr, nother, nothererr;
+	htbin.clear(), mt2bin.clear(), znunugen.clear(), znunupred.clear(), znunuprederr.clear(), znunuprederrstat.clear(), znunuprederrsyst.clear(), ZGratio.clear(), ZGratioerr.clear(), mt2low.clear(), mt2up.clear(), ndata.clear(), ndataerr.clear(), nqcd.clear(), nqcderr.clear(), nother.clear(), nothererr.clear();
 	for(int i = 1; i<=hData->GetNbinsX(); ++i){
 
-	PredictedZnunu                = fMCZnunuPhotonRatioHisto->GetBinContent(i)*(hData->GetBinContent(i)-hOther->GetBinContent(i)-hQCD->GetBinContent(i));
+	PredictedZnunu                = fRB_MCtoData*fMCZnunuPhotonRatioHisto->GetBinContent(i)*(hData->GetBinContent(i)-hOther->GetBinContent(i)-hQCD->GetBinContent(i));
 	PredictedZnunu_ErrSys         = GetZnunuPreditionErrorSys (i, hData, hOther, hQCD);
 	PredictedZnunu_ErrSysClosure  = GetZnunuPreditionErrorSysClosure (i, hPhotons);
 	PredictedZnunu_ErrStat        = GetZnunuPreditionErrorStat(i, hData);
 
-	//make here a if case - this a detailed printout 
 	*fLogStream << "For " << hPhotons->GetBinLowEdge(i) << " < MT2 < " << hPhotons->GetBinLowEdge(i)+hPhotons->GetBinWidth(i) <<  "(" << i << "/" << hData->GetNbinsX() << ")" << endl;
 
 	*fLogStream << "Photon events in Photon Signal region (data-bg): " <<  hData->GetBinContent(i) << " - " << hOther->GetBinContent(i)+hQCD->GetBinContent(i) << " MC: " << hPhotons->GetBinContent(i) << endl;
@@ -1113,42 +1070,21 @@ void Prediction::MakePrediction(){
 	*fLogStream << "MC closure:"                                                                                              << endl;
 	*fLogStream << "  " << fMCZnunuPhotonRatioHisto->GetBinContent(i)*(hPhotons->GetBinContent(i))   << " pm " << PredictedZnunu_ErrSysClosure << " (sys) " << endl; 
 
-	int MT2bin = 99;
-	int HTbin  = 99;
-	if      (fMT2min == 150 && fMT2max == 200) MT2bin=0;
-	else if (fMT2min == 200 && fMT2max == 275) MT2bin=1;
-	else if (fMT2min == 275 && fMT2max == 375) MT2bin=2;
-	else if (fMT2min == 375 && fMT2max == 500) MT2bin=3;
-	else if (fMT2min == 500)                   MT2bin=4;
-	else if (fMT2min ==   0 && fMT2max ==1e+8) MT2bin=-1;
-	//else    {cout << "MT2bin not valid for printout! " << endl; exit(-1);} //this is stupid
-	if      (fHTmin  == 750 && fHTmax == 1200) HTbin =1;
-	else if (fHTmin  == 1200)                  HTbin =2;
-	else if (fHTmin  == 450 && fHTmax == 750 ) HTbin =0;
-	else if (fHTmin  == 750 )                  HTbin =10;
-	else if (fHTmin  == 450 )                  HTbin =-10;
-	//else    {cout << "HTbin not valid for printout! " << endl; exit(-1);} //this is stupid
-	htbin.push_back(HTbin);
-	mt2bin.push_back(MT2bin);
-	znunugen.push_back(HadronicSignalRegion->hZJetsToNuNu->GetBinContent(i));
-	znunupred.push_back(PredictedZnunu);
-	znunuprederr.push_back(sqrt(PredictedZnunu_ErrSys*PredictedZnunu_ErrSys+PredictedZnunu_ErrStat*PredictedZnunu_ErrStat));
-	znunuprederrstat.push_back(PredictedZnunu_ErrStat);
-	znunuprederrsyst.push_back(PredictedZnunu_ErrSys);
-	ZGratio.push_back(fMCZnunuPhotonRatioHisto->GetBinContent(i));
-	ZGratioerr.push_back(fMCZnunuPhotonRatioHisto->GetBinError(i));
-	mt2low.push_back(hPhotons->GetBinLowEdge(i));
-	mt2up.push_back(hPhotons->GetBinLowEdge(i)+hPhotons->GetBinWidth(i));
-	ndata.push_back(hData->GetBinContent(i));
-	ndataerr.push_back(hData->GetBinError(i));
-	nqcd.push_back(hQCD->GetBinContent(i));
-	nqcderr.push_back(hQCD->GetBinError(i));
-	nother.push_back(hOther->GetBinContent(i));
-	nothererr.push_back(hOther->GetBinError(i));
-	ngamma.push_back(hPhotons->GetBinContent(i));
-	ngammaerr.push_back(hPhotons->GetBinError(i));
-
-	if(fPrintBrunoTable){//see fPrintBrunoTable at beginning
+	if(fPrintBrunoTable){//note that this is differently organized than in run_GammaJetsToZnunu.C - for prediction we need fPrintBrunoTable = true
+		int MT2bin;
+		int HTbin;
+		if      (fMT2min == 150 && fMT2max == 200) MT2bin=0;
+		else if (fMT2min == 200 && fMT2max == 275) MT2bin=1;
+		else if (fMT2min == 275 && fMT2max == 375) MT2bin=2;
+		else if (fMT2min == 375 && fMT2max == 500) MT2bin=3;
+		else if (fMT2min == 500)                   MT2bin=4;
+		else if (fMT2min ==   0 && fMT2max ==1e+8) MT2bin=-1;
+		else    {cout << "MT2bin not valid for printout! " << endl; exit(-1);}
+		if      (fHTmin  == 750 && fHTmax == 1200) HTbin =1;
+		else if (fHTmin  == 1200)                  HTbin =2;
+		else if (fHTmin  == 450 && fHTmax == 750 ) HTbin =0;
+		else if (fHTmin  == 750 )                  HTbin =10;
+		else    {cout << "HTbin not valid for printout! " << endl; exit(-1);}
 		*fLogStream << "************************** Bruno-Gay Printout ******************************" << endl;
 	        (*fLogStream).precision(3) ;
 		*fLogStream << "ZinvFromG " << HTbin << " " << MT2bin << " " << HadronicSignalRegion->hZJetsToNuNu->GetBinContent(i)
@@ -1160,27 +1096,36 @@ void Prediction::MakePrediction(){
 		            << hOther->GetBinContent(i) << " $\\pm$ " << hOther->GetBinError(i)  << " & "
 			    << fMCZnunuPhotonRatioHisto->GetBinContent(i)      << " $\\pm$ " << fMCZnunuPhotonRatioHisto->GetBinError(i)  << " & "
 			    << PredictedZnunu           << " $\\pm$ " << PredictedZnunu_ErrSys   << " $\\pm$ " << PredictedZnunu_ErrStat   << " & "
-			    << HadronicSignalRegion->hZJetsToNuNu->GetBinContent(i) 
-			    <<  "after fit " << hPhotons->GetBinContent(i)
-			    << " before fit " << PhotonicSignalRegion_EB->hPhotons->GetBinContent(i)+ PhotonicSignalRegion_EE->hPhotons->GetBinContent(i)
-			    << " \\\\ " << endl;
+			    << HadronicSignalRegion->hZJetsToNuNu->GetBinContent(i)  << " \\\\ " << endl;
 		*fLogStream << "************************** Bruno-Gay Printout ******************************" << endl;
+		htbin.push_back(HTbin);
+		mt2bin.push_back(MT2bin);
+		znunugen.push_back(HadronicSignalRegion->hZJetsToNuNu->GetBinContent(i));
+		znunupred.push_back(PredictedZnunu);
+		znunuprederr.push_back(sqrt(PredictedZnunu_ErrSys*PredictedZnunu_ErrSys+PredictedZnunu_ErrStat*PredictedZnunu_ErrStat));
+		znunuprederrstat.push_back(PredictedZnunu_ErrStat);
+		znunuprederrsyst.push_back(PredictedZnunu_ErrSys);
+		ZGratio.push_back(fMCZnunuPhotonRatioHisto->GetBinContent(i));
+		ZGratioerr.push_back(fMCZnunuPhotonRatioHisto->GetBinError(i));
+		mt2low.push_back(hPhotons->GetBinLowEdge(i));
+		mt2up.push_back(hPhotons->GetBinLowEdge(i)+hPhotons->GetBinWidth(i));
+		ndata.push_back(hData->GetBinContent(i));
+		ndataerr.push_back(hData->GetBinError(i));
+		nqcd.push_back(hQCD->GetBinContent(i));
+		nqcderr.push_back(hQCD->GetBinError(i));
+		nother.push_back(hOther->GetBinContent(i));
+		nothererr.push_back(hOther->GetBinError(i));
 	}
 	}
-	if(fPrintBrunoTable){//see fPrintBrunoTable at beginning
-		*fLogStream << endl << "************************** Bruno-Gay Printout ******************************" << endl;
-        	*fLogStream << fixed << setprecision(2) ;
-		*fLogStream << " Name     " << " SR " << " HTbin " << " MT2bin   " << " MCpred   " << " DataDrivenPred " << " DataDrivenPredError " << " ScaleFactor " << " ScaleFactorError " /*<< " Ngamma"*/ << endl;
-		for(int jj = 0; jj<htbin.size(); ++jj){
-			*fLogStream << "ZinvFromG   " << fSR << " " << setw(5) << htbin[jj] << " " << setw(4) << mt2bin[jj] << " " << setw(13) << znunugen[jj]
-			            << " " << setw(13) << znunupred[jj] << " " << setw(18) << znunuprederr[jj]
-		    		    << " " << setw(13) << ZGratio[jj]   << " " << setw(16) << ZGratioerr[jj] /*<<  "            " << ngamma[jj] << "+/-" << ngammaerr[jj]*/ << endl;
-		}
+	*fLogStream << endl << "************************** Bruno-Gay Printout ******************************" << endl;
+        *fLogStream << fixed << setprecision(2) ;
+	*fLogStream << " Name     " << " SR " << " HTbin " << " MT2bin   " << " MCpred   " << " DataDrivenPred " << " DataDrivenPredError " << " ScaleFactor " << " ScaleFactorError " << endl;
+	for(int jj = 0; jj<htbin.size(); ++jj){
+		*fLogStream << "ZinvFromG   " << fSR << " " << setw(5) << htbin[jj] << " " << setw(4) << mt2bin[jj] << " " << setw(13) << znunugen[jj]
+		            << " " << setw(13) << znunupred[jj] << " " << setw(18) << znunuprederr[jj]
+		    	    << " " << setw(13) << ZGratio[jj]   << " " << setw(16) << ZGratioerr[jj] << endl;
+	}
 		*fLogStream << "----------------------------------------------------------------------------" << endl;
-	}
-
-	//this is the final prediction table for Z(nunu) from photon
-	*fLogStream << endl;
 	*fLogStream << "\%BEGINLATEX\%"                    << endl
 		    << "\\begin{table}[!htb]"              << endl
 		    << "\\begin{center}"                   << endl
@@ -1192,7 +1137,7 @@ void Prediction::MakePrediction(){
 		    << "\\hline" << endl;
 	for(int jj = 0; jj<htbin.size(); ++jj){
 		*fLogStream << "$" << int(mt2low[jj]) << "-" << int(mt2up[jj]) << "$" 
-		            << " " << setw(19) << "& " << int(ndata[jj])   << " " << setw(1)  << "& " 
+		            << " " << setw(19) << "& $" << ndata[jj]      << " \\pm "<< ndataerr[jj]   << "$" << " " << setw(1)  << "& " 
 		            << " " << setw(2)  <<   "$" << nqcd[jj]       << " \\pm "<< nqcderr[jj]    << "$" << " " << setw(1)  << "& "
 		            << " " << setw(2)  <<   "$" << nother[jj]     << " \\pm "<< nothererr[jj]  << "$" << " " << setw(1)  << "& "
 		            << " " << setw(4)  <<   "$" << ZGratio[jj]    << " \\pm "<< ZGratioerr[jj] << "$" << " " << setw(1)  << "& "
@@ -1205,50 +1150,11 @@ void Prediction::MakePrediction(){
 		    << "\\end{table}"    << endl
 		    << "\%ENDLATEX\%"    << endl
 		    << endl;
-
-
-	*fLogStream << endl << "************************** Modified table for 1b est ******************************" << endl;
-        *fLogStream << fixed << setprecision(2) ;
-	*fLogStream << " Name     " << " SR " << " HTbin " << " MT2bin   " << " MCpred(wrong)   " << " DataDrivenPred " << " DataDrivenPredError(slightwrong) " << " ScaleFactor " << " ScaleFactorError " << endl;
-	for(int jj = 0; jj<htbin.size(); ++jj){
-		*fLogStream << "ZinvFromG   " << fSR << " " << setw(5) << htbin[jj] << " " << setw(4) << mt2bin[jj] << " " << setw(13) << znunugen[jj]
-		            << " " << setw(13) << znunupred[jj]*modtablescale << " " << setw(18) << sqrt(pow(znunuprederr[jj]*modtablescale,2)+pow(znunupred[jj]*modtablescaleerr,2))
-		    	    << " " << setw(13) << ZGratio[jj]*modtablescale   << " " << setw(16) << sqrt(pow(ZGratioerr[jj]*modtablescale,2) + pow(ZGratio[jj]*modtablescaleerr,2))  << endl;
-	}
-		*fLogStream << "----------------------------------------------------------------------------" << endl;
-	*fLogStream << "\%BEGINLATEX\%"                    << endl
-		    << "\\begin{table}[!htb]"              << endl
-		    << "\\begin{center}"                   << endl
-		    << "\\begin{tabular}{l|cccccc}"        << endl
-		    << "\\hline\\hline"                    << endl
-		    << "\\multirow{2}{*}{$M_{T2}$\\ bin}";
-		    if(fHTmin==750 && fHTmax==950) *fLogStream << " & \\multicolumn{6}{c}{$750 < H_T<950$ GeV}  \\";
-	*fLogStream << "  & $N^{\\gamma}$         & $QCD^{bkg}$&           $R_Z^{data}(1b/0b)$      &    $R^{MC}(Z(\\nu\\nu)/\\gamma)$ & data pred                   & MC estimate(is 0b not 1b) \\\\" << endl
-		    << "\\hline" << endl;
-	for(int jj = 0; jj<htbin.size(); ++jj){
-		*fLogStream << "$" << int(mt2low[jj]) << "-" << int(mt2up[jj]) << "$" 
-		            << " " << setw(19) << "& " << int(ndata[jj]) << " " << setw(1)  << "& " 
-		            << " " << setw(2)  <<   "$" << nqcd[jj]       << " \\pm "<< nqcderr[jj]    << "$" << " " << setw(1)  << "& "
-		            << " " << setw(2) <<  fixed << setprecision(3) <<   "$" << modtablescale     << " \\pm "<< modtablescaleerr  << "$" << " " << setw(1)  << "& "
-		            << " " << setw(4) <<  fixed << setprecision(2) <<   "$" << ZGratio[jj]    << " \\pm "<< ZGratioerr[jj] << "$" << " " << setw(1)  << "& "
-		            << " " << setw(7)  <<   "$" << znunupred[jj]*modtablescale  << " \\pm " << znunuprederrstat[jj]*modtablescale << " \\pm " << sqrt(pow(znunuprederrsyst[jj]*modtablescale,2)+pow(znunupred[jj]*modtablescaleerr,2)) << "$ & "
-			    << " " << setw(4)  << znunugen[jj] << " \\\\ " << endl;
-	}
-	*fLogStream << "\\hline\\hline"  << endl
-		    << "\\end{tabular}"  << endl
-		    << "\\end{center}"   << endl
-		    << "\\end{table}"    << endl
-		    << "\%ENDLATEX\%"    << endl
-		    << endl;
-	*fLogStream << endl << "************************** Modified table for 1b est ******************************" << endl;
-
-	if(!fDoPhotonSigmaIEtaIEta) cout << "YOUR ARE NOT DOING fDoPhotonSigmaIEtaIEta " << endl;//just a reminder
+	*fLogStream << "************************** Bruno-Gay Printout ******************************" << endl;
 
 }
 
 TH1D* Prediction::RebinHisto(TH1D* histo, float lastbinlowedge){
-	//rebin a histogram in such a way that all bins < lastbinlowedge are kept as they are
-	//but all bins > lastbinlowedge are rebinned into one single bin
 	TH1D *h        = (TH1D*) histo->Clone(histo->GetName());
 	if(h->GetNbinsX()<2) return h;
 	if(h->GetBinLowEdge(h->GetNbinsX())<lastbinlowedge) return h;
@@ -1270,8 +1176,6 @@ TH1D* Prediction::RebinHisto(TH1D* histo, float lastbinlowedge){
 }
 
 TH1D* Prediction::RefillRatioHisto(TH1D* histo, float lastbinlowedge){
-	//this function adds up the contents and uncertainties for bins > lastbinlowedge
-	//and replaces those contents and uncertainties by their (quadratic) sum
 	TH1D *h        = (TH1D*) histo->Clone(histo->GetName());
 	if(h->GetNbinsX()<2) return h;
 	if(h->GetBinLowEdge(h->GetNbinsX())<lastbinlowedge) return h;
@@ -1306,7 +1210,7 @@ TH1D* Prediction::GetScaledHisto(TH1D* histo, float scale_fact, float scale_fact
 
 TH1D* Prediction::GetScaledHisto2(TH1D* histo, float scale_fact, float scale_fact_err){
 	// takes histo, scale factor and uncertainty on scale factor
-	// and returns scaled histo with uncertainty on scale factor propagated.
+	// and returns scaled and rebinned histo with 1 bin with uncertainty on scale factor propagated.
 	TH1D *h        = (TH1D*) histo->Clone(histo->GetName());
 	for(int i = 1; i<=h->GetNbinsX(); ++i){
 	h->SetBinError(i, sqrt(h->GetBinError(i)*  h->GetBinError(i)   *scale_fact    *scale_fact + 
@@ -1318,7 +1222,7 @@ TH1D* Prediction::GetScaledHisto2(TH1D* histo, float scale_fact, float scale_fac
 
 TH1D* Prediction::GetScaledHisto(TH1D* histo, float scale_fact, float scale_fact_err, int ngroup){
 	// takes histo, scale factor and uncertainty on scale factor
-	// and returns scaled and rebinned histo with ngroup bins merged into 1 bin with uncertainty on scale factor propagated.
+	// and returns scaled and rebinned histo with ngroup bins merged into 1 with uncertainty on scale factor propagated.
 	if(ngroup>=histo->GetNbinsX()) ngroup=histo->GetNbinsX();
 	TH1D *h        = (TH1D*) histo->Clone(histo->GetName());
 	h->Rebin(ngroup);
@@ -1332,9 +1236,10 @@ TH1D* Prediction::GetScaledHisto(TH1D* histo, float scale_fact, float scale_fact
 
 float Prediction::GetZnunuPreditionErrorSys(TH1D* hData, TH1D* hOther, TH1D* hQCD){
 	// histograms must be scales with prober uncertainties
-	float pred_err_2 = pow(fMCZnunuPhotonRatioErr * (hData->GetBinContent(1) - hOther->GetBinContent(1) - hQCD->GetBinContent(1)),2);
-	pred_err_2      += pow(fMCZnunuPhotonRatio * hOther->GetBinError(1),2);
-	pred_err_2      += pow(fMCZnunuPhotonRatio * hQCD->GetBinError(1),2);
+	float pred_err_2 = pow(fMCZnunuPhotonRatioErr * (hData->GetBinContent(1) - hOther->GetBinContent(1) - hQCD->GetBinContent(1))*fRB_MCtoData,2);
+	pred_err_2      += pow(fMCZnunuPhotonRatio*fRB_MCtoData * hOther->GetBinError(1),2);
+	pred_err_2      += pow(fMCZnunuPhotonRatio*fRB_MCtoData * hQCD->GetBinError(1),2);
+	pred_err_2      += pow(fRB_MCtoDataErr* fMCZnunuPhotonRatio*(hData->GetBinContent(1) - hOther->GetBinContent(1) - hQCD->GetBinContent(1)),2);
 
 	return sqrt(pred_err_2);
 }
@@ -1342,9 +1247,10 @@ float Prediction::GetZnunuPreditionErrorSys(TH1D* hData, TH1D* hOther, TH1D* hQC
 float Prediction::GetZnunuPreditionErrorSys(int i, TH1D* hData, TH1D* hOther, TH1D* hQCD){
 	// histograms must be scales with prober uncertainties
 	if(i>hData->GetNbinsX() || i<=0) return -999.;
-	float pred_err_2 = pow(fMCZnunuPhotonRatioHisto->GetBinError(i)  * (hData->GetBinContent(i) - hOther->GetBinContent(i) - hQCD->GetBinContent(i)),2);
-	pred_err_2      += pow(fMCZnunuPhotonRatioHisto->GetBinContent(i) * hOther->GetBinError(i),2);
-	pred_err_2      += pow(fMCZnunuPhotonRatioHisto->GetBinContent(i) * hQCD->GetBinError(i),2);
+	float pred_err_2 = pow(fMCZnunuPhotonRatioHisto->GetBinError(i)  * (hData->GetBinContent(i) - hOther->GetBinContent(i) - hQCD->GetBinContent(i))*fRB_MCtoData,2);
+	pred_err_2      += pow(fMCZnunuPhotonRatioHisto->GetBinContent(i)*fRB_MCtoData * hOther->GetBinError(i),2);
+	pred_err_2      += pow(fMCZnunuPhotonRatioHisto->GetBinContent(i)*fRB_MCtoData * hQCD->GetBinError(i),2);
+	pred_err_2      += pow(fRB_MCtoDataErr* fMCZnunuPhotonRatioHisto->GetBinContent(i)*(hData->GetBinContent(i) - hOther->GetBinContent(i) - hQCD->GetBinContent(i)),2);
 
 	return sqrt(pred_err_2);
 }
@@ -1352,8 +1258,9 @@ float Prediction::GetZnunuPreditionErrorSys(int i, TH1D* hData, TH1D* hOther, TH
 float Prediction::GetZnunuPreditionErrorSysClosure(TH1D* hPhotons){
 	// computes systematic uncerainty on Znunu prediction for MC closure test:
 	// takes into account MLfit uncertainty on Photon-MC yield, MC statistics, statistical uncerainty on Znunu/photon ratio
-	float pred_err_2 = pow(fMCZnunuPhotonRatioErr* hPhotons->GetBinContent(1),2);
-	pred_err_2      += pow(fMCZnunuPhotonRatio   * hPhotons->GetBinError(1)  ,2);
+	float pred_err_2 = pow(fMCZnunuPhotonRatioErr* hPhotons->GetBinContent(1)*fRB_MCtoData,2);
+	pred_err_2      += pow(fMCZnunuPhotonRatio   * hPhotons->GetBinError(1)  *fRB_MCtoData,2);
+	pred_err_2      += pow(fMCZnunuPhotonRatio   * hPhotons->GetBinContent(1)*fRB_MCtoDataErr,2);
 	return sqrt(pred_err_2);
 }
 
@@ -1361,43 +1268,26 @@ float Prediction::GetZnunuPreditionErrorSysClosure(int i, TH1D* hPhotons){
 	// computes systematic uncerainty on Znunu prediction for MC closure test:
 	// takes into account MLfit uncertainty on Photon-MC yield, MC statistics, statistical uncerainty on Znunu/photon ratio
 	if(i>hPhotons->GetNbinsX() || i<=0) return -999.;
-	float pred_err_2 = pow(fMCZnunuPhotonRatioHisto->GetBinError(i)     * hPhotons->GetBinContent(i),2);
-	pred_err_2      += pow(fMCZnunuPhotonRatioHisto->GetBinContent(i)   * hPhotons->GetBinError(i)  ,2);
+	float pred_err_2 = pow(fMCZnunuPhotonRatioHisto->GetBinError(i)     * hPhotons->GetBinContent(i)*fRB_MCtoData,2);
+	pred_err_2      += pow(fMCZnunuPhotonRatioHisto->GetBinContent(i)   * hPhotons->GetBinError(i)  *fRB_MCtoData,2);
+	pred_err_2      += pow(fMCZnunuPhotonRatioHisto->GetBinContent(i)   * hPhotons->GetBinContent(i)*fRB_MCtoDataErr,2);
 	return sqrt(pred_err_2);
 }
 
 float Prediction::GetZnunuPreditionErrorStat(TH1D* hData){
 	// statistical uncertainty on prediction due to data statistics
-	float pred_err   = fMCZnunuPhotonRatio * hData->GetBinError(1);
+	float pred_err   = fRB_MCtoData* fMCZnunuPhotonRatio * hData->GetBinError(1);
 	return pred_err;
 }
 
 float Prediction::GetZnunuPreditionErrorStat(int i, TH1D* hData){
 	// statistical uncertainty on prediction due to data statistics
 	if(i>hData->GetNbinsX() || i<=0) return -999.;
-	float pred_err   = fMCZnunuPhotonRatioHisto->GetBinContent(i) * hData->GetBinError(i);
+	float pred_err   = fRB_MCtoData* fMCZnunuPhotonRatioHisto->GetBinContent(i) * hData->GetBinError(i);
 	return pred_err;
 }
 
-TH1D* Prediction::RescaleHisto(TH1D* histMC1, TH1D* histMC2, TH1D* hist_data_EB, TH1D* hist_data_EE){
-	// takes histo, scale factor and uncertainty on scale factor
-	// and returns scaled and rebinned histo with 1 bin with uncertainty on scale factor propagated.
-	TH1D *hData    = (TH1D*) hist_data_EB->Clone("hData");
-	TH1D *hDataEE  = (TH1D*) hist_data_EE->Clone("hData_EE");
-	TH1D *h        = (TH1D*) histMC1->Clone(histMC1->GetName());
-	TH1D *hMC      = (TH1D*) histMC1->Clone("hMC");
-	TH1D *htemp    = (TH1D*) histMC2->Clone("htemp");
-	hData->Add(hDataEE);
-	hMC  ->Add(htemp);
-	double scalefactor = 1;
-	if(hMC->Integral()>0&&hData->Integral()>0) scalefactor = hData->Integral()/hMC->Integral();
-	if(fVerbose>4) cout << "after MT2>" << gMT2bins[0] << ": data " << hData->Integral() << ", MC " << hMC->Integral() << " --> SF = " << scalefactor << endl;
-	h->Scale(scalefactor);
-	return h;
-}
-
 void DrawHisto(TH1* h_orig, TString name,  Option_t *drawopt, Channel* channel){
-	//draws histograms
 	TH1D* h = (TH1D*)h_orig->Clone(name);
 	TString canvname = "canv_"+name;
 	TCanvas *col = new TCanvas(canvname, "", 0, 0, 500, 500);

@@ -1,0 +1,204 @@
+############################################################################################
+GENERAL
+Path             /shome/
+
+# here a 0.935 SF for all nonQCD MC is applied
+
+SAMPLE
+Name		DYToNuNu_400_infty
+SName		DY
+ShapeName	ZJetsToNuNu
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-400-HT-inf-TuneZ2Star-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	5.274
+Kfact           0.1847
+Lumi            19500
+Type            mc
+Color		419
+# 19.76%
+
+SAMPLE
+Name		DYToNuNu_400_infty-2
+SName		DY
+ShapeName	ZJetsToNuNu
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-400-HT-inf-TuneZ2Star-8TeV-madgraph-ext-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	5.274
+Kfact           0.7502
+Lumi            19500
+Type            mc
+Color		419
+# 80.24%
+
+SAMPLE
+Name		DYToNuNu_200_400
+SName		DY
+ShapeName	ZJetsToNuNu
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-200-HT-400-TuneZ2Star-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	41.49
+Kfact           0.4850
+Lumi            19500
+Type            mc
+Color		419
+## 51.88
+
+SAMPLE
+Name		DYToNuNu_200_400-2
+SName		DY
+ShapeName	ZJetsToNuNu
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-200-HT-400-TuneZ2Star-8TeV-madgraph-ext-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	41.49
+Kfact           0.4499
+Lumi            19500
+Type            mc
+Color		419
+## 48.12%
+#
+#SAMPLE
+#Name		DYToNuNu_100_200
+#SName		DY
+#ShapeName	ZJetsToNuNu
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-100-HT-200-TuneZ2Star-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+##Xsection  	160.3
+#Xsection  	80.15
+#Kfact           0.4134
+#Lumi            19500
+#Type            mc
+#Color		419
+## 44.22%
+#
+#SAMPLE
+#Name		DYToNuNu_100_200-2
+#SName		DY
+#ShapeName	ZJetsToNuNu
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-100-HT-200-TuneZ2Star-8TeV-madgraph-ext-Summer12-DR53X-PU-S10-START53-V7C-v1.root
+##Xsection  	160.3
+#Xsection  	80.15
+#Kfact           0.5215
+#Lumi            19500
+#Type            mc
+#Color		419
+## 55.78%
+#
+#SAMPLE
+#Name		DYToNuNu_50_100
+#SName		DY
+#ShapeName	ZJetsToNuNu
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-50-HT-100-TuneZ2Star-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+#Xsection  	381.2
+#Kfact           0.935
+#Lumi            19500
+#Type            mc
+#Color		419
+## 16.79%
+#
+#SAMPLE
+#Name		DYToNuNu_50_100-2
+#SName		DY
+#ShapeName	ZJetsToNuNu
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-50-HT-100-TuneZ2Star-8TeV-madgraph-ext-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+#Xsection  	381.2
+#Kfact           0.935
+#Lumi            19500
+#Type            mc
+#Color		419
+## 83.21%
+
+
+SAMPLE
+Name		DYToNuNu_400_infty
+SName		DY
+ShapeName	ZJetsToNuNu
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/ZJetsToNuNu-400-HT-inf-TuneZ2Star-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	5.274
+Kfact           0.1847
+Lumi            19600
+Type            mc
+Color		419
+# 19.76%
+
+SAMPLE
+Name		DYToNuNu_400_infty-2
+SName		DY
+ShapeName	ZJetsToNuNu
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/ZJetsToNuNu-400-HT-inf-TuneZ2Star-8TeV-madgraph-ext-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	5.274
+Kfact           0.7502
+Lumi            19600
+Type            mc
+Color		419
+# 80.24%
+
+SAMPLE
+Name		DYToNuNu_200_400
+SName		DY
+ShapeName	ZJetsToNuNu
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/ZJetsToNuNu-200-HT-400-TuneZ2Star-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	41.49
+Kfact           0.4850
+Lumi            19600
+Type            mc
+Color		419
+# 51.88
+
+SAMPLE
+Name		DYToNuNu_200_400-2
+SName		DY
+ShapeName	ZJetsToNuNu
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/ZJetsToNuNu-200-HT-400-TuneZ2Star-8TeV-madgraph-ext-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	41.49
+Kfact           0.4499
+Lumi            19600
+Type            mc
+Color		419
+# 48.12%
+
+#SAMPLE
+#Name		DYToNuNu_100_200
+#SName		DY
+#ShapeName	ZJetsToNuNu
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/ZJetsToNuNu-100-HT-200-TuneZ2Star-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+##Xsection  	160.3
+#Xsection  	80.15
+#Kfact           0.4134
+#Lumi            19600
+#Type            mc
+#Color		419
+## 44.22%
+#
+#SAMPLE
+#Name		DYToNuNu_100_200-2
+#SName		DY
+#ShapeName	ZJetsToNuNu
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/ZJetsToNuNu-100-HT-200-TuneZ2Star-8TeV-madgraph-ext-Summer12-DR53X-PU-S10-START53-V7C-v1.root
+##Xsection  	160.3
+#Xsection  	80.15
+#Kfact           0.5215
+#Lumi            19600
+#Type            mc
+#Color		419
+## 55.78%
+#
+#SAMPLE
+#Name		DYToNuNu_50_100
+#SName		DY
+#ShapeName	ZJetsToNuNu
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/ZJetsToNuNu-50-HT-100-TuneZ2Star-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+#Xsection  	381.2
+#Kfact           0.935
+#Lumi            19600
+#Type            mc
+#Color		419
+## 16.79%
+#
+#SAMPLE
+#Name		DYToNuNu_50_100-2
+#SName		DY
+#ShapeName	ZJetsToNuNu
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/ZJetsToNuNu-50-HT-100-TuneZ2Star-8TeV-madgraph-ext-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+#Xsection  	381.2
+#Kfact           0.935
+#Lumi            19600
+#Type            mc
+#Color		419
+## 83.21%
+
+

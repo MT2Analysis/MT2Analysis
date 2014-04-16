@@ -17,7 +17,10 @@
 using namespace std;
 using namespace RooFit ;
 
-//run via root -l -b -q run_GammaJetsToZnunu.C
+//run via root -l -b -q try_GammaJetsToZnunu.C
+
+//this is a copy of run_GammaJetsToZnunu.C where I try to be more efficient running over all topological regions.
+//use at own risk - easiest is checking with the results of run_GammaJetsToZnunu.C
 
 
 // User Input:  ----------------------------------------------
@@ -34,7 +37,9 @@ Bool_t  fDoPhotonSigmaIEtaIEta     = true;  // set to "true" to perfom sigmaIeta
 Bool_t  fDoPhotonSignalRegion      = true; // get shapes for photons in signal region <-- needed for background prediction, default = true
 Bool_t  fDoHadronicSignalRegion    = true; // get shapes for hadronic signal region <-- needed for background prediction, default = true
 Bool_t  fDoPrediction              = true; // calculate the Znunu background from photon sample, needs fDoPhotonSignalRegion,fDoHadronicSignalRegion to be true, default = true
-Bool_t  fPrintBrunoTable           = true; // gay printout - not needed anymore - NOTE: you should implement a way to directly store the result into histograms to make hardcoded stuff of ZinvVisualization obsolete
+Bool_t  fPrintBrunoTable           = true; // gay printout - not needed anymore
+Bool_t  fPrintFullPrintOut         = true;  // full printout during running
+Bool_t  fMakeFinalTable            = true;  // make final prediction table
 Bool_t  fDoVariableMT2bins         = true;  // variable MT2bins - needs to be true
 Bool_t  fDoPileUpWeights           = true;  // apply PU weights - default = true
 Bool_t  fbSFReWeight               = true;  // apply BTV SF weights --> need to adjust fNBJets = {-10,[-3,3]}, default = true
@@ -46,9 +51,11 @@ Float_t fMinMT2forConstR           = 350;   // min MT2 value after which a const
 Bool_t  fAddFitIntrinsicUncert     = false; // if you'd like to add an intrinsic uncertainty to the template fit
 Float_t fFitIntrinsicUncert        = 0.0;
 Bool_t  fAddRMCUncertainty         = true;  // systematic uncertainty on Z/gamma ratio
-Float_t fRMCUncertainty            = 0.3;   // 0.3 for MT2 > 275, otherwise 0.2 (see AN) - NOTE: find a way to implement this dynamically
+Float_t fRMCUncertainty            = 0.2;   // 0.3 for MT2 > 275, otherwise 0.2 (see AN)
+Float_t fRMCUncertaintyTail        = 0.3;   // 0.3 for MT2 > 275, otherwise 0.2 (see AN)
 // options ---------------
-TString fOutDir                    = "../Results/Filtered/GammaJetsPrediction/20130617_0b1b_test/";    // directory where shapes will be saved
+//TString fOutDir                    = "../Results/Filtered/GammaJetsPrediction/20130617_0b1b_test/";    // directory where shapes will be saved
+TString fOutDir                    = "../dummy/";    // directory where shapes will be saved
 Int_t   fVerbose                   = 9; 
 Bool_t  fSaveResults               = true;  // default = true
 Bool_t  fSaveZnunuToGammaRatio     = true;  // default = true
@@ -59,88 +66,80 @@ Float_t fConstantZToGammaR_LowHT   = 0.458; // 750 < HT < 950
 Float_t fConstantZToGammaErr_LowHT = 0.057; // abs uncertainty on fConstantZToGammaR the relative uncertainty fRMCUncertainty is added in quadrature if fAddRMCUncertainty==true
 Float_t fConstantZToGammaR_HighHT  = 0.628; // HT > 950
 Float_t fConstantZToGammaErr_HighHT= 0.120; // abs uncertainty on fConstantZToGammaR 
-// cut imput for HT, NBJets, NJets, fSR
-Float_t fHTmin                     = 750;    // cuts for low HT, medium HT, high HT
-Float_t fHTmax                     = 1E+8;   /// DID YOU CHECK fHT, fMET - need to set separately
-Float_t fMT2min                    = 0;      //default = 0
-Float_t fMT2max                    = 1E+8;   //default = 1E+8
-Int_t   fNBJets                    = 0;      //-10 means no requirement on NBJets
-Int_t   fNJets                     = -2;     //negative values means >=NJets, positive values means ==NJets, two digit numbers XY mean X<=NJets<=Y
-Int_t   fSR                        = -1;     //will be set via fNBJets, fNJets
-//NOTE: some parts of the above (or the use of it) are really hard-coded below - need to change this later
-//NOTE: find a way to do all calculations for all signal regions (within a triggerstream) at once.
 // ------
 Bool_t  fHT                        = true;   //run over HT dataset
 Bool_t  fMET                       = false;  //run over single photon dataset
 Bool_t  fISRreweight               = false;  //apply an effective ISR weight (effective means not reweight gen-photon/Z but observed distribution), default = false
 Bool_t  fReScaleAfterMT2           = false;  //rescales MC histograms to fit data normalization - as histograms are with MT2 cut, this means renormalizating after applying MT2 cut, default = false
 Bool_t  fdontRescaleRatio          = true;   //keep this true, for Z/gamma calculation use photon MC not normalized to data in sigmaietaieta fit - idea is that both the gamma MC and Z MC should ne on equal footing
-Double_t fGammakFactor             = 0.8;    //this is the kFaktor to gamma MC from the samples.dat, needed to have correct Z/G ratio for now it's a dummy - it will be set in the beginning of test_GammaJetsToZnunu()
-Double_t modtablescale = 0.0937533; Double_t modtablescaleerr = 0.0120557;//defined below at beginning of test_GammaJetsToZnunu() - see there for explanation
 
-//at the moment cannot use the below in one go
-// ------
-/// high HT (HT>1200)
-//    int gNMT2bins_2j0b                  = 6;
-//    double  gMT2bins_2j0b[gNMT2bins_2j0b+1]   = {120, 150, 200, 260, 350, 550, 900};
-//    int gNMT2bins_2j1b                  = 2;
-//    double  gMT2bins_2j1b[gNMT2bins_2j1b+1]   = {100, 180, 350};
-//    int gNMT2bins_3j0b                  = 7;
-//    double  gMT2bins_3j0b[gNMT2bins_3j0b+1]   = {160, 185, 220, 270, 350, 450, 650, 1000};
-//    int gNMT2bins_3j1b                  = 4;
-//    double  gMT2bins_3j1b[gNMT2bins_3j1b+1]   = {150, 180, 230, 350, 550};
-//    int gNMT2bins_3j2b                  = 2;
-//    double  gMT2bins_3j2b[gNMT2bins_3j2b+1]   = {130, 200, 350};
-//    int gNMT2bins_6j0b                  = 3;
-//    double  gMT2bins_6j0b[gNMT2bins_6j0b+1]   = {160, 200, 300, 500};
-//    int gNMT2bins_6j1b                  = 3;
-//    double  gMT2bins_6j1b[gNMT2bins_6j1b+1]   = {150, 200, 300, 500};
-//    int gNMT2bins_6j2b                  = 2;
-//    double  gMT2bins_6j2b[gNMT2bins_6j2b+1]   = {130, 200, 350};
-//    int gNMT2bins_3b                  = 1;
-//    double  gMT2bins_3b[gNMT2bins_3b+1]   = {125, 300};
-/// medium HT (750<HT<1200)
-//    int gNMT2bins_2j0b                  = 9;
-//    double  gMT2bins_2j0b[gNMT2bins_2j0b+1]   = {125, 150, 180, 220, 270, 325, 425, 580, 780, 1000};
-//    int gNMT2bins_2j1b                  = 5;
-//    double  gMT2bins_2j1b[gNMT2bins_2j1b+1]   = {100, 135, 170, 260, 450, 700};
-//    int gNMT2bins_3j0b                  = 9;
-//    double  gMT2bins_3j0b[gNMT2bins_3j0b+1]   = {160, 185, 215, 250, 300, 370, 480, 640, 800, 1000};
-//    int gNMT2bins_3j1b                  = 6;
-//    double  gMT2bins_3j1b[gNMT2bins_3j1b+1]   = {150, 175, 210, 270, 380, 600, 900};
-//    int gNMT2bins_3j2b                  = 5;
-//    double  gMT2bins_3j2b[gNMT2bins_3j2b+1]   = {130, 160, 200, 270, 370, 500};
-//    int gNMT2bins_6j0b                  = 5;
-//    double  gMT2bins_6j0b[gNMT2bins_6j0b+1]   = {160, 200, 250, 325, 425, 600};
-//    int gNMT2bins_6j1b                  = 4;
-//    double  gMT2bins_6j1b[gNMT2bins_6j1b+1]   = {150, 190, 250, 350, 500};
-//    int gNMT2bins_6j2b                  = 4;
-//    double  gMT2bins_6j2b[gNMT2bins_6j2b+1]   = {130, 170, 220, 300, 450};
-//    int gNMT2bins_3b                  = 3;
-//    double  gMT2bins_3b[gNMT2bins_3b+1]   = {125, 175, 275, 450};
-/// low HT (450<HT<750)
-//     const int gNMT2bins_2j0b_lHT                      = 8;
-//     double  gMT2bins_2j0b_lHT[gNMT2bins_2j0b_lHT+1]   = {200, 240, 290, 350, 420, 490, 570, 650, 750};
-//     const int gNMT2bins_2j1b_lHT                      = 6;
-//     double  gMT2bins_2j1b_lHT[gNMT2bins_2j1b_lHT+1]   = {200, 250, 310, 380, 450, 550, 700};
-//     const int gNMT2bins_3j0b_lHT                      = 8;
-//     double  gMT2bins_3j0b_lHT[gNMT2bins_3j0b_lHT+1]   = {200, 240, 290, 350, 420, 490, 570, 650, 750};
-//     const int gNMT2bins_3j1b_lHT                      = 6;
-//     double  gMT2bins_3j1b_lHT[gNMT2bins_3j1b_lHT+1]   = {200, 250, 310, 380, 460, 550, 700};
-//     const int gNMT2bins_3j2b_lHT                      = 4;
-//     double  gMT2bins_3j2b_lHT[gNMT2bins_3j2b_lHT+1]   = {200, 250, 325, 425, 550};
-//     const int gNMT2bins_6j0b_lHT                      = 3;
-//     double  gMT2bins_6j0b_lHT[gNMT2bins_6j0b_lHT+1]   = {200, 280, 380, 520};
-//     const int gNMT2bins_6j1b_lHT                      = 3;
-//     double  gMT2bins_6j1b_lHT[gNMT2bins_6j1b_lHT+1]   = {200, 250, 325, 450};
-//     const int gNMT2bins_6j2b_lHT                      = 3;
-//     double  gMT2bins_6j2b_lHT[gNMT2bins_6j2b_lHT+1]   = {200, 250, 300, 400};
-//     const int gNMT2bins_3b_lHT                        = 2;
-//     double  gMT2bins_3b_lHT  [gNMT2bins_3b_lHT+1]     = {200, 280, 400};
+   //definition of all signal bins
+    // HT > 1200
+    const int gNMT2bins_2j0b_hHT                      = 6;
+    double  gMT2bins_2j0b_hHT[gNMT2bins_2j0b_hHT+1]   = {120, 150, 200, 260, 350, 550, 900};
+    const int gNMT2bins_2j1b_hHT                      = 2;
+    double  gMT2bins_2j1b_hHT[gNMT2bins_2j1b_hHT+1]   = {100, 180, 350};
+    const int gNMT2bins_3j0b_hHT                      = 7;
+    double  gMT2bins_3j0b_hHT[gNMT2bins_3j0b_hHT+1]   = {160, 185, 220, 270, 350, 450, 650, 1000};
+    const int gNMT2bins_3j1b_hHT                      = 4;
+    double  gMT2bins_3j1b_hHT[gNMT2bins_3j1b_hHT+1]   = {150, 180, 230, 350, 550};
+    const int gNMT2bins_3j2b_hHT                      = 2;
+    double  gMT2bins_3j2b_hHT[gNMT2bins_3j2b_hHT+1]   = {130, 200, 350};
+    const int gNMT2bins_6j0b_hHT                      = 3;
+    double  gMT2bins_6j0b_hHT[gNMT2bins_6j0b_hHT+1]   = {160, 200, 300, 500};
+    const int gNMT2bins_6j1b_hHT                      = 3;
+    double  gMT2bins_6j1b_hHT[gNMT2bins_6j1b_hHT+1]   = {150, 200, 300, 500};
+    const int gNMT2bins_6j2b_hHT                      = 2;
+    double  gMT2bins_6j2b_hHT[gNMT2bins_6j2b_hHT+1]   = {130, 200, 350};
+    const int gNMT2bins_3b_hHT                        = 1;
+    double  gMT2bins_3b_hHT[gNMT2bins_3b_hHT+1]       = {125, 300};
 
-//need to define this here stupidly, try to implement a loop for everything later
-const int gNMT2bins = 9;
-    double  gMT2bins[gNMT2bins+1]   = {125, 150, 180, 220, 270, 325, 425, 580, 780, 1000};
+    // HT > 750 && HT < 1200
+    const int gNMT2bins_2j0b_mHT                      = 9;
+    double  gMT2bins_2j0b_mHT[gNMT2bins_2j0b_mHT+1]   = {125, 150, 180, 220, 270, 325, 425, 580, 780, 1000};
+    const int gNMT2bins_2j1b_mHT                      = 5;
+    double  gMT2bins_2j1b_mHT[gNMT2bins_2j1b_mHT+1]   = {100, 135, 170, 260, 450, 700};
+    const int gNMT2bins_3j0b_mHT                      = 9;
+    double  gMT2bins_3j0b_mHT[gNMT2bins_3j0b_mHT+1]   = {160, 185, 215, 250, 300, 370, 480, 640, 800, 1000};
+    const int gNMT2bins_3j1b_mHT                      = 6;
+    double  gMT2bins_3j1b_mHT[gNMT2bins_3j1b_mHT+1]   = {150, 175, 210, 270, 380, 600, 900};
+    const int gNMT2bins_3j2b_mHT                      = 5;
+    double  gMT2bins_3j2b_mHT[gNMT2bins_3j2b_mHT+1]   = {130, 160, 200, 270, 370, 500};
+    const int gNMT2bins_6j0b_mHT                      = 5;
+    double  gMT2bins_6j0b_mHT[gNMT2bins_6j0b_mHT+1]   = {160, 200, 250, 325, 425, 600};
+    const int gNMT2bins_6j1b_mHT                      = 4;
+    double  gMT2bins_6j1b_mHT[gNMT2bins_6j1b_mHT+1]   = {150, 190, 250, 350, 500};
+    const int gNMT2bins_6j2b_mHT                      = 4;
+    double  gMT2bins_6j2b_mHT[gNMT2bins_6j2b_mHT+1]   = {130, 170, 220, 300, 450};
+    const int gNMT2bins_3b_mHT                        = 3;
+    double  gMT2bins_3b_mHT[gNMT2bins_3b_mHT+1]       = {125, 175, 275, 450};
+
+    // HT > 450 && HT < 750
+    const int gNMT2bins_2j0b_lHT                      = 8;
+    double  gMT2bins_2j0b_lHT[gNMT2bins_2j0b_lHT+1]   = {200, 240, 290, 350, 420, 490, 570, 650, 750};
+    const int gNMT2bins_2j1b_lHT                      = 6;
+    double  gMT2bins_2j1b_lHT[gNMT2bins_2j1b_lHT+1]   = {200, 250, 310, 380, 450, 550, 700};
+    const int gNMT2bins_3j0b_lHT                      = 8;
+    double  gMT2bins_3j0b_lHT[gNMT2bins_3j0b_lHT+1]   = {200, 240, 290, 350, 420, 490, 570, 650, 750};
+    const int gNMT2bins_3j1b_lHT                      = 6;
+    double  gMT2bins_3j1b_lHT[gNMT2bins_3j1b_lHT+1]   = {200, 250, 310, 380, 460, 550, 700};
+    const int gNMT2bins_3j2b_lHT                      = 4;
+    double  gMT2bins_3j2b_lHT[gNMT2bins_3j2b_lHT+1]   = {200, 250, 325, 425, 550};
+    const int gNMT2bins_6j0b_lHT                      = 3;
+    double  gMT2bins_6j0b_lHT[gNMT2bins_6j0b_lHT+1]   = {200, 280, 380, 520};
+    const int gNMT2bins_6j1b_lHT                      = 3;
+    double  gMT2bins_6j1b_lHT[gNMT2bins_6j1b_lHT+1]   = {200, 250, 325, 450};
+    const int gNMT2bins_6j2b_lHT                      = 3;
+    double  gMT2bins_6j2b_lHT[gNMT2bins_6j2b_lHT+1]   = {200, 250, 300, 400};
+    const int gNMT2bins_3b_lHT                        = 2;
+    double  gMT2bins_3b_lHT  [gNMT2bins_3b_lHT+1]     = {200, 280, 400};
+
+//definition of topological regions
+const int signalregionsize = 12;
+string signal_region[signalregionsize] = {"2j0b", "2j1to2b", "2j1to2bmod", "3to5j0b", "3to5j1b", "3to5j1bmod", "3to5j2b", "6j0b", "6j1b", "6j1bmod", "6j2b", "3b"};
+//definition of HT regions, the names are set by the fMET/fHT flags above
+const int HTbinsize = 2;
+string HT_bin[HTbinsize] = {"HTge450", "HTge750"};//dummy
 
 // Some Global Variables ------------------------------------
 std::ostringstream  fTriggerStream;
@@ -149,9 +148,54 @@ std::ostringstream  fCutStreamPhotons;
 std::ostringstream  fCutStreamPhotonsMT2;
 std::ostringstream  fCutStreamSignal;
 std::ostringstream* fLogStream     = 0;
+// cut imput for HT, NBJets, NJets, fSR - all are dummies now
+Float_t fHTmin;
+Float_t fHTmax;
+Float_t fMT2min;
+Float_t fMT2max;
+Int_t   fNBJets;
+Int_t   fNJets ;
+Int_t   fSR;
+Double_t fGammakFactor;
+Double_t modtablescale;
+Double_t modtablescaleerr;
+Bool_t   fModTable;
+//for final table ---------------------------------------------
+vector<int>    fhtbin;
+vector<int>    fmt2bin;
+vector<int>    fNJ;
+vector<int>    fNBJ;
+vector<int>    fSigReg;
+vector<double> fznunugen;
+vector<double> fznunupred;
+vector<double> fznunuprederr;
+vector<double> fznunuprederrstat;
+vector<double> fznunuprederrsyst;
+vector<double> fZGratio;
+vector<double> fZGratioerr;
+vector<double> fmt2low;
+vector<double> fmt2up;
+vector<double> fndata;
+vector<double> fndataerr;
+vector<double> fnqcd;
+vector<double> fnqcderr;
+vector<double> fnother;
+vector<double> fnothererr;
+vector<double> fngamma;
+vector<double> fngammaerr;
+vector<double> fModV;
+vector<double> fModVE;
+vector<bool>   fMod;
+
+void MakeFinalPredictionTable();
 
 // this function calls all Cut Streams - needed as function to separate fHT/fMET cases
-void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
+void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max, int NJets, int NBJets){
+	fTriggerStream = 0;
+	fTriggerStreamPhotons = 0;
+	fCutStreamPhotons = 0;
+	fCutStreamPhotonsMT2 = 0;
+	fCutStreamSignal = 0;
 	// Trigger Stream ---------------------------------------------------------------
 	//
 	if(fHT){
@@ -201,16 +245,13 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 	  << "misc.TrackingLogErrorTooManyClustersFlag==0"                 << "&&"
           << "misc.CrazyHCAL==0"
 	  << "&&(type1pfmet[0].Pt()<30||type1pfmet[0].Pt()/misc.CaloMETRaw<=2.)";
-	if(fMET){
-		fCutStreamPhotons << "&& photon[0].lv.Pt()>=180 ";
-	}
-	//NOTE: Improve fNBJets, fNJets usage (there are 3 cutstreams where this appears)
-	if(fNBJets==0){//improve
-		fCutStreamPhotons << "&&NBJets40CSVM==0";
-	} else if(fNBJets==1) fCutStreamPhotons << "&&NBJets40CSVM==1";
-	else if(fNBJets==2)   fCutStreamPhotons << "&&NBJets40CSVM==2";
-	else if(fNBJets==-3)  fCutStreamPhotons << "&&NBJets40CSVM>=3";
-	else if(fNBJets==-1)  fCutStreamPhotons << "&&NBJets40CSVM>=1";
+	if(fMET) fCutStreamPhotons << "&& photon[0].lv.Pt()>=180 ";
+	if (NJets>=10)   fCutStreamPhotons << "&&NJetsIDLoose40>=" << NJets/10 << "&&NJetsIDLoose40<=" << NJets%10;
+	else if(NJets>0) fCutStreamPhotons << "&&NJetsIDLoose40==" << NJets;
+	else             fCutStreamPhotons << "&&NJetsIDLoose40>=" << abs(NJets);
+	if(NBJets>=0)        fCutStreamPhotons << "&&NBJets40CSVM==" << NBJets;
+	else if(NBJets!=-10) fCutStreamPhotons << "&&NBJets40CSVM>=" << NBJets;
+
 	if(!fMrennaHack){
 		fCutStreamPhotons << "&&"	
 	  	<< "(misc.ProcessID!=6||photon[0].MCmatchexitcode!=1)";
@@ -219,19 +260,10 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 		<< "(misc.ProcessID!=6||(photon[0].MCmatchexitcode!=1||photon[0].GenJetMinDR<0.3))"           << "&&"
 		<< "(misc.ProcessID!=5||(photon[0].GenJetMinDR>0.3))";
 	}
-	if(fNJets==35){
-		fCutStreamPhotons << "&&NJetsIDLoose40>=3&&NJetsIDLoose40<=5";
-	} else if(fNJets==2){
-		fCutStreamPhotons << "&&NJetsIDLoose40==2";
-	} else if(fNJets==-6){
-		fCutStreamPhotons << "&&NJetsIDLoose40>=6";
-	} else if(fNJets==-2){
-		fCutStreamPhotons << "&&NJetsIDLoose40>=2";
-	}
 
 	// CutStream for Photon Signal Region ------------------------------------------ 
 	fCutStreamPhotonsMT2 << " " 
-	  << "misc.MT2>=" << gMT2bins[0]                                   << "&&"
+	  //<< "misc.MT2>=" << gMT2bins[0]                                   << "&&"
 	  << "misc.MET>=30"                                                << "&&"
 	  << "misc.HT >=" << HTmin  << " && misc.HT <=" << HTmax           << "&&"
 	  << "misc.MT2>=" << MT2min << " && misc.MT2<=" << MT2max          << "&&"
@@ -261,12 +293,11 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 	if(fMET){
 		fCutStreamPhotonsMT2 << "&& photon[0].lv.Pt()>=180 && misc.MET>200";
 	}
-	if(fNBJets==0){//improve
-		fCutStreamPhotonsMT2 << "&&NBJets40CSVM==0";
-	} else if(fNBJets==1) fCutStreamPhotonsMT2 << "&&NBJets40CSVM==1";
-	else if(fNBJets==2)   fCutStreamPhotonsMT2 << "&&NBJets40CSVM==2";
-	else if(fNBJets==-3)  fCutStreamPhotonsMT2 << "&&NBJets40CSVM>=3";
-	else if(fNBJets==-1)  fCutStreamPhotonsMT2 << "&&NBJets40CSVM>=1";
+	if (NJets>=10)   fCutStreamPhotonsMT2 << "&&NJetsIDLoose40>=" << NJets/10 << "&&NJetsIDLoose40<=" << NJets%10;
+	else if(NJets>0) fCutStreamPhotonsMT2 << "&&NJetsIDLoose40==" << NJets;
+	else             fCutStreamPhotonsMT2 << "&&NJetsIDLoose40>=" << abs(NJets);
+	if(NBJets>=0)        fCutStreamPhotonsMT2 << "&&NBJets40CSVM==" << NBJets;
+	else if(NBJets!=-10) fCutStreamPhotonsMT2 << "&&NBJets40CSVM>=" << NBJets;
 	if(!fMrennaHack){
 		fCutStreamPhotonsMT2<< "&&"	
 	  	<< "(misc.ProcessID!=6||photon[0].MCmatchexitcode!=1)";
@@ -275,19 +306,10 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 		<< "(misc.ProcessID!=6||(photon[0].MCmatchexitcode!=1||photon[0].GenJetMinDR<0.3))"           << "&&"
 		<< "(misc.ProcessID!=5||(photon[0].GenJetMinDR>0.3))";
 	}
-	if(fNJets==35){
-		fCutStreamPhotonsMT2 << "&&NJetsIDLoose40>=3&&NJetsIDLoose40<=5";
-	} else if(fNJets==2){
-		fCutStreamPhotonsMT2 << "&&NJetsIDLoose40==2";
-	} else if(fNJets==-6){
-		fCutStreamPhotonsMT2 << "&&NJetsIDLoose40>=6";
-	} else if(fNJets==-2){
-		fCutStreamPhotons << "&&NJetsIDLoose40>=2";
-	}
 
 	// CutStream for Hadronic Signal Region ----------------------------------------------
 	fCutStreamSignal << " " 
-	  << "misc.MT2>=" << gMT2bins[0]                                   << "&&"
+	  //<< "misc.MT2>=" << gMT2bins[0]                                   << "&&"
 	  << "misc.MET>=30"                                                << "&&"
 	  << "misc.HT >=" << HTmin  << " && misc.HT <=" << HTmax           << "&&"
 	  << "misc.MT2>=" << MT2min << " && misc.MT2<=" << MT2max          << "&&"
@@ -314,38 +336,29 @@ void DefineCutStreams(float HTmin, float HTmax, float MT2min, float MT2max){
 	if(fMET){
 		fCutStreamSignal << "&& misc.MET>200";
 	}
-	if(fNBJets==0){//improve
-		fCutStreamSignal << "&&NBJets40CSVM==0";
-	} else if(fNBJets==1) fCutStreamSignal << "&&NBJets40CSVM==1";
-	else if(fNBJets==2)   fCutStreamSignal << "&&NBJets40CSVM==2";
-	else if(fNBJets==-3)  fCutStreamSignal << "&&NBJets40CSVM>=3";
-	else if(fNBJets==-1)  fCutStreamSignal << "&&NBJets40CSVM>=1";
-	if(fNJets==35){
-		fCutStreamSignal << "&&NJetsIDLoose40>=3&&NJetsIDLoose40<=5";
-	} else if(fNJets==2){
-		fCutStreamSignal << "&&NJetsIDLoose40==2";
-	} else if(fNJets==-6){
-		fCutStreamSignal << "&&NJetsIDLoose40>=6";
-	} else if(fNJets==-2){
-		fCutStreamSignal << "&&NJetsIDLoose40>=2";
-	}
+	if (NJets>=10)   fCutStreamSignal << "&&NJetsIDLoose40>=" << NJets/10 << "&&NJetsIDLoose40<=" << NJets%10;
+	else if(NJets>0) fCutStreamSignal << "&&NJetsIDLoose40==" << NJets;
+	else             fCutStreamSignal << "&&NJetsIDLoose40>=" << abs(NJets);
+	if(NBJets>=0)        fCutStreamSignal << "&&NBJets40CSVM==" << NBJets;
+	else if(NBJets!=-10) fCutStreamSignal << "&&NBJets40CSVM>=" << NBJets;
 
 }
 
 // *********************** run_GammaJetsToZnunu: this is the main function calling also other functions ********************************
 //this function calls all functions needed to do the Z(nunu) estimate from photon data sample, note that there is a lot of user input at the beginning
-void run_GammaJetsToZnunu(){
+void try_GammaJetsToZnunu(){
 	gSystem->Load("libPhysics");
 	gSystem->Load("libRooFit") ;
 	gSystem->CompileMacro("../MT2Code/src/MT2Shapes.cc", "k");//needed to efficiently get the shapes for MC and data along sigmaietaieta or MT2
 
+	fhtbin.clear(), fmt2bin.clear(), fznunugen.clear(), fznunupred.clear(), fznunuprederr.clear(), fznunuprederrstat.clear(), fznunuprederrsyst.clear(), fZGratio.clear(), fZGratioerr.clear(), fmt2low.clear(), fmt2up.clear(), fndata.clear(), fndataerr.clear(), fnqcd.clear(), fnqcderr.clear(), fnother.clear(), fnothererr.clear(), fngamma.clear(), fngammaerr.clear(), fNJ.clear(); fNBJ.clear(), fMod.clear(), fModV.clear(), fModVE.clear(), fSigReg.clear();
+
 	//at the moment samples.dat are hardcoded
-	if(fMET && fHTmin==450&&fHTmax==750 ) fSamplesRemovedPhotons     ="samples/samples_1g_GEst_MET_filter.dat";
-	if(fMET && fHTmin==450&&fHTmax==750 ) fSamplesHadronic           ="samples/samples_had_GEst_MET_filter.dat";
-	if(fHT  && fHTmin==750              ) fSamplesRemovedPhotons     ="samples/samples_1g_GEst_HT_filter.dat";
-	if(fHT  && fHTmin==750              ) fSamplesHadronic           ="samples/samples_had_GEst_HT_filter.dat";
-	if(fHT  && fHTmin==1200             ) fSamplesRemovedPhotons     ="samples/samples_1g_GEst_extremeHT_filter.dat";
-	if(fHT  && fHTmin==1200             ) fSamplesHadronic           ="samples/samples_had_GEst_extremeHT_filter.dat";
+	if(fMET) fSamplesRemovedPhotons     ="samples/samples_1g_GEst_MET_filter.dat";
+	if(fMET) fSamplesHadronic           ="samples/samples_had_GEst_MET_filter.dat";
+	if(fHT ) fSamplesRemovedPhotons     ="samples/samples_1g_GEst_HT_filter.dat";
+	if(fHT ) fSamplesHadronic           ="samples/samples_had_GEst_HT_filter.dat";
+                 fSamplesHadronic           ="samples/samples_Znunu_HTMET_filter.dat";//only Z(nunu) needed for hadronic region
 	cout << "your samples are " << endl;
 	cout << "    " << fSamplesRemovedPhotons << endl;
 	cout << "    " << fSamplesHadronic << endl;
@@ -354,150 +367,249 @@ void run_GammaJetsToZnunu(){
 	if(fMET) fDoPhotonSigmaIEtaIEta = false;
 	if(!fDoPhotonSigmaIEtaIEta) cout << "YOUR ARE NOT DOING fDoPhotonSigmaIEtaIEta " << endl;
 	//adjust k factor - for fHT the k factor of gamma is different as for fMET
+	//this is the kFaktor to gamma MC from the samples.dat, is needed to have correct Z/G ratio
 	if(fMET)      fGammakFactor = 0.9;
 	else if (fHT) fGammakFactor = 0.8;
 	cout << "photonMC k factor is " << fGammakFactor << endl;
 	// logStream
 	fLogStream = new std::ostringstream();
+	TString OutputDirOrig = fOutDir;
 
-	//we make two prediction tables - NOTE: need to improve this
+	//we make two prediction tables
 	//the second table uses the 0 b estimate and scales it with the Zll(1b)/Zll(0b) ratio obtained with functions like GammaVsZllStudies.C GammaVsZllStudiesRatios.C
 	//the corresponding ratios and their uncertainties are hard-coded here
-	if(fNJets==2  && fHTmin==450 ) { modtablescale = 0.0937533; modtablescaleerr = 0.0224717;}//2j,lowHT	- 24%
-	if(fNJets==35 && fHTmin==450 ) { modtablescale = 0.16062;   modtablescaleerr = 0.0238675;}//35j,lowHT	- 15%
-	if(fNJets==-6 && fHTmin==450 ) { modtablescale = 0.2693407; modtablescaleerr = 0.167893; }//6j,lowHT	- 62%
-	if(fNJets==2  && fHTmin==750 ) { modtablescale = 0.0937533; modtablescaleerr = 0.0503878;}//2j,medHT	- 54%
-	if(fNJets==35 && fHTmin==750 ) { modtablescale = 0.16062;   modtablescaleerr = 0.0181368;}//35j,medHT	- 11%
-	if(fNJets==-6 && fHTmin==750 ) { modtablescale = 0.2693407; modtablescaleerr = 0.142773; }//6j,medHT	- 53%
-	if(fNJets==2  && fHTmin==1200) { modtablescale = 0.0937533; modtablescaleerr = 0.0597187;}//2j,highHT	- 64%
-	if(fNJets==35 && fHTmin==1200) { modtablescale = 0.16062;   modtablescaleerr = 0.0303366;}//35j,highHT	- 19%
-	if(fNJets==-6 && fHTmin==1200) { modtablescale = 0.2693407; modtablescaleerr = 0.201307; }//6j,highHT	- 75%
+	for(int i1 = 0; i1<=HTbinsize; ++i1){
+		if(fMET && i1==1) continue;
+	for(int i2 = 0; i2<=signalregionsize; ++i2){
+		int gNMT2bins;
+		if(fMET){
+			if(signal_region[i2]=="2j0b")       gNMT2bins = gNMT2bins_2j0b_lHT;
+			if(signal_region[i2]=="2j1to2b")    gNMT2bins = gNMT2bins_2j1b_lHT;
+			if(signal_region[i2]=="2j1to2bmod") { gNMT2bins = gNMT2bins_2j1b_lHT; modtablescale = 0.0937533; modtablescaleerr = 0.0224717;}
+			if(signal_region[i2]=="3to5j0b")    gNMT2bins = gNMT2bins_3j0b_lHT;
+			if(signal_region[i2]=="3to5j1b")    gNMT2bins = gNMT2bins_3j1b_lHT;
+			if(signal_region[i2]=="3to5j1bmod") { gNMT2bins = gNMT2bins_3j1b_lHT; modtablescale = 0.16062;   modtablescaleerr = 0.0238675;}
+			if(signal_region[i2]=="3to5j2b")    gNMT2bins = gNMT2bins_3j2b_lHT;
+			if(signal_region[i2]=="6j0b")       gNMT2bins = gNMT2bins_6j0b_lHT;
+			if(signal_region[i2]=="6j1b")       gNMT2bins = gNMT2bins_6j1b_lHT;
+			if(signal_region[i2]=="6j1bmod")    { gNMT2bins = gNMT2bins_6j1b_lHT; modtablescale = 0.2693407; modtablescaleerr = 0.167893; }
+			if(signal_region[i2]=="6j2b")       gNMT2bins = gNMT2bins_6j2b_lHT;
+			if(signal_region[i2]=="3b")         gNMT2bins = gNMT2bins_3b_lHT;
+		} if(fHT){
+		   if(i1==0){
+			if(signal_region[i2]=="2j0b")       gNMT2bins = gNMT2bins_2j0b_mHT;
+			if(signal_region[i2]=="2j1to2b")    gNMT2bins = gNMT2bins_2j1b_mHT;
+			if(signal_region[i2]=="2j1to2bmod") { gNMT2bins = gNMT2bins_2j1b_mHT; modtablescale = 0.0937533; modtablescaleerr = 0.0503878;}
+			if(signal_region[i2]=="3to5j0b")    gNMT2bins = gNMT2bins_3j0b_mHT;
+			if(signal_region[i2]=="3to5j1b")    gNMT2bins = gNMT2bins_3j1b_mHT;
+			if(signal_region[i2]=="3to5j1bmod") { gNMT2bins = gNMT2bins_3j1b_mHT; modtablescale = 0.16062;   modtablescaleerr = 0.0181368;}
+			if(signal_region[i2]=="3to5j2b")    gNMT2bins = gNMT2bins_3j2b_mHT;
+			if(signal_region[i2]=="6j0b")       gNMT2bins = gNMT2bins_6j0b_mHT;
+			if(signal_region[i2]=="6j1b")       gNMT2bins = gNMT2bins_6j1b_mHT;
+			if(signal_region[i2]=="6j1bmod")    { gNMT2bins = gNMT2bins_6j1b_mHT; modtablescale = 0.2693407; modtablescaleerr = 0.142773; }
+			if(signal_region[i2]=="6j2b")       gNMT2bins = gNMT2bins_6j2b_mHT;
+			if(signal_region[i2]=="3b")         gNMT2bins = gNMT2bins_3b_mHT;
+		   } if(i1==1){
+			if(signal_region[i2]=="2j0b")       gNMT2bins = gNMT2bins_2j0b_hHT;
+			if(signal_region[i2]=="2j1to2b")    gNMT2bins = gNMT2bins_2j1b_hHT;
+			if(signal_region[i2]=="2j1to2bmod") { gNMT2bins = gNMT2bins_2j1b_hHT; modtablescale = 0.0937533; modtablescaleerr = 0.0597187;}
+			if(signal_region[i2]=="3to5j0b")    gNMT2bins = gNMT2bins_3j0b_hHT;
+			if(signal_region[i2]=="3to5j1b")    gNMT2bins = gNMT2bins_3j1b_hHT;
+			if(signal_region[i2]=="3to5j1bmod") { gNMT2bins = gNMT2bins_3j1b_hHT; modtablescale = 0.16062;   modtablescaleerr = 0.0303366;}
+			if(signal_region[i2]=="3to5j2b")    gNMT2bins = gNMT2bins_3j2b_hHT;
+			if(signal_region[i2]=="6j0b")       gNMT2bins = gNMT2bins_6j0b_hHT;
+			if(signal_region[i2]=="6j1b")       gNMT2bins = gNMT2bins_6j1b_hHT;
+			if(signal_region[i2]=="6j1bmod")    { gNMT2bins = gNMT2bins_6j1b_hHT; modtablescale = 0.2693407; modtablescaleerr = 0.201307; }
+			if(signal_region[i2]=="6j2b")       gNMT2bins = gNMT2bins_6j2b_hHT;
+			if(signal_region[i2]=="3b")         gNMT2bins = gNMT2bins_3b_hHT;
+		   }
+		}
+		const int NMT2bins = gNMT2bins+1;
+  		double gMT2bins[NMT2bins];
+		if(fMET){
+			if(signal_region[i2]=="2j0b")       { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_2j0b_lHT[i0]; }
+			if(signal_region[i2]=="2j1to2b")    { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_2j1b_lHT[i0]; }
+			if(signal_region[i2]=="2j1to2bmod") { fModTable = true;  for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_2j1b_lHT[i0]; }
+			if(signal_region[i2]=="3to5j0b")    { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3j0b_lHT[i0]; }
+			if(signal_region[i2]=="3to5j1b")    { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3j1b_lHT[i0]; }
+			if(signal_region[i2]=="3to5j1bmod") { fModTable = true;  for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3j1b_lHT[i0]; }
+			if(signal_region[i2]=="3to5j2b")    { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3j2b_lHT[i0]; }
+			if(signal_region[i2]=="6j0b")       { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_6j0b_lHT[i0]; }
+			if(signal_region[i2]=="6j1b")       { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_6j1b_lHT[i0]; }
+			if(signal_region[i2]=="6j1bmod")    { fModTable = true;  for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_6j1b_lHT[i0]; }
+			if(signal_region[i2]=="6j2b")       { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_6j2b_lHT[i0]; }
+			if(signal_region[i2]=="3b")         { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3b_lHT[i0];   }
+		} if(fHT){
+		   if(i1==0){
+			if(signal_region[i2]=="2j0b")       { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_2j0b_mHT[i0];  }
+			if(signal_region[i2]=="2j1to2b")    { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_2j1b_mHT[i0];  }
+			if(signal_region[i2]=="2j1to2bmod") { fModTable = true;  for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_2j1b_mHT[i0];  }
+			if(signal_region[i2]=="3to5j0b")    { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3j0b_mHT[i0];  }
+			if(signal_region[i2]=="3to5j1b")    { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3j1b_mHT[i0];  }
+			if(signal_region[i2]=="3to5j1bmod") { fModTable = true;  for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3j1b_mHT[i0];  }
+			if(signal_region[i2]=="3to5j2b")    { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3j2b_mHT[i0];  }
+			if(signal_region[i2]=="6j0b")       { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_6j0b_mHT[i0];  }
+			if(signal_region[i2]=="6j1b")       { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_6j1b_mHT[i0];  }
+			if(signal_region[i2]=="6j1bmod")    { fModTable = true;  for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_6j1b_mHT[i0];  }
+			if(signal_region[i2]=="6j2b")       { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_6j2b_mHT[i0];  }
+			if(signal_region[i2]=="3b")         { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3b_mHT[i0];    }
+		   } if(i1==1){
+			if(signal_region[i2]=="2j0b")       { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_2j0b_hHT[i0];  }
+			if(signal_region[i2]=="2j1to2b")    { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_2j1b_hHT[i0];  }
+			if(signal_region[i2]=="2j1to2bmod") { fModTable = true;  for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_2j1b_hHT[i0];  }
+			if(signal_region[i2]=="3to5j0b")    { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3j0b_hHT[i0];  }
+			if(signal_region[i2]=="3to5j1b")    { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3j1b_hHT[i0];  }
+			if(signal_region[i2]=="3to5j1bmod") { fModTable = true;  for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3j1b_hHT[i0];  }
+			if(signal_region[i2]=="3to5j2b")    { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3j2b_hHT[i0];  }
+			if(signal_region[i2]=="6j0b")       { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_6j0b_hHT[i0];  }
+			if(signal_region[i2]=="6j1b")       { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_6j1b_hHT[i0];  }
+			if(signal_region[i2]=="6j1bmod")    { fModTable = true;  for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_6j1b_hHT[i0];  }
+			if(signal_region[i2]=="6j2b")       { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_6j2b_hHT[i0];  }
+			if(signal_region[i2]=="3b")         { fModTable = false; for(int i0 = 0; i0<=gNMT2bins; ++i0) gMT2bins[i0] = gMT2bins_3b_hHT[i0];    }
+		   }
+		}
+		if(fModTable==false) { modtablescale = 1.0; modtablescaleerr = 0.0; }
+		if(fMET) {             fHTmin =  450.; fHTmax =  750.;}
+		if(fHT)  { if(i1==0) { fHTmin =  750.; fHTmax = 1200.;}  
+		           if(i1==1) { fHTmin = 1200.; fHTmax =  1E+8;} }
+		fMT2min = gMT2bins[0]; fMT2max = 1E+8;
+		//set topological region, NJets, NBJets
+		if(signal_region[i2]=="2j0b")       { fNJets =  2; fNBJets =  0; fSR = 0; }
+		if(signal_region[i2]=="2j1to2b")    { fNJets =  2; fNBJets = -1; fSR = 1; }
+		if(signal_region[i2]=="2j1to2bmod") { fNJets =  2; fNBJets =  0; fSR = 1; }//fake NBJets
+		if(signal_region[i2]=="3to5j0b")    { fNJets = 35; fNBJets =  0; fSR = 2; }
+		if(signal_region[i2]=="3to5j1b")    { fNJets = 35; fNBJets =  1; fSR = 3; }
+		if(signal_region[i2]=="3to5j1bmod") { fNJets = 35; fNBJets =  0; fSR = 3; }//fake NBJets
+		if(signal_region[i2]=="3to5j2b")    { fNJets = 35; fNBJets =  2; fSR = 4; }
+		if(signal_region[i2]=="6j0b")       { fNJets = -6; fNBJets =  0; fSR = 5; }
+		if(signal_region[i2]=="6j1b")       { fNJets = -6; fNBJets =  1; fSR = 6; }
+		if(signal_region[i2]=="6j1bmod")    { fNJets = -6; fNBJets =  0; fSR = 6; }//fake NBJets
+		if(signal_region[i2]=="6j2b")       { fNJets = -6; fNBJets =  2; fSR = 7; }
+		if(signal_region[i2]=="3b")         { fNJets = -3; fNBJets = -3; fSR = 8; }
 
-	// define cutsteams
-	DefineCutStreams(fHTmin, fHTmax, fMT2min, fMT2max);
-
-	// fix output dir
-	if(fReScaleAfterMT2)  fOutDir= TString::Format("%s_%s",       "RescaledMT2",   fOutDir.Data());
-	if(fISRreweight)      fOutDir= TString::Format("%s_%s",       "ISRreweighted", fOutDir.Data());
-	if(fNJets <0)         fOutDir= TString::Format("%s_ge%dj",     fOutDir.Data(), abs(fNJets));
-	else                  fOutDir= TString::Format("%s_%dj",       fOutDir.Data(), fNJets);
-	if(fNBJets>=0)        fOutDir= TString::Format("%s_%db",       fOutDir.Data(), fNBJets);
-	else if(fNBJets!=-10) fOutDir= TString::Format("%s_ge%db",     fOutDir.Data(), abs(fNBJets));
-	else                  fOutDir= TString::Format("%s_%d_HT_%s",  fOutDir.Data(), abs(fHTmin),  "Inf");
-	if(fHTmax <10000)     fOutDir= TString::Format("%s_%d_HT_%d",  fOutDir.Data(), abs(fHTmin),  abs(fHTmax));
-	else                  fOutDir= TString::Format("%s_%d_HT_%s",  fOutDir.Data(), abs(fHTmin),  "Inf");
-	if(fMT2max<10000)     fOutDir= TString::Format("%s_%d_MT2_%d", fOutDir.Data(), abs(fMT2min), abs(fMT2max));
-	else                  fOutDir= TString::Format("%s_%d_MT2_%s", fOutDir.Data(), abs(fMT2min), "Inf");
+		// define cutsteams
+		DefineCutStreams(fHTmin, fHTmax, fMT2min, fMT2max, fNJets, fNBJets);
 	
-	//set topological region depending on NJets/NBJets
-	if(fNBJets== 0 && fNJets== 2) fSR = 0;
-	if(fNBJets==-1 && fNJets== 2) fSR = 1;
-	if(fNBJets== 0 && fNJets==35) fSR = 2;
-	if(fNBJets== 1 && fNJets==35) fSR = 3;
-	if(fNBJets== 2 && fNJets==35) fSR = 4;
-	if(fNBJets== 0 && fNJets==-6) fSR = 5;
-	if(fNBJets== 1 && fNJets==-6) fSR = 6;
-	if(fNBJets== 2 && fNJets==-6) fSR = 7;
-	if(fNBJets==-3 && fNJets==-3) fSR = 8;
-
-	// log MT2 and HT cuts
-	*fLogStream << "------------------------------------------------------------------------------------------------" << endl;
-	*fLogStream << "+++ new Znunu with Gamma+jets prediction                                                     +++" << endl;
-	*fLogStream << "+++ outputdir: " << fOutDir <<                                                              "+++" << endl; 
-	*fLogStream << "------------------------------------------------------------------------------------------------" << endl;
-
-	//NOTE: Here might be a good place to make the loop to run over several topological and possibly HT regions
-	// new prediction class ------------------------------------------------------
-	Prediction* prediction = new Prediction();
-	prediction->fVerbose=fVerbose;
-	prediction->fSave   =fSaveResults;
-	prediction->fOutputDir=fOutDir;
-
-
-	// SigmaIEtaIEta Fit *********************************************************************
-	// Get Photon Normalization: EB or EB+EE
-	if(fDoPhotonSigmaIEtaIEta){
-		std::ostringstream cutStreamPhotons_EB;
-		std::ostringstream cutStreamPhotons_EE;
-		if(fSeparateEBEE){
-			cutStreamPhotons_EB << fCutStreamPhotons.str() << "&&abs(photon[0].lv.Eta())<1.4442";
-			cutStreamPhotons_EE << fCutStreamPhotons.str() << "&&abs(photon[0].lv.Eta())>1.566";
-		} else{
-			cutStreamPhotons_EB << fCutStreamPhotons.str() ;
-			cutStreamPhotons_EE << fCutStreamPhotons.str() ;
+		fOutDir = OutputDirOrig;
+		// fix output dir
+		if(fReScaleAfterMT2)  fOutDir= TString::Format("%s_%s",       "RescaledMT2",   fOutDir.Data());
+		if(fISRreweight)      fOutDir= TString::Format("%s_%s",       "ISRreweighted", fOutDir.Data());
+		if(fNJets <0)         fOutDir= TString::Format("%s_ge%dj",     fOutDir.Data(), abs(fNJets));
+		else                  fOutDir= TString::Format("%s_%dj",       fOutDir.Data(), fNJets);
+		if(fNBJets>=0)        fOutDir= TString::Format("%s_%db",       fOutDir.Data(), fNBJets);
+		else if(fNBJets!=-10) fOutDir= TString::Format("%s_ge%db",     fOutDir.Data(), abs(fNBJets));
+		else                  fOutDir= TString::Format("%s_%d_HT_%s",  fOutDir.Data(), abs(fHTmin),  "Inf");
+		if(fHTmax <10000)     fOutDir= TString::Format("%s_%d_HT_%d",  fOutDir.Data(), abs(fHTmin),  abs(fHTmax));
+		else                  fOutDir= TString::Format("%s_%d_HT_%s",  fOutDir.Data(), abs(fHTmin),  "Inf");
+		if(fMT2max<10000)     fOutDir= TString::Format("%s_%d_MT2_%d", fOutDir.Data(), abs(fMT2min), abs(fMT2max));
+		else                  fOutDir= TString::Format("%s_%d_MT2_%s", fOutDir.Data(), abs(fMT2min), "Inf");
+	
+		// log MT2 and HT cuts
+		*fLogStream << "------------------------------------------------------------------------------------------------" << endl;
+		*fLogStream << "+++ new Znunu with Gamma+jets prediction                                                     +++" << endl;
+		*fLogStream << "+++ outputdir: " << fOutDir <<                                                              "+++" << endl; 
+		*fLogStream << "------------------------------------------------------------------------------------------------" << endl;
+	
+		// new prediction class ------------------------------------------------------
+		Prediction* prediction = new Prediction();
+		prediction->fVerbose=fVerbose;
+		prediction->fSave   =fSaveResults;
+		prediction->fOutputDir=fOutDir;
+	
+	
+		// SigmaIEtaIEta Fit *********************************************************************
+		// Get Photon Normalization: EB or EB+EE
+		if(fDoPhotonSigmaIEtaIEta){
+			std::ostringstream cutStreamPhotons_EB;
+			std::ostringstream cutStreamPhotons_EE;
+			if(fSeparateEBEE){
+				cutStreamPhotons_EB << fCutStreamPhotons.str() << "&&abs(photon[0].lv.Eta())<1.4442";
+				cutStreamPhotons_EE << fCutStreamPhotons.str() << "&&abs(photon[0].lv.Eta())>1.566";
+			} else{
+				cutStreamPhotons_EB << fCutStreamPhotons.str() ;
+				cutStreamPhotons_EE << fCutStreamPhotons.str() ;
+			}
+			prediction->PhotonSigmaIEtaIEta_EB = new Channel("SigmaIEtaIEta_EB", "photon[0].SigmaIEtaIEta", 
+									cutStreamPhotons_EB.str().c_str(), fTriggerStreamPhotons.str().c_str(),fSamplesRemovedPhotons);
+			prediction->PhotonSigmaIEtaIEta_EB->fVerbose =prediction->fVerbose;
+			prediction->PhotonSigmaIEtaIEta_EB->fOutputDir=prediction->fOutputDir;
+			prediction->PhotonSigmaIEtaIEta_EB->fAddMCPedestal = true; // set this to avoid
+			prediction->PhotonSigmaIEtaIEta_EB->fRootFile="SigmaIEtaIEta_EB_Shapes.root";
+			prediction->PhotonSigmaIEtaIEta_EB->GetShapes("SigmaIEtaIEta_EB", "SigmaIEtaIEta", 30, 0, 0.08);
+			prediction->GetPhotonNormalization(prediction->PhotonSigmaIEtaIEta_EB, prediction->MLRes_EB);
+	
+			// Get Photon Normalization: EE
+			prediction->PhotonSigmaIEtaIEta_EE = new Channel("SigmaIEtaIEta_EE", "photon[0].SigmaIEtaIEta", 
+									cutStreamPhotons_EE.str().c_str(), fTriggerStreamPhotons.str().c_str(),fSamplesRemovedPhotons);
+			prediction->PhotonSigmaIEtaIEta_EE->fVerbose =prediction->fVerbose;
+			prediction->PhotonSigmaIEtaIEta_EE->fOutputDir=prediction->fOutputDir;
+			prediction->PhotonSigmaIEtaIEta_EE->fAddMCPedestal = true; // set this to avoid
+			prediction->PhotonSigmaIEtaIEta_EE->fRootFile="SigmaIEtaIEta_EE_Shapes.root";
+			prediction->PhotonSigmaIEtaIEta_EE->GetShapes("SigmaIEtaIEta_EE", "SigmaIEtaIEta", 30, 0, 0.08);
+			prediction->GetPhotonNormalization(prediction->PhotonSigmaIEtaIEta_EE, prediction->MLRes_EE);
+			delete prediction->PhotonSigmaIEtaIEta_EE;
+			delete prediction->PhotonSigmaIEtaIEta_EB;
 		}
-		prediction->PhotonSigmaIEtaIEta_EB = new Channel("SigmaIEtaIEta_EB", "photon[0].SigmaIEtaIEta", 
-								 cutStreamPhotons_EB.str().c_str(), fTriggerStreamPhotons.str().c_str(),fSamplesRemovedPhotons);
-		prediction->PhotonSigmaIEtaIEta_EB->fVerbose =prediction->fVerbose;
-		prediction->PhotonSigmaIEtaIEta_EB->fOutputDir=prediction->fOutputDir;
-		prediction->PhotonSigmaIEtaIEta_EB->fAddMCPedestal = true; // set this to avoid
-		prediction->PhotonSigmaIEtaIEta_EB->fRootFile="SigmaIEtaIEta_EB_Shapes.root";
-		prediction->PhotonSigmaIEtaIEta_EB->GetShapes("SigmaIEtaIEta_EB", "SigmaIEtaIEta", 30, 0, 0.08);
-		prediction->GetPhotonNormalization(prediction->PhotonSigmaIEtaIEta_EB, prediction->MLRes_EB);
-
-		// Get Photon Normalization: EE
-		prediction->PhotonSigmaIEtaIEta_EE = new Channel("SigmaIEtaIEta_EE", "photon[0].SigmaIEtaIEta", 
-								 cutStreamPhotons_EE.str().c_str(), fTriggerStreamPhotons.str().c_str(),fSamplesRemovedPhotons);
-		prediction->PhotonSigmaIEtaIEta_EE->fVerbose =prediction->fVerbose;
-		prediction->PhotonSigmaIEtaIEta_EE->fOutputDir=prediction->fOutputDir;
-		prediction->PhotonSigmaIEtaIEta_EE->fAddMCPedestal = true; // set this to avoid
-		prediction->PhotonSigmaIEtaIEta_EE->fRootFile="SigmaIEtaIEta_EE_Shapes.root";
-		prediction->PhotonSigmaIEtaIEta_EE->GetShapes("SigmaIEtaIEta_EE", "SigmaIEtaIEta", 30, 0, 0.08);
-		prediction->GetPhotonNormalization(prediction->PhotonSigmaIEtaIEta_EE, prediction->MLRes_EE);
-		delete prediction->PhotonSigmaIEtaIEta_EE;
-		delete prediction->PhotonSigmaIEtaIEta_EB;
-	}
-	else {
-		//use hard-coded normalization
-		prediction->SetPhotonNormalizationStupid(prediction->MLRes_EB);
-		prediction->SetPhotonNormalizationStupid(prediction->MLRes_EE);
-	}
-
-	// Get Photon signal yield (in data and MC)
-	// Photon Signal Region ******************************************************************************************
-	if(fDoPhotonSignalRegion){	
-		// Get Photon Selection Signal Region: EB
-		std::ostringstream cutStreamPhotonsMT2_EB;
-		cutStreamPhotonsMT2_EB << fCutStreamPhotonsMT2.str() << "&&abs(photon[0].lv.Eta())<1.4442";
-		prediction->PhotonicSignalRegion_EB = new Channel("PhotonicSignalRegion_EB", "misc.MT2", cutStreamPhotonsMT2_EB.str().c_str(), 
-							       fTriggerStreamPhotons.str().c_str(), fSamplesRemovedPhotons);
-		prediction->PhotonicSignalRegion_EB->fVerbose =prediction->fVerbose;
-		prediction->PhotonicSignalRegion_EB->fOutputDir=prediction->fOutputDir;
-		prediction->PhotonicSignalRegion_EB->fRootFile="SignalRegionRemovedPhotons_EB_Shapes.root";
-		if(fDoVariableMT2bins) prediction->PhotonicSignalRegion_EB->GetShapes("PhotonicSignalRegion_EB", "MT2 (GeV)", gNMT2bins, gMT2bins );
-		else                   prediction->PhotonicSignalRegion_EB->GetShapes("PhotonicSignalRegion_EB", "MT2 (GeV)", 30, 0, 800);
-		
-		// Get Photon Selection Signal Region: EE
-		std::ostringstream cutStreamPhotonsMT2_EE;
-		cutStreamPhotonsMT2_EE << fCutStreamPhotonsMT2.str() << "&&abs(photon[0].lv.Eta())>1.566";
-		prediction->PhotonicSignalRegion_EE = new Channel("PhotonicSignalRegion_EE", "misc.MT2", cutStreamPhotonsMT2_EE.str().c_str(), 
-							       fTriggerStreamPhotons.str().c_str(), fSamplesRemovedPhotons);
-		prediction->PhotonicSignalRegion_EE->fVerbose =prediction->fVerbose;
-		prediction->PhotonicSignalRegion_EE->fOutputDir=prediction->fOutputDir;
-		prediction->PhotonicSignalRegion_EE->fRootFile="SignalRegionRemovedPhotons_EE_Shapes.root";
-		if(fDoVariableMT2bins) prediction->PhotonicSignalRegion_EE->GetShapes("PhotonicSignalRegion_EE", "MT2 (GeV)", gNMT2bins, gMT2bins );
-		else                   prediction->PhotonicSignalRegion_EE->GetShapes("PhotonicSignalRegion_EE", "MT2 (GeV)", 30, 0, 800);
-		
-	}
-
-	// get hadronic Znunu yield - note: you should modify the samples.dat to contain only Znunu MC, as rest is not needed
-	// Hadronic Signal Region ********************************************************************************************* 
-	if(fDoHadronicSignalRegion){
-		prediction->HadronicSignalRegion = new Channel("HadronicSignalRegion","misc.MT2", fCutStreamSignal.str().c_str(), 
-							       fTriggerStream.str().c_str(), fSamplesHadronic);
-		prediction->HadronicSignalRegion->fRootFile="HadronicMT2Shapes.root";
-		prediction->HadronicSignalRegion->fVerbose =prediction->fVerbose;
-		prediction->HadronicSignalRegion->fOutputDir=prediction->fOutputDir;
-		if(fDoVariableMT2bins) prediction->HadronicSignalRegion->GetShapes("HadronicRegion", "MT2 (GeV)", gNMT2bins, gMT2bins );
-		else                   prediction->HadronicSignalRegion->GetShapes("HadronicRegion", "MT2 (GeV)", 30, 0, 800);
-
-		// compute MC Znunu/Photon ratio --------------------------------------------------
-		prediction->GetMCZnunuToPhotonRatio();
-		if(fDoPrediction)  {
-		// make Prediction ----------------------------------------------------------------
-		prediction->MakePrediction();
+		else {
+			//use hard-coded normalization
+			prediction->SetPhotonNormalizationStupid(prediction->MLRes_EB);
+			prediction->SetPhotonNormalizationStupid(prediction->MLRes_EE);
 		}
-	}
+	
+		// Get Photon signal yield (in data and MC)
+		// Photon Signal Region ******************************************************************************************
+		if(fDoPhotonSignalRegion){	
+			// Get Photon Selection Signal Region: EB
+			std::ostringstream cutStreamPhotonsMT2_EB;
+			cutStreamPhotonsMT2_EB << fCutStreamPhotonsMT2.str() << "&&abs(photon[0].lv.Eta())<1.4442";
+			prediction->PhotonicSignalRegion_EB = new Channel("PhotonicSignalRegion_EB", "misc.MT2", cutStreamPhotonsMT2_EB.str().c_str(), 
+								fTriggerStreamPhotons.str().c_str(), fSamplesRemovedPhotons);
+			prediction->PhotonicSignalRegion_EB->fVerbose =prediction->fVerbose;
+			prediction->PhotonicSignalRegion_EB->fOutputDir=prediction->fOutputDir;
+			prediction->PhotonicSignalRegion_EB->fRootFile="SignalRegionRemovedPhotons_EB_Shapes.root";
+			if(fDoVariableMT2bins) prediction->PhotonicSignalRegion_EB->GetShapes("PhotonicSignalRegion_EB", "MT2 (GeV)", gNMT2bins, gMT2bins );
+			else                   prediction->PhotonicSignalRegion_EB->GetShapes("PhotonicSignalRegion_EB", "MT2 (GeV)", 30, 0, 800);
+			
+			// Get Photon Selection Signal Region: EE
+			std::ostringstream cutStreamPhotonsMT2_EE;
+			cutStreamPhotonsMT2_EE << fCutStreamPhotonsMT2.str() << "&&abs(photon[0].lv.Eta())>1.566";
+			prediction->PhotonicSignalRegion_EE = new Channel("PhotonicSignalRegion_EE", "misc.MT2", cutStreamPhotonsMT2_EE.str().c_str(), 
+								fTriggerStreamPhotons.str().c_str(), fSamplesRemovedPhotons);
+			prediction->PhotonicSignalRegion_EE->fVerbose =prediction->fVerbose;
+			prediction->PhotonicSignalRegion_EE->fOutputDir=prediction->fOutputDir;
+			prediction->PhotonicSignalRegion_EE->fRootFile="SignalRegionRemovedPhotons_EE_Shapes.root";
+			if(fDoVariableMT2bins) prediction->PhotonicSignalRegion_EE->GetShapes("PhotonicSignalRegion_EE", "MT2 (GeV)", gNMT2bins, gMT2bins );
+			else                   prediction->PhotonicSignalRegion_EE->GetShapes("PhotonicSignalRegion_EE", "MT2 (GeV)", 30, 0, 800);
+			
+		}
+	
+		// get hadronic Znunu yield - note: you should modify the samples.dat to contain only Znunu MC, as rest is not needed
+		// Hadronic Signal Region ********************************************************************************************* 
+		if(fDoHadronicSignalRegion){
+			prediction->HadronicSignalRegion = new Channel("HadronicSignalRegion","misc.MT2", fCutStreamSignal.str().c_str(), 
+								fTriggerStream.str().c_str(), fSamplesHadronic);
+			prediction->HadronicSignalRegion->fRootFile="HadronicMT2Shapes.root";
+			prediction->HadronicSignalRegion->fVerbose =prediction->fVerbose;
+			prediction->HadronicSignalRegion->fOutputDir=prediction->fOutputDir;
+			if(fDoVariableMT2bins) prediction->HadronicSignalRegion->GetShapes("HadronicRegion", "MT2 (GeV)", gNMT2bins, gMT2bins );
+			else                   prediction->HadronicSignalRegion->GetShapes("HadronicRegion", "MT2 (GeV)", 30, 0, 800);
+	
+			// compute MC Znunu/Photon ratio --------------------------------------------------
+			prediction->GetMCZnunuToPhotonRatio();
+			if(fDoPrediction)  {
+			// make Prediction ----------------------------------------------------------------
+			prediction->MakePrediction();
+			}
+			delete prediction->HadronicSignalRegion;
+		}
+		if(fDoPhotonSignalRegion){//clean up
+			delete prediction->PhotonicSignalRegion_EB;
+			delete prediction->PhotonicSignalRegion_EE;
+		}
+		delete prediction;
+	}}//topological,HT
+
+	if(fMakeFinalTable) MakeFinalPredictionTable();//uses only global variables
 	
 	if(fWriteToFile){
 		TString logname =fOutDir + ".log"; 
@@ -506,7 +618,6 @@ void run_GammaJetsToZnunu(){
 	} else{
 		cout << fLogStream->str();
 	}
-	delete prediction;
 	delete fLogStream;
 }
 
@@ -606,6 +717,7 @@ void Channel::GetShapes(TString SelectionName, TString xtitle, const int nbins, 
 //                    variable,    cuts,    njet, nbjets,  nlep, selection_name,      HLT,    xtitle   nbins  bins   
         tA->GetShapes(fVariable,  fCuts,    fNJets,  fNBJets, -10  , SelectionName,    fTrigger , xtitle , nbins, bins);
 
+	bool issigmaietaieta = false;
 	// retrieve shapes
 	for(int i=0; i<tA->GetNShapes(); ++i){
 		TString name =tA->fh_shapes[i]->GetName();
@@ -618,6 +730,7 @@ void Channel::GetShapes(TString SelectionName, TString xtitle, const int nbins, 
 		else if (name.Contains("Top_"))        {hTop         = (TH1D*) tA->fh_shapes[i]->Clone(tA->fh_shapes[i]->GetName()); hTop->SetDirectory(0);}
 		else if (name.Contains("Signal_"))     {hSignal      = (TH1D*) tA->fh_shapes[i]->Clone(tA->fh_shapes[i]->GetName()); hSignal->SetDirectory(0);}
 		else if (name.Contains("Other_"))      {hOther       = (TH1D*) tA->fh_shapes[i]->Clone(tA->fh_shapes[i]->GetName()); hOther->SetDirectory(0);}
+		if(name.Contains("SigmaIEtaIEta"))      issigmaietaieta = true;
 	}
 	delete tA;
 	fGotShapes=true;
@@ -652,19 +765,30 @@ void Channel::GetShapes(TString SelectionName, TString xtitle, const int nbins, 
 		}
 		TH1D *hZ = (TH1D*)f->Get(z_reg.c_str());
 		TH1D *hG = (TH1D*)f->Get(g_reg.c_str());
-		//NOTE: make maybe an if close to surpress this output
-		for(int nbin = 1; nbin<=hPhotons->GetNbinsX(); ++nbin){//do it like that in order to not change the error
-			cout << "Photon " << hPhotons->GetBinContent(nbin) << " Zinv " << hZJetsToNuNu->GetBinContent(nbin) << endl;
-			cout << "SF G   " << hG->GetBinContent(nbin) << " SF Z " << hZ->GetBinContent(nbin) << endl;
-			hPhotons->SetBinContent(nbin, hPhotons->GetBinContent(nbin)*hG->GetBinContent(nbin));
-			hPhotons->SetBinError(  nbin, hPhotons->GetBinError(  nbin)*hG->GetBinContent(nbin));
-			hZJetsToNuNu->SetBinContent(nbin, hZJetsToNuNu->GetBinContent(nbin)*hZ->GetBinContent(nbin));
-			hZJetsToNuNu->SetBinError(  nbin, hZJetsToNuNu->GetBinError(  nbin)*hZ->GetBinContent(nbin));
-			cout << "Photon " << hPhotons->GetBinContent(nbin) << " Zinv " << hZJetsToNuNu->GetBinContent(nbin) << endl;
+		if(fPrintFullPrintOut){
+			for(int nbin = 1; nbin<=hPhotons->GetNbinsX(); ++nbin){//do it like that in order to not change the error
+				cout << "Photon " << hPhotons->GetBinContent(nbin) << " Zinv " << hZJetsToNuNu->GetBinContent(nbin) << endl;
+				cout << "SF G   " << hG->GetBinContent(nbin) << " SF Z " << hZ->GetBinContent(nbin) << endl;
+				hPhotons->SetBinContent(nbin, hPhotons->GetBinContent(nbin)*hG->GetBinContent(nbin));
+				hPhotons->SetBinError(  nbin, hPhotons->GetBinError(  nbin)*hG->GetBinContent(nbin));
+				hZJetsToNuNu->SetBinContent(nbin, hZJetsToNuNu->GetBinContent(nbin)*hZ->GetBinContent(nbin));
+				hZJetsToNuNu->SetBinError(  nbin, hZJetsToNuNu->GetBinError(  nbin)*hZ->GetBinContent(nbin));
+				cout << "Photon " << hPhotons->GetBinContent(nbin) << " Zinv " << hZJetsToNuNu->GetBinContent(nbin) << endl;
+			}
 		}
 		f->Close();
 	}
-
+	if(issigmaietaieta){
+		if(hOther==0){
+			hOther=(TH1D*)hQCD->Clone("Other");
+			if(hOther->Integral()>1.) hOther->Scale(0.01/hOther->Integral());//total hOther yield is <= 0.01;
+			else                      hOther->Scale(0.01);
+		} else if(hOther->Integral()<=0){
+			hOther=(TH1D*)hQCD->Clone("Other");
+			if(hOther->Integral()>1.) hOther->Scale(0.01/hOther->Integral());//total hOther yield is <= 0.01;
+			else                      hOther->Scale(0.01);
+		}
+	}
 	// fix colors
 	if(hQCD!=0)        {hQCD    ->SetLineColor(kYellow+1);    hQCD    ->SetFillColor(kYellow+1);      hQCD    ->SetFillStyle(3001);}
 	if(hPhotons!=0)    {hPhotons->SetLineColor(kViolet-3);    hPhotons->SetFillColor(kViolet-3);      hPhotons->SetFillStyle(3001);}
@@ -761,7 +885,11 @@ void Prediction::GetPhotonNormalization(Channel* channel, MLResult* MLRes){
 	TH1D *hPhotons = (TH1D*)channel->hPhotons->Clone("Photons");
 	TH1D *hData    = (TH1D*)channel->hData->Clone("Data");
 	TH1D *hOther   = (TH1D*)channel->hOther->Clone("Other");
-	//NOTE: think of modifying hOthers if it is completely empty, like saying hOther = hQCD clone that is rescaled to have small entries like normalized to 1 or so
+	if(hOther->Integral()<=0){
+		hOther->Add(hQCD);
+		if(hOther->Integral()>1.) hOther->Scale(0.01/hOther->Integral());//total hOther yield is <= 0.01;
+		else                      hOther->Scale(0.01);
+	}
 
 	if(channel->fAddMCPedestal){ // Add Pedestal to QCD MC PDF in order to avoid bins in PDF with zero entries
 		                     // but data in same bin! this causes problems!
@@ -975,9 +1103,17 @@ void Prediction::GetMCZnunuToPhotonRatio(){
 		*fLogStream << "+++ adding in quadrature " << fRMCUncertainty << " percent uncertainty on R   " << endl;
 		*fLogStream << "------------------------------------------------------------------------------" << endl;
 		fMCZnunuPhotonRatioErr = sqrt(pow(fMCZnunuPhotonRatioErr,2)+pow(fMCZnunuPhotonRatio*fRMCUncertainty,2));
-		for(int i = 1; i<= fMCZnunuPhotonRatioHisto->GetNbinsX(); ++i) fMCZnunuPhotonRatioHisto->SetBinError(i, sqrt(pow(fMCZnunuPhotonRatioHisto->GetBinError(i),2)+pow(fMCZnunuPhotonRatioHisto->GetBinContent(i)*fRMCUncertainty,2)));
-		//TOBEUPDATED: running additional uncertainty
+		for(int i = 1; i<= fMCZnunuPhotonRatioHisto->GetNbinsX(); ++i) {
+			//either bin is above threshold, last bin, or bin is just below threshold, but majority of the bin is in increased uncertainty window
+			if(fMCZnunuPhotonRatioHisto->GetBinLowEdge(i)>=(fMinMT2forConstR-0.01) || i==fMCZnunuPhotonRatioHisto->GetNbinsX() || 
+			  (fMCZnunuPhotonRatioHisto->GetBinLowEdge(i+1)>=(fMinMT2forConstR-0.01) && fMCZnunuPhotonRatioHisto->GetBinLowEdge(i)<(fMinMT2forConstR-0.01) &&
+			  (fMCZnunuPhotonRatioHisto->GetBinLowEdge(i+1)-fMinMT2forConstR)>=(fMinMT2forConstR-fMCZnunuPhotonRatioHisto->GetBinLowEdge(i) ) ) )
+				fMCZnunuPhotonRatioHisto->SetBinError(i, sqrt(pow(fMCZnunuPhotonRatioHisto->GetBinError(i),2)+pow(fMCZnunuPhotonRatioHisto->GetBinContent(i)*fRMCUncertaintyTail,2)));
+			else
+				fMCZnunuPhotonRatioHisto->SetBinError(i, sqrt(pow(fMCZnunuPhotonRatioHisto->GetBinError(i),2)+pow(fMCZnunuPhotonRatioHisto->GetBinContent(i)*fRMCUncertainty,2)));
+
 		}
+		}//fAddRMCUncertainty
 
 		*fLogStream << "Ratio: " << fMCZnunuPhotonRatio << " pm " << fMCZnunuPhotonRatioErr << endl;
 		*fLogStream << "------------------------------------------------------------------------" << endl;
@@ -1147,6 +1283,33 @@ void Prediction::MakePrediction(){
 	nothererr.push_back(hOther->GetBinError(i));
 	ngamma.push_back(hPhotons->GetBinContent(i));
 	ngammaerr.push_back(hPhotons->GetBinError(i));
+
+	fhtbin.push_back(HTbin);
+	fmt2bin.push_back(i);
+	fznunugen.push_back(HadronicSignalRegion->hZJetsToNuNu->GetBinContent(i));
+	fznunupred.push_back(PredictedZnunu);
+	fznunuprederr.push_back(sqrt(PredictedZnunu_ErrSys*PredictedZnunu_ErrSys+PredictedZnunu_ErrStat*PredictedZnunu_ErrStat));
+	fznunuprederrstat.push_back(PredictedZnunu_ErrStat);
+	fznunuprederrsyst.push_back(PredictedZnunu_ErrSys);
+	fZGratio.push_back(fMCZnunuPhotonRatioHisto->GetBinContent(i));
+	fZGratioerr.push_back(fMCZnunuPhotonRatioHisto->GetBinError(i));
+	fmt2low.push_back(hPhotons->GetBinLowEdge(i));
+	if(i!=hPhotons->GetNbinsX()) fmt2up.push_back(hPhotons->GetBinLowEdge(i)+hPhotons->GetBinWidth(i));
+	else                         fmt2up.push_back(9999999.);
+	fndata.push_back(hData->GetBinContent(i));
+	fndataerr.push_back(hData->GetBinError(i));
+	fnqcd.push_back(hQCD->GetBinContent(i));
+	fnqcderr.push_back(hQCD->GetBinError(i));
+	fnother.push_back(hOther->GetBinContent(i));
+	fnothererr.push_back(hOther->GetBinError(i));
+	fngamma.push_back(hPhotons->GetBinContent(i));
+	fngammaerr.push_back(hPhotons->GetBinError(i));
+	fNJ.push_back(fNJets);
+	fNBJ.push_back(fNBJets);
+	fMod.push_back(modtablescale);
+	fModV.push_back(modtablescaleerr);
+	fModVE.push_back(fModTable);
+	fSigReg.push_back(fSR);
 
 	if(fPrintBrunoTable){//see fPrintBrunoTable at beginning
 		*fLogStream << "************************** Bruno-Gay Printout ******************************" << endl;
@@ -1391,7 +1554,7 @@ TH1D* Prediction::RescaleHisto(TH1D* histMC1, TH1D* histMC2, TH1D* hist_data_EB,
 	hMC  ->Add(htemp);
 	double scalefactor = 1;
 	if(hMC->Integral()>0&&hData->Integral()>0) scalefactor = hData->Integral()/hMC->Integral();
-	if(fVerbose>4) cout << "after MT2>" << gMT2bins[0] << ": data " << hData->Integral() << ", MC " << hMC->Integral() << " --> SF = " << scalefactor << endl;
+	if(fVerbose>4) cout << "after MT2>" << hData->GetBinLowEdge(1) << ": data " << hData->Integral() << ", MC " << hMC->Integral() << " --> SF = " << scalefactor << endl;
 	h->Scale(scalefactor);
 	return h;
 }
@@ -1417,3 +1580,126 @@ void DrawHisto(TH1* h_orig, TString name,  Option_t *drawopt, Channel* channel){
 		delete file;
 	}
 }
+
+
+void MakeFinalPredictionTable(){
+
+	if(fPrintBrunoTable){//see fPrintBrunoTable at beginning
+		*fLogStream << endl << "************************** Bruno-Gay Printout ******************************" << endl;
+        	*fLogStream << fixed << setprecision(2) ;
+		*fLogStream << " Name     " << " SR " << " HTbin " << " MT2bin   " << " MCpred   " << " DataDrivenPred " << " DataDrivenPredError " << " ScaleFactor " << " ScaleFactorError " /*<< " Ngamma"*/ << endl;
+		for(int jj = 0; jj<fhtbin.size(); ++jj){
+			if(fMod[jj]==true) continue;
+			*fLogStream << "ZinvFromG   " << fSigReg[jj] << " " << setw(5) << fhtbin[jj] << " " << setw(4) << fmt2bin[jj] << " " << setw(13) << fznunugen[jj]
+			            << " " << setw(13) << fznunupred[jj] << " " << setw(18) << fznunuprederr[jj]
+		    		    << " " << setw(13) << fZGratio[jj]   << " " << setw(16) << fZGratioerr[jj] /*<<  "            " << ngamma[jj] << "+/-" << ngammaerr[jj]*/ << endl;
+		}
+		*fLogStream << "----------------------------------------------------------------------------" << endl;
+	}
+
+	//this is the final prediction table for Z(nunu) from photon
+	*fLogStream << endl;
+	*fLogStream << "\%BEGINLATEX\%"                    << endl
+		    << "\\begin{table}[!htb]"              << endl
+		    << "\\begin{center}"                   << endl
+		    << "\\begin{tabular}{r|cccccc}"        << endl
+		    << "\\hline\\hline"                    << endl;
+	*fLogStream << "$M_\\mathrm{T2}$ [GeV] & $N^{\\gamma}_\\mathrm{data}$ & $N^{QCD}_\\mathrm{bkg}$ &           $N^{EWK}^\\mathrm{bkg}$      &    $R_\\mathrm{sim}(Z(\\nu\\bar{\\nu})/\\gamma)$ & data prediction             & sim. truth \\\\" << endl
+		    << "\\hline\\hline" << endl;
+	int oldHT = -999; int oldSR = -999;
+	for(int jj = 0; jj<fhtbin.size(); ++jj){
+		if(fMod[jj]==true) continue;
+		if(fhtbin[jj]!=oldHT){
+		    oldHT = fhtbin[jj];
+	            if(fhtbin[jj]==0) *fLogStream << " & \\multicolumn{6}{c}{low H_\\mathrm{T}} \\\\ \\hline\\hline" << endl;
+	            if(fhtbin[jj]==1) *fLogStream << " & \\multicolumn{6}{c}{medium H_\\mathrm{T}} \\\\ \\hline\\hline" << endl;
+	            if(fhtbin[jj]==2) *fLogStream << " & \\multicolumn{6}{c}{high H_\\mathrm{T}} \\\\ \\hline\\hline" << endl;
+		}
+		if(fSigReg[jj]!=oldSR){
+		   oldSR = fSigReg[jj];
+		   if(fSigReg[jj]==0) *fLogStream << " & \\multicolumn{6}{c}{2 jets, 0 b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==1) *fLogStream << " & \\multicolumn{6}{c}{2 jets, $\\geq1$ b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==2) *fLogStream << " & \\multicolumn{6}{c}{3-5 jets, 0 b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==3) *fLogStream << " & \\multicolumn{6}{c}{3-5 jets, 1 b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==4) *fLogStream << " & \\multicolumn{6}{c}{3-5 jets, 2 b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==5) *fLogStream << " & \\multicolumn{6}{c}{$\\geq6$ jets, 0 b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==6) *fLogStream << " & \\multicolumn{6}{c}{$\\geq6$ jets, 1 b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==7) *fLogStream << " & \\multicolumn{6}{c}{$\\geq6$ jets, 2 b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==8) *fLogStream << " & \\multicolumn{6}{c}{$\\geq3$ jets, $\\geq3$ b jets} \\\\ \\hline" << endl;
+		};
+		if(fmt2up<100000.)  *fLogStream << "$" << int(fmt2low[jj]) << "-" << int(fmt2up[jj]) << "$" 
+		else                *fLogStream << "$\\geq " << int(fmt2low[jj]) << "$";
+		                    *fLogStream << " " << setw(19) << "& " << int(fndata[jj])   << " " << setw(1)  << "& ";
+		if(fnqcd[jj]>0)     *fLogStream << <<  fixed << setprecision(2) << " " << setw(2)  <<   "$" << fnqcd[jj]       << " \\pm "<< fnqcderr[jj]    << "$" << " " << setw(1)  << "& ";
+		else                *fLogStream << " " << setw(8) << "$-$" << " " << setw(7)  << "& ";
+		if(fnother[jj]>0)   *fLogStream << " " << setw(2)  <<   "$" << fnother[jj]     << " \\pm "<< fnothererr[jj]  << "$" << " " << setw(1)  << "& ";
+		else                *fLogStream << " " << setw(8) << "$-$" << " " << setw(7)  << "& ";
+		                    *fLogStream << " " << setw(4)  <<   "$" << fZGratio[jj]    << " \\pm "<< fZGratioerr[jj] << "$" << " " << setw(1)  << "& "
+		                                << " " << setw(7)  <<   "$" << fznunupred[jj]  << " \\pm " << fznunuprederrstat[jj] << " \\pm " << fznunuprederrsyst[jj] << "$ & "
+			                        << " " << setw(4)  << fznunugen[jj] << " \\\\ " << endl;
+	}
+	*fLogStream << "\\hline\\hline"  << endl
+		    << "\\end{tabular}"  << endl
+		    << "\\end{center}"   << endl
+		    << "\\end{table}"    << endl
+		    << "\%ENDLATEX\%"    << endl
+		    << endl;
+	if(!fDoPhotonSigmaIEtaIEta) cout << "reminder: YOUR ARE NOT DOING fDoPhotonSigmaIEtaIEta " << endl;//just a reminder
+
+	*fLogStream << endl << "************************** Modified table for 1b est ******************************" << endl;
+	if(fPrintBrunoTable){//see fPrintBrunoTable at beginning
+		*fLogStream << fixed << setprecision(2) ;
+		*fLogStream << " Name     " << " SR " << " HTbin " << " MT2bin   " << " MCpred(wrong)   " << " DataDrivenPred " << " DataDrivenPredError(slightwrong) " << " ScaleFactor " << " ScaleFactorError " << endl;
+		for(int jj = 0; jj<fhtbin.size(); ++jj){
+			if(fMod[jj]==false) continue;
+			*fLogStream << "ZinvFromG   " << fSigReg[jj] << " " << setw(5) << fhtbin[jj] << " " << setw(4) << fmt2bin[jj] << " " << setw(13) << fznunugen[jj]
+				<< " " << setw(13) << fznunupred[jj]*fModV[jj] << " " << setw(18) << sqrt(pow(fznunuprederr[jj]*fModV[jj],2)+pow(fznunupred[jj]*fModVE[jj],2))
+				<< " " << setw(13) << fZGratio[jj]*fModV[jj]   << " " << setw(16) << sqrt(pow(fZGratioerr[jj]*fModV[jj],2) + pow(fZGratio[jj]*fModVE[jj],2))  << endl;
+		}
+	}
+	*fLogStream << "----------------------------------------------------------------------------" << endl << endl;
+
+	*fLogStream << "$M_\\mathrm{T2}$ [GeV] & $N^{\\gamma}_\\mathrm{data}$ & $N^{QCD}_\\mathrm{bkg}$ &    $R^Z_\\mathrm{data}(1b/0b)$   &    $R_\\mathrm{sim}(Z(\\nu\\bar{\\nu})/\\gamma)$ & data prediction             & sim. truth \\\\" << endl
+		    << "\\hline\\hline" << endl;
+	oldHT = -999; oldSR = -999;
+	for(int jj = 0; jj<fhtbin.size(); ++jj){
+		if(fMod[jj]==false) continue;
+		if(fhtbin[jj]!=oldHT){
+		    oldHT = fhtbin[jj];
+	            if(fhtbin[jj]==0) *fLogStream << " & \\multicolumn{6}{c}{low H_\\mathrm{T}} \\\\ \\hline\\hline" << endl;
+	            if(fhtbin[jj]==1) *fLogStream << " & \\multicolumn{6}{c}{medium H_\\mathrm{T}} \\\\ \\hline\\hline" << endl;
+	            if(fhtbin[jj]==2) *fLogStream << " & \\multicolumn{6}{c}{high H_\\mathrm{T}} \\\\ \\hline\\hline" << endl;
+		}
+		if(fSigReg[jj]!=oldSR){
+		   oldSR = fSigReg[jj];
+		   if(fSigReg[jj]==0) *fLogStream << " & \\multicolumn{6}{c}{2 jets, 0 b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==1) *fLogStream << " & \\multicolumn{6}{c}{2 jets, $\\geq1$ b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==2) *fLogStream << " & \\multicolumn{6}{c}{3-5 jets, 0 b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==3) *fLogStream << " & \\multicolumn{6}{c}{3-5 jets, 1 b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==4) *fLogStream << " & \\multicolumn{6}{c}{3-5 jets, 2 b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==5) *fLogStream << " & \\multicolumn{6}{c}{$\\geq6$ jets, 0 b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==6) *fLogStream << " & \\multicolumn{6}{c}{$\\geq6$ jets, 1 b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==7) *fLogStream << " & \\multicolumn{6}{c}{$\\geq6$ jets, 2 b jets} \\\\ \\hline" << endl;
+		   if(fSigReg[jj]==8) *fLogStream << " & \\multicolumn{6}{c}{$\\geq3$ jets, $\\geq3$ b jets} \\\\ \\hline" << endl;
+		};
+		if(fmt2up<100000.)  *fLogStream << "$" << int(fmt2low[jj]) << "-" << int(fmt2up[jj]) << "$" 
+		else                *fLogStream << "$\\geq " << int(fmt2low[jj]) << "$";
+		                    *fLogStream << " " << setw(19) << "& " << int(fndata[jj])   << " " << setw(1)  << "& ";
+		if(fnqcd[jj]>0)     *fLogStream << <<  fixed << setprecision(2) << " " << setw(2)  <<   "$" << fnqcd[jj]       << " \\pm "<< fnqcderr[jj]    << "$" << " " << setw(1)  << "& ";
+		else                *fLogStream << " " << setw(8) << "$-$" << " " << setw(7)  << "& ";
+		                    *fLogStream << " " << setw(2) <<  fixed << setprecision(3) <<   "$" << fModV[jj]     << " \\pm "<< fModVE[jj]  << "$" << " " << setw(1)  << "& ";
+		                    *fLogStream << " " << setw(4) <<  fixed << setprecision(2) <<   "$" << fZGratio[jj]    << " \\pm "<< fZGratioerr[jj] << "$" << " " << setw(1)  << "& "
+		                    *fLogStream << " " << setw(7)  <<   "$" << fznunupred[jj]*fModV[jj]  << " \\pm " << fznunuprederrstat[jj]*fModV[jj] << " \\pm " << sqrt(pow(fznunuprederrsyst[jj]*fModV[jj],2)+pow(fznunupred[jj]*fModVE[jj],2)) 
+                                                << "$ & " << " " << setw(4)  << fznunugen[jj] << " \\\\ " << endl;
+	}
+	*fLogStream << "\\hline\\hline"  << endl
+		    << "\\end{tabular}"  << endl
+		    << "\\end{center}"   << endl
+		    << "\\end{table}"    << endl
+		    << "\%ENDLATEX\%"    << endl
+		    << endl;
+	*fLogStream << endl << "************************** Modified table for 1b est ******************************" << endl;
+
+	if(!fDoPhotonSigmaIEtaIEta) cout << "reminder: YOUR ARE NOT DOING fDoPhotonSigmaIEtaIEta " << endl;//just a reminder
+
+}//MakeFinalPredictionTable()

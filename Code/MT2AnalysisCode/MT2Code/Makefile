@@ -2,7 +2,7 @@ ROOTCFLAGS     = $(shell root-config --cflags)
 ROOTLIBS       = $(shell root-config --libs)
 ROOTGLIBS      = $(shell root-config --glibs)
 
-INCLUDES       = -I./include -I../TESCO/include -I${CMSSW_RELEASE_BASE}/src/CondFormats/JetMETObjects/interface -I${CMSSW_RELEASE_BASE}/src/ -I${CMS_PATH}/${SCRAM_ARCH}/external/zlib/1.2.3/include
+INCLUDES       = -I./include -I../ASAnalysis/include -I${CMSSW_RELEASE_BASE}/src/CondFormats/JetMETObjects/interface -I${CMSSW_RELEASE_BASE}/src/ -I${CMS_PATH}/${SCRAM_ARCH}/external/zlib/1.2.3/include
 
 CXX            = g++
 CXXFLAGS       = -g -fPIC -fno-var-tracking -Wno-deprecated -D_GNU_SOURCE -O2 -std=c++0x $(INCLUDES) 
@@ -21,13 +21,13 @@ NGLIBS         = $(ROOTGLIBS) -lMinuit -lMinuit2 -lTreePlayer
 GLIBS          = $(filter-out -lNew, $(NGLIBS)) 
 GLIBS         += -L$(CMSSW_RELEASE_BASE)/lib/$(SCRAM_ARCH) -L/swshare/cms/slc5_amd64_gcc462/cms/cmssw/$(CMSSW_BASE_VERSION)/lib/$(SCRAM_ARCH) -lFWCoreFWLite -lFWCoreUtilities -lDataFormatsCommon -lDataFormatsFWLite -lCondFormatsJetMETObjects -L${CMS_PATH}/${SCRAM_ARCH}/external/zlib/1.2.3/lib -lz
 
-SRCS           = ../TESCO/src/base/TreeClassBase.cc ../TESCO/src/base/TreeReader.cc ../TESCO/src/base/TreeAnalyzerBase.cc ../TESCO/src/base/UserAnalysisBase.cc \
+SRCS           = ../ASAnalysis/src/base/TreeClassBase.cc ../ASAnalysis/src/base/TreeReader.cc ../ASAnalysis/src/base/TreeAnalyzerBase.cc ../ASAnalysis/src/base/UserAnalysisBase.cc \
                  src/MT2tree.cc src/MT2Analysis.cc \
-                 ../TESCO/src/helper/TMctLib.cc ../TESCO/src/helper/mctlib.cc ../TESCO/src/helper/OnTheFlyCorrections.cc \
-                 ../TESCO/src/helper/Davismt2.cc ../TESCO/src/helper/Hemisphere.cc  src/MT2Analyzer.cc \
-                 src/MassPlotter.cc ../TESCO/src/helper/PUWeight.C \
+                 ../ASAnalysis/src/helper/TMctLib.cc ../ASAnalysis/src/helper/mctlib.cc ../ASAnalysis/src/helper/OnTheFlyCorrections.cc \
+                 ../ASAnalysis/src/helper/Davismt2.cc ../ASAnalysis/src/helper/Hemisphere.cc  src/MT2Analyzer.cc \
+                 src/MassPlotter.cc ../ASAnalysis/src/helper/PUWeight.C \
 		 src/QuickAnalysis.cc src/QuickAnalyzer.cc  src/MT2Shapes.cc \
-                 ../TESCO/src/helper/Lumi3DReWeighting_standalone.cc src/helper/EventFilterFromListStandAlone.cc\
+                 ../ASAnalysis/src/helper/Lumi3DReWeighting_standalone.cc src/helper/EventFilterFromListStandAlone.cc\
 #                 src/ZInvEstFromW.cc \
 #                 src/ScanAnalysis.cc 
 #                 src/AnalysisAndHistos.cc \
@@ -75,7 +75,7 @@ MakeMassPlots: src/exe/MakeMassPlots.C $(OBJS)
 	mv /scratch/$$USERNAME/MakeMassPlots MakeMassPlots
 
 
-obj/dict_%.o: include/%.hh ../TESCO/include/%.hh  dict/%_linkdef.hh 
+obj/dict_%.o: include/%.hh ../ASAnalysis/include/%.hh  dict/%_linkdef.hh 
 	@echo "Generating dictionary for $<"
 	$(ROOTSYS)/bin/rootcint -f $(patsubst %.o, %.C, $@) -c -Idict $(INCLUDES) $(notdir $^)
 	$(CXX) -c $(CXXFLAGS) -o $@ $(patsubst %.o, %.C, $@)
@@ -93,4 +93,3 @@ deps: $(SRCS)
 	makedepend $(INCLUDES) $^
 
 # DO NOT DELETE THIS LINE -- make depend needs it
-

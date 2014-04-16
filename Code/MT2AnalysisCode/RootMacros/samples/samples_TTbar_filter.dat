@@ -1,0 +1,1208 @@
+############################################################################################
+GENERAL
+Path             /shome/
+#Path             dcap://t3se01.psi.ch/pnfs/psi.ch/cms/trivcat/store/user/leo/SUSY/MT2trees/MT2_V02-01-02/
+#__________________________________________________________________________________________
+# list of samples
+#
+# miss TTbar_2l, TTbar_1l_JESdown, TTbar_0l_JESup
+# here a 0.935 SF for all nonQCD MC is applied
+#
+## --------------- Top ----------
+SAMPLE
+Name		TTbar_MadgraphInclv1_lowHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/TTJets-MassiveBinDECAY-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	234.
+Kfact           0.7805	
+Lumi            19600
+Type            mc
+Color		855
+
+SAMPLE
+Name		TTbar_MadgraphInclv1_highHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/TTJets-MassiveBinDECAY-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	234.
+Kfact           0.7805	
+Lumi            19600
+Type            mc
+Color		855
+
+SAMPLE
+Name		TTbar_MadgraphInclv2_lowHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/TTJets-MassiveBinDECAY-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v2.root
+Xsection  	234.
+Kfact           0.1544	
+Lumi            19600
+Type            mc
+Color		855
+
+SAMPLE
+Name		TTbar_MadgraphInclv2_highHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/TTJets-MassiveBinDECAY-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v2.root
+Xsection  	234.
+Kfact           0.1544	
+Lumi            19600
+Type            mc
+Color		855
+
+
+SAMPLE
+Name		TTbar_Powhegv1_lowHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/TT-CT10-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	234.
+Kfact           0.2193
+Lumi            19600
+Type            mc
+Color		419
+
+SAMPLE
+Name		TTbar_Powhegv1_highHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/TT-CT10-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	234.
+Kfact           0.2193	
+Lumi            19600
+Type            mc
+Color		419
+
+SAMPLE
+Name		TTbar_Powhegv2_lowHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/TT-CT10-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v2.root
+Xsection  	234.
+Kfact           0.7156
+Lumi            19600
+Type            mc
+Color		419
+
+SAMPLE
+Name		TTbar_Powhegv2_highHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/TT-CT10-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v2.root
+Xsection  	234.
+Kfact           0.7156	
+Lumi            19600
+Type            mc
+Color		419
+
+SAMPLE
+Name		TTbar_Madgraph0l_lowHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/TTJets-HadronicMGDecays-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-ext-v1.root
+Xsection  	234.
+Kfact           0.41595	
+Lumi            19600
+Type            mc
+Color		401
+
+SAMPLE
+Name		TTbar_Madgraph0l_highHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/TTJets-HadronicMGDecays-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-ext-v1.root
+Xsection  	234.
+Kfact           0.41595	
+Lumi            19600
+Type            mc
+Color		401
+
+SAMPLE
+Name		TTbar_Madgraph1l_lowHT
+SName		Top
+ShapeName	Top
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130503_8TeV/lowHT/TTJets-SemiLeptMGDecays-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7C-v1.root
+Xsection  	234.
+Kfact           0.41435	
+Lumi            19600
+Type            mc
+Color		403
+
+SAMPLE
+Name		TTbar_Madgraph1l_highHT
+SName		Top
+ShapeName	Top
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130503_8TeV/highHT/TTJets-SemiLeptMGDecays-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7C-v1.root
+Xsection  	234.
+Kfact           0.41435	
+Lumi            19600
+Type            mc
+Color		403
+
+SAMPLE
+Name		TTbar_Madgraph2l_lowHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV/lowHT/TTJets-FullLeptMGDecays-8TeV-madgraph-tauola.root
+Xsection  	234.
+Kfact           0.10460	
+Lumi            19600
+Type            mc
+Color		399
+
+SAMPLE
+Name		TTbar_Madgraph2l_highHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV/highHT/TTJets-FullLeptMGDecays-8TeV-madgraph-tauola.root
+Xsection  	234.
+Kfact           0.10460	
+Lumi            19600
+Type            mc
+Color		399
+
+#systematic ttbar
+SAMPLE
+Name		TT-matchingdown_lowHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/TTJets-matchingdown-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	234.
+Kfact           0.89176
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		TT-matchingdown_highHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/TTJets-matchingdown-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	234.
+Kfact           0.89176	
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		TT-matchingup_lowHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/TTJets-matchingup-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	234.
+Kfact           0.94666	
+Lumi            19600
+Type            mc
+Color		419
+
+SAMPLE
+Name		TT-matchingup_highHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/TTJets-matchingup-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	234.
+Kfact           0.94666	
+Lumi            19600
+Type            mc
+Color		419
+
+SAMPLE
+Name		TT-scaledown_lowHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/TTJets-scaledown-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	234.
+Kfact           1.56404	
+Lumi            19600
+Type            mc
+Color		401
+
+SAMPLE
+Name		TT-scaledown_highHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/TTJets-scaledown-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	234.
+Kfact           1.56404	
+Lumi            19600
+Type            mc
+Color		401
+
+SAMPLE
+Name		TT-scaleup_lowHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/TTJets-scaleup-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	234.
+Kfact           0.6702	
+Lumi            19600
+Type            mc
+Color		403
+
+SAMPLE
+Name		TT-scaleup_highHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/TTJets-scaleup-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	234.
+Kfact           0.6702	
+Lumi            19600
+Type            mc
+Color		403
+
+SAMPLE
+Name		TT-massdown_lowHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/TTJets-mass169-5-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	234.
+Kfact           1.0227	
+Lumi            19600
+Type            mc
+Color		kMagenta
+
+SAMPLE
+Name		TT-massdown_highHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/TTJets-mass169-5-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	234.
+Kfact           1.0227	
+Lumi            19600
+Type            mc
+Color		kMagenta
+
+SAMPLE
+Name		TT-massup_lowHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/TTJets-mass175-5-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	234.
+Kfact           0.8616	
+Lumi            19600
+Type            mc
+Color		kRed
+
+SAMPLE
+Name		TT-massup_highHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/TTJets-mass175-5-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	234.
+Kfact           0.8616	
+Lumi            19600
+Type            mc
+Color		kRed
+
+SAMPLE
+Name		TTbar_Madgraph0l_JESdown_lowHT
+SName		Top
+ShapeName	Top
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/lowHT/TTJets-HadronicMGDecays-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-ext-v1.root
+Xsection  	234.
+Kfact           0.41595	
+Lumi            19600
+Type            mc
+Color		401
+
+SAMPLE
+Name		TTbar_Madgraph0l_JESdown_highHT
+SName		Top
+ShapeName	Top
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/highHT/TTJets-HadronicMGDecays-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-ext-v1.root
+Xsection  	234.
+Kfact           0.41595	
+Lumi            19600
+Type            mc
+Color		401
+
+SAMPLE
+Name		TTbar_Madgraph1l_JESdown_lowHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV/lowHT/TTJets-SemiLeptMGDecays-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7C-v1.root
+Xsection  	234.
+Kfact           0.41435	
+Lumi            19600
+Type            mc
+Color		403
+
+SAMPLE
+Name		TTbar_Madgraph1l_JESdown_highHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV/highHT/TTJets-SemiLeptMGDecays-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7C-v1.root
+Xsection  	234.
+Kfact           0.41435	
+Lumi            19600
+Type            mc
+Color		403
+
+SAMPLE
+Name		TTbar_Madgraph2l_JESdown_lowHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/lowHT/TTJets-FullLeptMGDecays-8TeV-madgraph-tauola.root
+Xsection  	234.
+Kfact           0.10460	
+Lumi            19600
+Type            mc
+Color		399
+
+SAMPLE
+Name		TTbar_Madgraph2l_JESdown_highHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/highHT/TTJets-FullLeptMGDecays-8TeV-madgraph-tauola.root
+Xsection  	234.
+Kfact           0.10460	
+Lumi            19600
+Type            mc
+Color		399
+
+SAMPLE
+Name		TTbar_Madgraph0l_JESup_lowHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV/lowHT/TTJets-HadronicMGDecays-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-ext-v1.root 
+Xsection  	234.
+Kfact           0.41595	
+Lumi            19600
+Type            mc
+Color		401
+
+SAMPLE
+Name		TTbar_Madgraph0l_JESup_highHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV/highHT/TTJets-HadronicMGDecays-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-ext-v1.root 
+Xsection  	234.
+Kfact           0.41595	
+Lumi            19600
+Type            mc
+Color		401
+
+SAMPLE
+Name		TTbar_Madgraph1l_JESup_lowHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/lowHT/TTJets-SemiLeptMGDecays-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7C-v1.root
+Xsection  	234.
+Kfact           0.41435	
+Lumi            19600
+Type            mc
+Color		403
+
+SAMPLE
+Name		TTbar_Madgraph1l_JESup_highHT
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/highHT/TTJets-SemiLeptMGDecays-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7C-v1.root
+Xsection  	234.
+Kfact           0.41435	
+Lumi            19600
+Type            mc
+Color		403
+
+SAMPLE
+Name		TTbar_Madgraph2l_JESup_lowHT
+SName		Top
+ShapeName	Top
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/lowHT/TTJets-FullLeptMGDecays-8TeV-madgraph-tauola.root
+Xsection  	234.
+Kfact           0.10460	
+Lumi            19600
+Type            mc
+Color		399
+
+SAMPLE
+Name		TTbar_Madgraph2l_JESup_highHT
+SName		Top
+ShapeName	Top
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/highHT/TTJets-FullLeptMGDecays-8TeV-madgraph-tauola.root
+Xsection  	234.
+Kfact           0.10460	
+Lumi            19600
+Type            mc
+Color		399
+
+# -------- electroweak --------
+
+SAMPLE
+Name		WJetsHT400v1_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/WJetsToLNu-HT-400ToInf-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	25.22
+Kfact           0.2332
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT400v1_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-HT-400ToInf-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	25.22
+Kfact           0.2332
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT400v2_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/WJetsToLNu-HT-400ToInf-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	25.22
+Kfact           0.7017
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT400v2_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-HT-400ToInf-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	25.22
+Kfact           0.7017
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT300v1_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/WJetsToLNu-HT-300To400-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	38.3
+Kfact           0.2322
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT300v1_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-HT-300To400-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	38.3
+Kfact           0.2322
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT300v2_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/WJetsToLNu-HT-300To400-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	38.3
+Kfact           0.7027
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT300v2_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-HT-300To400-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	38.3
+Kfact           0.7027
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT250v1_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/WJetsToLNu-HT-250To300-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	48.01
+Kfact           0.2324
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT250v1_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-HT-250To300-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	48.01
+Kfact           0.2324
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT250v2_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/WJetsToLNu-HT-250To300-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	48.01
+Kfact           0.7025
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT250v2_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-HT-250To300-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	48.01
+Kfact           0.7025
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT200_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File           casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/WJetsToLNu-HT-200To250-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7C-v1-2.root
+Xsection  	90.27
+Kfact          0.935
+Lumi           19600
+Type           mc
+Color		417
+
+SAMPLE
+Name		WJetsHT200_highHT
+SName		Wtolnu
+ShapeName	WJets
+File           casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-HT-200To250-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7C-v1-2.root
+Xsection  	90.27
+Kfact          0.935
+Lumi           19600
+Type           mc
+Color		417
+
+SAMPLE
+Name           WJets_Incl_lowHT
+SName          Wtolnu
+ShapeName      WJets
+File           casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/WJetsToLNu-TuneZ2Star-8TeV-madgraph-tarball-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection       36257.2
+Kfact           0.935
+Lumi            19600
+Type            mc
+Color          417
+
+SAMPLE
+Name           WJets_Incl_highHT
+SName          Wtolnu
+ShapeName      WJets
+File           casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-TuneZ2Star-8TeV-madgraph-tarball-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection       36257.2
+Kfact           0.935
+Lumi            19600
+Type            mc
+Color          417
+
+# systematic samples
+
+SAMPLE
+Name		W-matchingdown_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/WJetsToLNu-matchingdown-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	36257.2
+Kfact           0.9131	
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		W-matchingdown_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-matchingdown-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	36257.2
+Kfact           0.9131	
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		W-matchingup_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/WJetsToLNu-matchingup-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	36257.2
+Kfact           0.9316	
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		W-matchingup_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-matchingup-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	36257.2
+Kfact           0.9316	
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		W-scaledown_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/WJetsToLNu-scaledown-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	36257.2
+Kfact           1.023	
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		W-scaledown_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-scaledown-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+Xsection  	36257.2
+Kfact           1.023	
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		W-scaleup_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/WJetsToLNu-scaleup-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v2-2.root
+Xsection  	36257.2
+Kfact           0.9841	
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		W-scaleup_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-scaleup-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v2-2.root
+Xsection  	36257.2
+Kfact           0.9841	
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT400v1_JESdown_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/lowHT/WJetsToLNu-HT-400ToInf-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	25.22
+Kfact           0.2332
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT400v1_JESdown_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/highHT/WJetsToLNu-HT-400ToInf-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	25.22
+Kfact           0.2332
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT400v2_JESdown_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/lowHT/WJetsToLNu-HT-400ToInf-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	25.22
+Kfact           0.7017
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT400v2_JESdown_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/highHT/WJetsToLNu-HT-400ToInf-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	25.22
+Kfact           0.7017
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT300v1_JESdown_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/lowHT/WJetsToLNu-HT-300To400-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	38.3
+Kfact           0.2322
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT300v1_JESdown_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/highHT/WJetsToLNu-HT-300To400-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	38.3
+Kfact           0.2322
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT300v2_JESdown_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/lowHT/WJetsToLNu-HT-300To400-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	38.3
+Kfact           0.7027
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT300v2_JESdown_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/highHT/WJetsToLNu-HT-300To400-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	38.3
+Kfact           0.7027
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT250v1_JESdown_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/lowHT/WJetsToLNu-HT-250To300-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	48.01
+Kfact           0.2324
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT250v1_JESdown_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/highHT/WJetsToLNu-HT-250To300-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	48.01
+Kfact           0.2324
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT250v2_JESdown_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/lowHT/WJetsToLNu-HT-250To300-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	48.01
+Kfact           0.7025
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT250v2_JESdown_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/highHT/WJetsToLNu-HT-250To300-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	48.01
+Kfact           0.7025
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT200_JESdown_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File           haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/lowHT/WJetsToLNu-HT-200To250-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7C-v1-2.root
+Xsection  	90.27
+Kfact          0.935
+Lumi           19600
+Type           mc
+Color		417
+
+SAMPLE
+Name		WJetsHT200_JESdown_highHT
+SName		Wtolnu
+ShapeName	WJets
+File           haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESdown/highHT/WJetsToLNu-HT-200To250-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7C-v1-2.root
+Xsection  	90.27
+Kfact          0.935
+Lumi           19600
+Type           mc
+Color		417
+
+SAMPLE
+Name		WJetsHT400v1_JESup_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/lowHT/WJetsToLNu-HT-400ToInf-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	25.22
+Kfact           0.2332
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT400v1_JESup_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/highHT/WJetsToLNu-HT-400ToInf-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	25.22
+Kfact           0.2332
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT400v2_JESup_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/lowHT/WJetsToLNu-HT-400ToInf-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	25.22
+Kfact           0.7017
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT400v2_JESup_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/highHT/WJetsToLNu-HT-400ToInf-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	25.22
+Kfact           0.7017
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT300v1_JESup_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/lowHT/WJetsToLNu-HT-300To400-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	38.3
+Kfact           0.2322
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT300v1_JESup_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/highHT/WJetsToLNu-HT-300To400-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	38.3
+Kfact           0.2322
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT300v2_JESup_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/lowHT/WJetsToLNu-HT-300To400-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	38.3
+Kfact           0.7027
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT300v2_JESup_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/highHT/WJetsToLNu-HT-300To400-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	38.3
+Kfact           0.7027
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT250v1_JESup_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/lowHT/WJetsToLNu-HT-250To300-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	48.01
+Kfact           0.2324
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT250v1_JESup_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/highHT/WJetsToLNu-HT-250To300-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	48.01
+Kfact           0.2324
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT250v2_JESup_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/lowHT/WJetsToLNu-HT-250To300-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	48.01
+Kfact           0.7025
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT250v2_JESup_highHT
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/highHT/WJetsToLNu-HT-250To300-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	48.01
+Kfact           0.7025
+Lumi            19600
+Type            mc
+Color		417
+
+SAMPLE
+Name		WJetsHT200_JESup_lowHT
+SName		Wtolnu
+ShapeName	WJets
+File           casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/lowHT/WJetsToLNu-HT-200To250-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7C-v1-2.root
+Xsection  	90.27
+Kfact          0.935
+Lumi           19600
+Type           mc
+Color		417
+
+SAMPLE
+Name		WJetsHT200_JESup_highHT
+SName		Wtolnu
+ShapeName	WJets
+File           casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV_JESup/highHT/WJetsToLNu-HT-200To250-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7C-v1-2.root
+Xsection  	90.27
+Kfact          0.935
+Lumi           19600
+Type           mc
+Color		417
+
+# ---------------- Single Top ------------------------
+
+SAMPLE
+Name		Tbar_s_lowHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/Tbar-s-channel-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	1.76
+Kfact           0.935	
+Lumi            19600
+Type            mc
+Color		600
+
+SAMPLE
+Name		Tbar_s_highHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/Tbar-s-channel-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	1.76
+Kfact           0.935	
+Lumi            19600
+Type            mc
+Color		600
+
+SAMPLE
+Name		Tbar_t_lowHT
+SName		Top
+ShapeName	Top
+File             mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/Tbar-t-channel-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	30.7
+Kfact           0.935	
+Lumi            19600
+Type            mc
+Color		600
+
+SAMPLE
+Name		Tbar_t_highHT
+SName		Top
+ShapeName	Top
+File             mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/Tbar-t-channel-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	30.7
+Kfact           0.935	
+Lumi            19600
+Type            mc
+Color		600
+
+SAMPLE
+Name		Tbar_tW_lowHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/Tbar-tW-channel-DR-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	11.1
+Kfact           0.935	
+Lumi            19600
+Type            mc
+Color		600
+
+SAMPLE
+Name		Tbar_tW_highHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/Tbar-tW-channel-DR-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	11.1
+Kfact           0.935	
+Lumi            19600
+Type            mc
+Color		600
+
+SAMPLE
+Name		T_s_lowHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/T-s-channel-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	3.79
+Kfact           0.935	
+Lumi            19600
+Type            mc
+Color		600
+
+SAMPLE
+Name		T_s_highHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/T-s-channel-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	3.79
+Kfact           0.935	
+Lumi            19600
+Type            mc
+Color		600
+
+SAMPLE
+Name		T_t_lowHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/T-t-channel-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v3.root
+Xsection  	56.4
+Kfact           0.935	
+Lumi            19600
+Type            mc
+Color		600
+
+SAMPLE
+Name		T_t_highHT
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/T-t-channel-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v3.root
+Xsection  	56.4
+Kfact           0.935	
+Lumi            19600
+Type            mc
+Color		600
+
+SAMPLE
+Name            T_tw_lowHT
+SName           Top
+ShapeName       Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/T-tW-channel-DR-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection        11.1
+Kfact           0.935
+Lumi            19600
+Type            mc
+Color           600
+
+SAMPLE
+Name            T_tw_highHT
+SName           Top
+ShapeName       Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/T-tW-channel-DR-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection        11.1
+Kfact           0.935
+Lumi            19600
+Type            mc
+Color           600
+
+# ---------------- Diboson ------------------------
+
+SAMPLE
+Name		WW_lowHT
+SName		VV
+ShapeName	Diboson
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/WW-TuneZ2star-8TeV-pythia6-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	33.61
+Kfact           0.935	
+Lumi            19600
+Type            mc
+Color		600
+
+SAMPLE
+Name		WW_highHT
+SName		VV
+ShapeName	Diboson
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WW-TuneZ2star-8TeV-pythia6-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	33.61
+Kfact           0.935	
+Lumi            19600
+Type            mc
+Color		600
+
+SAMPLE
+Name            WZ_lowHT
+SName           VV
+ShapeName       Diboson
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/WZ-TuneZ2star-8TeV-pythia6-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection        12.63
+Kfact           0.935
+Lumi            19600
+Type            mc
+Color           600
+
+SAMPLE
+Name            WZ_highHT
+SName           VV
+ShapeName       Diboson
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WZ-TuneZ2star-8TeV-pythia6-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection        12.63
+Kfact           0.935
+Lumi            19600
+Type            mc
+Color           600
+
+SAMPLE
+Name            ZZ_lowHT
+SName           VV
+ShapeName       Diboson
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/lowHT/ZZ-TuneZ2star-8TeV-pythia6-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection        5.2
+Kfact           0.935
+Lumi            19600
+Type            mc
+Color           600
+
+SAMPLE
+Name            ZZ_highHT
+SName           VV
+ShapeName       Diboson
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZZ-TuneZ2star-8TeV-pythia6-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection        5.2
+Kfact           0.935
+Lumi            19600
+Type            mc
+Color           600

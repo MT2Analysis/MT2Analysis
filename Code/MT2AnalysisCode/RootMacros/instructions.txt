@@ -1,0 +1,197 @@
+These are instructions by me (Hannsjörg) on the 8 TeV background prediction macros. Note, that I comment the cleaned up versions.
+They work identical to the non-cleaned up versions, however I implemented some functionality that would have been great for usage already before
+already before, but which I just couldn't do as I was currently in a rush until the approval.
+The instructions are mainly to tell you, how I run the LostLepton and Zinv background prediction.
+
+
+Every code itself contains instructions how to run it.
+
+There are instructions always stored at the beginning of the code, after all #include commands, or
+at the beginning of the function (the principal function has the same name as the filename of the macro).
+
+Note that some of the include commands have hardcoded pathes (also inside the code).
+So please be aware of that!
+
+Also note, that most macros have flags defined at the beginning (i.e. outside any function).
+Each flag has the appropriate comment what it does do.
+
+Usually all macros run with
+
+root -l <filename>.C++
+except for the function of the Zinv estimate, there you have to run without the ++.
+
+
+Below I now mention the "flow" of macros needed for the two background estimations. 
+(I will describe only the inclusive analysis. For Higgs usually it is the same macroname plus somewhere the name Higgs in the macroname).
+
+One remark before I start:
+I don't want to upload to many samples.dat files into git. If some are missing: The samples.dat files I used are all on the t3:
+/shome/haweber/MT2Analysis_8TeV/Code/MT2AnalysisCode/RootMacros/samples/
+
+
+First of all, the two data/MC plot maker:
+root -l run_MassPlots_HT.C or run_MassPlots_MET.C
+--> simply plot data/MC for any variable of function of the MT2tree.cc/hh
+    Throughout the lost lepton or Zinv code there are figures supporting the estimate done with these two macros.
+    I think they don't need large instructions:
+    cutStream/basecutStream/triggerStream define the selection after which you want to plot your variable
+    the drawing is done in
+    //             variable , cuts'basecuts ,njet, nbjet, nlep, HLT     ,  xaxistitle    nbins   bins    flip_order,  log , comp, ratio,  stack,overlay,times,underflow
+    //tA->makeplot("misc.MT2", cuts, basecuts,   2,  -10, -10, trigger , "M_{T2} [GeV]" , 40,  200,  800,     false,  true,  true,  true,  true,   true,  1  ,   true);
+    for nlep nbjet: -10 means no cut on this variable, else if x<0 it means: NBJet>=x, etc.
+    nbins bins are int + double[int+1], instead you can also have nbins, xaxislowestvalue, xaxishighestvalue
+    flip_order would mean flipping the order of stacking of MC samples
+    log: due y-axis in log-style
+    comp, stack: keep it true
+    ratio: do the plot including data/MC ratio
+    overlay: overlay susy signal instead of stagging it (times is the scale factor for susy signal, default = 1 of course)
+    underflow: add or cut the underflow
+
+
+Lost Lepton estimate:
+root -l -b LostLeptonEstimate.C++
+root -l -b TauEstimation.C++
+--> These two lines run the data-driven part of the LostLepton estimation (i.e. without shapes).
+    You need both codes twice (once with fMET flag --> low HT, the second time with the fHT flag --> medium+high HT).
+    Keep the fRebin flag as true, as well as all other flags in default.
+    The default values are set so that you do
+    ISR reweighting (however no uncertainty on that due to normalization - I added this by hand, but I think you could also implement it),
+    btag reweighting + uncertainties
+    create all histograms needed for prediction (with MT2 binning)
+    do the actual estimate with all relevant uncertainties (like frel_sys_uncert: 5% on eff, frel_sys_uncert_bg: 20/50% uncertainty on bg subtraction), fdoubeLLerr: uncertainty on double LostLepton)
+    produce final tables (prediction table and one lepton table - there are actually more as left-over from the 7 TeV analysis)
+    produce final prediction plots as in the AN (this I did not test - previously that was a separate macro called LLVisualization.C)
+    store both all histograms, and all prediction numbers (the latter one has not been tested yet, previously done by hand by reading the produced prediction tables)
+    for TauEstimation.C there is in addition the fVetoLL flag, that just says if there is a lost/reconstructed electron/muon in the event the event is vetoed (to remove the overlap).
+    In the end if you merge both codes, that should be done more easily.
+In addition, after you produced all histograms you can also use the macros
+LostLeptonEstimateFromRootFile.C, TauEstimationFromRootfile.C
+The cross-check where I rebin HT and b-jet/n-jet is done in LostLeptonEstimateHTNJetsMerged.C/TauEstimationHTNJetsMerged.C . The main difference here is the definition of the histograms, or more precise the binning along MT2.
+
+The second step is:
+root -l -b TTbarStudies.C++
+--> This macro gets all histograms for the shape systematics, i.e. you create a 'nominal histogram' and the up/down histograms for all systematics.
+    Keep the three flags (btag reweighting, ISR reweighting, Wnoscalematching true).
+    The output is a rootfile containing all histograms (binned along MT2) with all the shape variations
+    (it keeps two versions: Lumi-normalized histograms, and histograms normalized to 1).
+The corresponding plots are done with
+root -l -b TTbarStudies_MakePlots.C++
+--> Here you have the options to plot only top or W shape, plot the 1-normalized distribution or the Lumi-normalized distribution, and do the plots with y-axis in log style or not.
+
+The third step is:
+root -l -b LostLeptonEstimate_SplittedByMC.C++
+---> This one takes the estimate from LostLeptonEstimate.C/TauEstimation.C and the shapes from TTbarStudies.C
+     and produces the final estimation histograms binned along MT2, and also produces a table.
+     Note, that in the current version of this code, te results of LostLeptonEstimate.C/TauEstimation.C are hardcoded as they were copied/paste from result table + using block mode in kwrite.
+     Now it should be easier to do this with the prediction file created by LostLeptonEstimate.C/TauEstimation.C.
+
+This is everything needed to do the estimate.
+Everything else was done by using root terminal (like checking if lepton SF and our 5% uncertainty on lepton efficiency are compatible).
+There are checks that were requested, e.g., by the ARC (due to lepton deficiency in >=6j,lowHT), e.g. UTMcheck.C++
+or checks done due to ISR reweighting (e.g. MakeWPtPlotsByHand.C++). But these things are not essential for the estimate.
+supporting figures (except for prediction vs. mc truth) are done with the run_MassPlots macros described above.
+
+
+
+Zinv estimate:
+here there exist two codes - the one I used (that one is working),
+and a new one I wrote (which crashes for high HT - and I haven't investigated that so far, but for low/medium HT the code works perfect).
+I'll describe both:
+root -l run_GammaJetsToZnunu.C (note, here no ++ - it will crash otherwise)
+This code has many options that you will have to change constantly. You need to run this code 45 times (due to NJet x NBJets x HT binning x different uncertainties)!
+I tried to hard-code as much as possbible due to that 45 times, so the code is not the nicest. However, it runs without problems!
+I also never made the effort to make the code 'better' or more useful (as producing a final result plots and rootfiles) as at the time I simply did not have the time.
+--> This macro does the Zinv prediction, and does the final prediction table, some supporting plots (like the Sigmaietaieta fit plot - actually not as plot but as TCanvas stored into a root file).
+    One downside of this code (besides all the hard-coded stuff and the 45 times running) is that it does not produce a root file with all predictions.
+    I used the 7 TeV implementation (look for Pascal's "Bruno-Gay Printout" ;) ) and copied from there into ZinvVisualization.C++ to produce the prediction plots and root files).
+    This macro - as a sideremark - uses the MT2class MT2Shapes. So you need to keep this class up to date, if you want to keep this macro.
+    I will discuss now the options you need to look for:
+    - fSamplesRemovedPhotons/fSamplesHadronic: sample of photon region (note that these are special MT2trees where photon was added to meet during the production of the MT2trees), and hadronic region (here only the Znunu MC is needed). This you have to change depending if you are at low/medium or high HT. For high HT, you will see that due to a feature in the sigmaietaieta fit there are QCD samples defined as electroweak with weight ~0. Otherwise the code crashed if the electroweak yield is ==0.
+   - all flags until 'fRMCUncertainty' you want to keep as they are set as default. Description is in the code.
+   - fRMCUncertainty: This is the 20/30% uncertainty on R(Z/gamma). You need to run the code twice: Once with the 20%, the other time with the 30%. This is in a way stupid, and could be fixed easily so that you run it only once. I actually ran the code twice in parallel for that.
+   - the next flags you need to change are fHTmin/fHTmax, fNJets, fNBJets - these select your HT bin and topological bin. Consequently you need to define the correct binning along MT2 in l.142/143 - that is very cumbersome, and that is the reason why you need to run the code so many times.
+   - !!!! Something important here. For the estimation in the one b-jet region you actually need to run the code with the binning of the one b-jet region, but with NBJets = 0. This is because we do the scaling of the 0 b-jet region to the 1 b-jet region. If you want to know the MC truth for the 1 b-jet region you either get it via running tree->Draw() functionality, or you need to run this code a second time with the correct b-jet content. !!!!
+   - change fHT or fMET if you run medium/high HT or low HT (this will change your trigger selection).
+   - All other flags you keep them as they are, as they are either defined hardcoded later, or should not be changed. I hope the description inside the macro is sufficient to understand all flags.
+   - DefineCutStream is self-explanatory, however I wanted to make two comments here:
+     fCutStreamPhotons is only for sigmaietaieta cut, fCutStreamPhotonsMT2 is basically the same, but with an MT2 cut, and the signal cut on the sigmaietaieta variable, fCutStreamSignal is for selecting the hadronic Znunu yield.
+     l.192 has type1pfmet[0].Pt()<100. Note, that MET itself is with photon added to reconstructed MET in event, while type1pfmet is only the reconstructed MET without the photon.
+     l.219 is there to disentanble QCD and gamma+jets MC overlap.
+     Except for the hard-coded stuff I don't want to comment further on the code. There are small descriptions inside the macro - I hope those are enough.
+     - Hardcoded stuff:l.343ff: the sample names.
+                       l.357: Gamma k factors: These are the k factors in the samples.dat files. These make data/MC agreement better, however we do not want to change the Z/gamma MC ratio due to that. So you need to correct that back.
+                       l.366: The 1b/0b scaling factors and uncertainties. How to obtain them, see later macro.
+This concludes the lenghty discussion of run_GammaJetsToZnunu.C. You need to play with it to really understand what it does.
+
+My own implementation - that seems to work fine for low and medium HT, but breaks for high HT is
+root -l -b ZnunuFromGammaEstimate.C++
+I used the run_GammaJetsToZnunu.C for our 8 TeV analysis.
+--> This macro does exactly the same as run_GammaJetsToZnunu.C, however - after the segfault for high HT would be fixed, you would need to run it only twice (once for low HT, and then for medium+high HT).
+    As this macro was based on the upper one, many flags are kept the same, but not all (e.g. you do not need anymore to define HTmin,HTmax,NJets,NBJets). The code itself has  also several comments wtihin, so here I want to mention only the most important ones.
+    First of all, this code produces the histograms - and stores them, does the estimate, produces the same printout and prediction tables, and in principle (I have not tested that yet) produces prediction root files and prediction vs. mctruth plots like in the AN.
+    In its style it is very similar to the LostLeptonEstimate code.
+    The only flags you need to set if fHT, fMET, and fhighHT (for now - if running for high HT) - to run medium+high HT or low HT selection
+    In ZnunuFromGammaEstimate() the histograms are produced. The samples are hardcoded as well as the gamma k factors (see l.249,263)
+    there are only 4 types of histograms, the binning is correctly chosen by coding, and also the histograms for the 0b --> 1b scaling are defined
+    There are 3 event loops, depending on the samples you run:
+    in l.562 you start with the first loop for sigmaietaieta fit, l.687 starts the photon control region, l.816 the hadronic region (Znunu)
+    The prediction itself is done in DoZnunuEstimate in the same manner as coded for the LostLepton estimate. Here I do the sigmaietaieta fitting (l.1053ff) - in here the code crashed for high HT.
+    get the Z/gamma ratio (l.1304ff) - including correctly assigned 20/30% (no need to run twice now), and do prediction from l.1386 on
+    tables, prediction file/plots are done in separate functions
+
+Now the Zinv estimate has several assisting functions, as several studies are needed for validation of Z/gamma ratio, etc.
+root -l -b ZinvVisualizationXXX.C where XXX = {"","Stat","Syst","RZG","Z1b0b"}. First of all, these codes are stupid, as they have hardcoded results. I did this via copy/paste from result tables using the block selection mode of kwrite which is really quick, but not nicely done.
+But the point I want to make, is that in interpretation we want to model the correlations correctly, and Z1b0b and RZG are correlated among several bins, etc. So you need to give histograms with different uncertainty sources to Bruno for interpretation. This could be easily implemented in ZnunuFromGammaEstimate.C somewhere inside the PredictionFile() function.
+
+root -l -b -q GammaVsZllStudies.C++ / GammaVsZllStudiesRatios.C++
+--> These macros produce gamma and Zll distribution histograms (first one), ratio plots and studies are done in the second one.
+    In the first one you define: gamma pt cuts, z pt cuts (in principle you could chose different cuts, but for comparison they should be the same of course), HT cuts (mainly HT>450 or HT>750), MT2 cut (I never did that), METcut (I also never did that - the 'MET' is the boson pT here), and njets, nbjets selection. Important are HT, boson pt, njet, nbjet.
+    You define the variable you want to plot (name like in the MT2tree structure, except for boson pT, that one is called VPt (V for vector boson), and the binning, see the macro for my choices.
+    Next there are two flags called HTselection and LLselection: In principle these are not needed, but due to historical reasons (the way I started coding this), these are used as described in the macro.
+    Using these flags all cuts are set. One important cut is 'ZllRecalculate()', this basically removes the two leptons and add them to MET, also modifying MT2 (all other variables in the MT2tree are untouched).
+    In l.248 you produce the Zll histograms. Note, that background here is purely obtained from MC, but you could use emu data to predict it (as main bg is ttbar). I only had once a look at the emu sample, to check if ttbar is modelled good enough.
+    In l.378 you produce the gamma histograms. Note here, that I don't do a sigmaietaieta fit. I rather take the result of the run_GammaJetsToZnunu.C code, and scale the QCD MC accordingly (using the kfactor defined in the samples.dat) --> that one could also be improved, but has no big influence.
+    The way these histograms are filled are similar to the way the MassPlotter.cc does it.
+    In this code I do some ratios, but I never used them.
+--> Ratios are done in GammaVsZllStudiesRatios.C. I have the same flags as in GammaVsZllStudies.C (The flags are used to call the correct root file for doing the ratios).
+    Additionally you can scale Z and photon samples and the background subtraction (for checks and uncertainty estimate I, e.g., changed the background scale by 2).
+    Next you can define the check you want to do, i.e. data/mc comparison, Z/gamma comparison, Z/Z comparison (e.g. 1b over 0b), ...
+    Furthermore you can dofit, I used this function to estimate the 20%, but there is no given procedure here. The comparison of Z/gamma was by looking at all the plots (i.e. Z/gamma ratio for different HT cutoffs, different min(boson pT), different NJet binning, and compare the ratio as a function of boson pT and MT2 binning), and then get a feeling what are the correct uncertainties.
+    the lowbin/upbin options are used if the binning in the previous macro was poorly chosen (mainly for boson pT plots, where - due to trigger, the boson pT > 0, but histogram started at 0).
+    the rebin option is used if the statistics is low. That is why I do the ratios in this macro.
+    The rest of the code should be rather clear.
+    As said before, only the sum of checks lead to a given conclusion about 
+    a) uncertainty on Z/gamma ratio
+    b) value + uncertainty on Z1b/Z0b scaling. I use than these numbers (which I computed by comparing all the different checks I did) to get the Z1b/Z0b scaling numbers I hardcoded inside run_GammaJetsToZnunu.C
+root -l -b GammaVsZnunuStudies.C++ / GammaVsZnunuStudiesPlots.C++
+--> These macros are a 'copy' of the GammaVsZllStudies.C macro, just now running over Znunu, instead of Zll.
+    One thing they do is plots for AN of the Z/gamma ratio.
+    The only 'study' I did was looking how the ratio behaves as a function of our signal region variables, so visual checks.
+PS: I just found the reason why the code breaks - there are two point of crash:
+The sigmaietaieta fit for high HT, 2j1b does not converge (due to QCD fluctuations that make it impossible to converge), and high HT, 3b region has no data, i.e. fit is impossible.
+As there is no safety cut implemented for either case, the code crashes. Note, that I implemented the general case regardless of b-content, but I have not used the method in b-enriched regions, therefore you can also veto these regions!!!!
+To cut out these two regions uncomment all lines that contains 'xxxxx'.
+
+Furthermore there are some minor macros that do checks, like Make1GPlotsByHand.C, MakeZPtPlotsByHand.C, which study the influence of the 'ISR recipe' on the data/MC agreement.
+
+
+
+Now beyond background prediction, there are several macros that do various things, like
+- check one noise filters (especially tobtec),
+- make plots for checks asked by ARC/conveners
+- do some tables for AN, etc.
+
+There are two macros, I want to mention:
+do_BumpGlobalSignificance.C / do_BumpGlobalSignificanceComplex.C
+--> These were used to estimate the 'LEE' effect of our deficiency in the muon, >=6j, low HT region.
+    Here one can do some improvement, but for 13 TeV it might get obsolete anyway.
+
+MT2Results_PlotsAndTables.C++
+--> this code takes the prediction root files, MC truth yield and data yield root files, and produces final result plots and tables.
+    !! The prediction root files for LostLepton and Zinv are the ones I produced by hand. The ones I implemented now in the codes described above might not be compatible, I did not check. I think they should be compatible.
+    The data and MC files I produced using MakeDataFile.C, MakeMCFile.C.
+    The code itself is - again - not very readable, as it was written in a rush, where different request were done, so that information is partly duplicated, etc.
+    However, I have added some comments inside the macro, so hopefully with those you will be able to understand everything.
+    The final plots are not fully the style we have public now. Robert (ARC member) wanted to change all the plot styles, and I did this by hand (quick and dirty).
+    So, one should modify all plotting macros (not only this, but also others, even the MassPlotter), so that this quick and dirty will not be needed in the future.
+    Another improvement (actually everywhere) that should be done here, is move to poissonian uncertainties. Actually root now supports poissonian uncertainties for histograms (i.e. different up/down uncertainties).

@@ -111,8 +111,8 @@ void MT2Common::getBins( const std::string& signal_region, int &nBins, Double_t*
     bins = new Double_t[nBins_tmp+1]{200, 250, 310, 380, 450, 550, 700};
     nBins = nBins_tmp;
   } else if( signal_region == "HTge450_3j0b" ) {
-  const int nBins_tmp                      = 8;
-  bins = new Double_t[nBins_tmp+1]{200, 240, 290, 350, 420, 490, 570, 650, 750};
+    const int nBins_tmp                      = 8;
+    bins = new Double_t[nBins_tmp+1]{200, 240, 290, 350, 420, 490, 570, 650, 750};
     nBins = nBins_tmp;
   } else if( signal_region == "HTge450_3j1b" ) {
     const int nBins_tmp                      = 6;
@@ -217,7 +217,6 @@ std::vector<MT2Sample> MT2Common::loadSamples(const std::string& filename) {
       IN.getline(buffer, 200, '\n');
       sscanf(buffer, "Path\t%s", StringValue);
       fPath = StringValue;
-      std::cout << fPath << std::endl;
       
       std::cout << " ----  " << std::endl;
       std::cout << "  Path " << fPath << std::endl;
@@ -242,9 +241,6 @@ std::vector<MT2Sample> MT2Common::loadSamples(const std::string& filename) {
       IN.getline(buffer, 200, '\n');
       sscanf(buffer, "File\t%s", StringValue);
       TString file =fPath+StringValue;
-std::cout << "fPath: " << fPath << std::endl;
-std::cout << "StringValue: " << StringValue << std::endl;
-std::cout << "file: " << file << std::endl;
       TFile *f = TFile::Open(file);
       s.file = f;
       s.tree = (TTree*)f->Get("MassTree");

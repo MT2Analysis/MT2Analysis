@@ -50,7 +50,7 @@ MT2SingleLLEstimate::MT2SingleLLEstimate( const std::string& aname, const MT2Reg
 
 
 
-MT2SingleLLEstimate MT2SingleLLEstimate::operator+( const MT2SingleLLEstimate& rhs ) {
+MT2SingleLLEstimate MT2SingleLLEstimate::operator+( const MT2SingleLLEstimate& rhs ) const {
 
 
   if( this->region->getName() != rhs.region->getName() ) {
@@ -58,11 +58,9 @@ MT2SingleLLEstimate MT2SingleLLEstimate::operator+( const MT2SingleLLEstimate& r
     exit(113);
   }
 
-  std::string newname = this->name;
-  if( rhs.name != this->name ) newname += "_" + rhs.name;
+  std::string newname = this->name + "_" + rhs.name;
 
-
-  MT2SingleLLEstimate result(name, *(this->region) );
+  MT2SingleLLEstimate result(newname, *(this->region) );
 
   result.yield->Add(this->yield);
   result.yield->Add(rhs.yield);
@@ -177,10 +175,9 @@ MT2SingleLLEstimate* MT2LeptonTypeLLEstimate::getGenRegion( const std::string& r
 
 
 
-MT2LeptonTypeLLEstimate MT2LeptonTypeLLEstimate::operator+( const MT2LeptonTypeLLEstimate& rhs ) {
+MT2LeptonTypeLLEstimate MT2LeptonTypeLLEstimate::operator+( const MT2LeptonTypeLLEstimate& rhs ) const {
 
-  std::string newname = this->name;
-  if( rhs.name != this->name ) newname += "_" + rhs.name;
+  std::string newname = this->name + "_" + rhs.name;
 
   std::string newSName = this->SName;
   if( rhs.SName != this->SName ) newSName += "_" + rhs.SName;
@@ -197,10 +194,10 @@ MT2LeptonTypeLLEstimate MT2LeptonTypeLLEstimate::operator+( const MT2LeptonTypeL
     }
 
     MT2SingleLLEstimate* reco_sum = new MT2SingleLLEstimate( *(this->reco[i]) + *(rhs.reco[i]) );
-    MT2SingleLLEstimate* gen_sum = new MT2SingleLLEstimate( *(this->gen[i]) + *(rhs.gen[i]) );
+    MT2SingleLLEstimate* gen_sum  = new MT2SingleLLEstimate( *(this->gen[i])  + *(rhs.gen[i]) );
 
-    reco.push_back( reco_sum );
-    gen.push_back( gen_sum );
+    result.reco.push_back( reco_sum );
+    result.gen.push_back( gen_sum );
 
   }
 
@@ -226,15 +223,62 @@ MT2LeptonTypeLLEstimate MT2LeptonTypeLLEstimate::operator+( const MT2LeptonTypeL
 
 
 
-MT2LostLeptonEstimate MT2LostLeptonEstimate::operator+( const MT2LostLeptonEstimate& rhs ) {
+const MT2LostLeptonEstimate& MT2LostLeptonEstimate::operator=( const MT2LostLeptonEstimate& rhs ) {
 
-  std::string newName = this->SName;
-  if( rhs.SName != this->SName ) newName += "_" + rhs.SName;
+  name = rhs.name;
+  SName = rhs.SName;
 
-  MT2LostLeptonEstimate result(newName);
+  for(std::map< std::string, MT2LeptonTypeLLEstimate*>::const_iterator j=rhs.l.begin(); j!=rhs.l.end(); ++j) 
+    l[j->first] = new MT2LeptonTypeLLEstimate(*(j->second));
+ 
 
-  //for(std::map< std::string, MT2LeptonTypeLLEstimate*>::iterator i=l.begin(); i!=l.end(); ++i) 
-  //  *(result.l[i->first]) = *(i->second) + *(rhs.l[i->first]);
+  return *this;
+
+}
+
+
+void MT2LostLeptonEstimate::add(const MT2LostLeptonEstimate& rhs) {
+
+  (*this) = (*this) + rhs;
+
+}
+
+
+MT2LostLeptonEstimate MT2LostLeptonEstimate::operator+( const MT2LostLeptonEstimate& rhs ) const {
+
+
+  MT2LostLeptonEstimate result("tmp");
+
+  if( l.size()==0 ) {
+
+    result = rhs;
+
+  } else if( rhs.l.size()==0 ) {
+
+    result = *this;
+
+  } else {
+
+    std::string newName = this->name + "_" + rhs.name;
+    result.name = newName;
+
+    std::string newSName = this->SName;
+    if( rhs.SName != this->SName ) {
+      if( newSName!="" && rhs.SName!="" ) newSName += "_" + rhs.SName;
+      else if( rhs.SName!="" ) newSName = rhs.SName;
+    }
+    result.SName = newSName;
+
+    for(std::map< std::string, MT2LeptonTypeLLEstimate*>::const_iterator i=l.begin(); i!=l.end(); ++i) {
+      for(std::map< std::string, MT2LeptonTypeLLEstimate*>::const_iterator j=rhs.l.begin(); j!=rhs.l.end(); ++j) {
+        if( i->first != j->first ) continue;
+        result.l[i->first] = new MT2LeptonTypeLLEstimate(*(i->second) + *(j->second));
+      }
+    }
+
+  } // else
+
+
 
   return result;
 

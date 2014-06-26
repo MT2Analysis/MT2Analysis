@@ -33,7 +33,7 @@ int main() {
 
 
 
-  std::string samplesFileName = "samples_HT_filter_prova.dat";
+  std::string samplesFileName = "samples_HT_filter_prova_fast.dat";
   std::vector<MT2Sample> fSamples = MT2Common::loadSamples(samplesFileName);
 
  
@@ -43,6 +43,7 @@ int main() {
   HTRegions.push_back(MT2HTRegion("highHT",  1200., 100000.,  30.));
 
   std::vector<MT2SignalRegion> signalRegions;
+  signalRegions.push_back(MT2SignalRegion(3, 3, 1, 1));  // 3j1b
   signalRegions.push_back(MT2SignalRegion(2, 2, 0, 0));  // 2j0b
   signalRegions.push_back(MT2SignalRegion(3, 3, 0, 0));  // 3j0b
 
@@ -55,14 +56,31 @@ int main() {
   
 
   MT2LostLeptonEstimate* ll_data  = mergeEstimates( llest, "HT-Data" );
-  MT2LostLeptonEstimate* ll_qcd   = mergeEstimates( llest, "QCD" );
-  MT2LostLeptonEstimate* ll_wjets = mergeEstimates( llest, "Wtolnu" );
-  MT2LostLeptonEstimate* ll_other = mergeEstimates( llest, "DY", "VV", "Photons" );
+  MT2LostLeptonEstimate* ll_top   = mergeEstimates( llest, "Top" );
+  //MT2LostLeptonEstimate* ll_qcd   = mergeEstimates( llest, "QCD" );
+  //MT2LostLeptonEstimate* ll_wjets = mergeEstimates( llest, "Wtolnu" );
+  //MT2LostLeptonEstimate* ll_other = mergeEstimates( llest, "DY", "VV" );
   
+  //MT2LostLeptonEstimate* ll_topW   = new MT2LostLeptonEstimate(*ll_top  + *ll_wjets);
+  //MT2LostLeptonEstimate* ll_bg     = new MT2LostLeptonEstimate(*ll_qcd  + *ll_other);
+  //MT2LostLeptonEstimate* ll_allMC  = new MT2LostLeptonEstimate(*ll_topW + *ll_bg);
 
-  //// then create summary histos and write to outfile
-  //std::vector<TH1D*> histos_reco = createPredictionHistos("Prediction"     , leptType, HTRegions, signalRegions);
-  //std::vector<TH1D*> histos_gen  = createPredictionHistos("SimulationTruth", leptType, HTRegions, signalRegions);
+  MT2Region r( &HTRegions[0], &signalRegions[0] );
+
+  std::cout << "yields:" << std::endl;
+  std::cout << llest[1]->l["Ele"] << std::endl;
+  std::cout << llest[1]->l["Ele"]->getRecoRegion(r.getName()) << std::endl;
+  std::cout << llest[1]->l["Ele"]->getRecoRegion(r.getName())->yield << std::endl;
+  std::cout << "all: " << llest[1]->l["Ele"]->getRecoRegion(r.getName())->yield->Integral() << std::endl;
+  std::cout << ll_top->l["Ele"] << std::endl;
+  std::cout << ll_top->l["Ele"]->getRecoRegion(r.getName()) << std::endl;
+  std::cout << ll_top->l["Ele"]->getRecoRegion(r.getName())->yield << std::endl;
+  std::cout << "top: " << ll_top->l["Ele"]->getRecoRegion(r.getName())->yield->Integral() << std::endl;
+  //std::cout << "data: " << ll_data->l["Ele"]->getRecoRegion(r.getName())->yield->Integral() << std::endl;
+
+  // then create summary histos and write to outfile
+//  std::vector<TH1D*> histos_ele_reco = createPredictionHistos("Prediction"     , "Ele", llest );
+//  std::vector<TH1D*> histos_gen  = createPredictionHistos("SimulationTruth", leptType, HTRegions, signalRegions);
 
 
   return 0;
@@ -144,7 +162,7 @@ MT2LostLeptonEstimate* computeLostLepton( const MT2Sample& sample, std::vector<M
   MT2LeptonTypeLLEstimate* llest_ele = getLeptonTypeLLEstimate( "Ele", tree_ele, sample, HTRegions, signalRegions );
   MT2LeptonTypeLLEstimate* llest_muo = getLeptonTypeLLEstimate( "Muo", tree_muo, sample, HTRegions, signalRegions );
 
-  MT2LostLeptonEstimate* llest = new MT2LostLeptonEstimate(sample.sname);
+  MT2LostLeptonEstimate* llest = new MT2LostLeptonEstimate(sample.name, sample.sname);
   llest->l["Ele"] = llest_ele;
   llest->l["Muo"] = llest_muo;
 
@@ -254,19 +272,21 @@ MT2LostLeptonEstimate* mergeEstimates( std::vector<MT2LostLeptonEstimate*> llest
 
   std::string newname = (snames.size()>0) ? (snames[0]) : "";
   for( unsigned i=1; i<snames.size(); ++i ) newname += "_" + snames[i];
+  newname = "merge_" + newname;
 
   MT2LostLeptonEstimate* return_llest = new MT2LostLeptonEstimate(newname);
 
-//for( unsigned i=0; i<llest.size(); ++i ) {
+  for( unsigned i=0; i<llest.size(); ++i ) {
 
-//  for( unsigned iname=0; iname<snames.size(); ++iname ) {
+    for( unsigned iname=0; iname<snames.size(); ++iname ) {
 
-//    if( llest[i]->SName == snames[iname] )
-//      return_llest += llest[i];
+      if( llest[i]->SName == snames[iname] ) {
+        return_llest->add(*(llest[i]));
+      }
 
-//  } // for snames
+    } // for snames
 
-//} // for llest
+  } // for llest
 
 
   return return_llest;
@@ -299,42 +319,6 @@ std::vector<TH1D*> createPredictionHistos( const std::string& prefix, const std:
   return histos;
 
 }
-
-
-
-
-/*
-MT2LostLeptonEstimate computeSignalRegionEstimate( TTree* tree, const MT2Sample& sample, float sampleweight, int njet_min, int njet_max, int nbjet_min, int nbjet_max ) {
-
-
-  std::string signalRegionName = MT2Common::getSignalRegion( njet_min, njet_max, nbjet_min, nbjet_max );
-
-  std::ostringstream signalRegionSelection;
-  signalRegionSelection << " " 
-    << "NJetsIDLoose40 >= " << njet_min  << " && "
-    << "NJetsIDLoose40 <= " << njet_max  << " && "
-    << "NBJets40CSVM   >= " << nbjet_min << " && "
-    << "NBJets40CSVM   >= " << nbjet_max;
-
-  TString signalRegionCuts = signalRegionSelection.str().c_str();
-  TString signalRegionCuts_ele = signalRegionCuts + " && NEles==1 && NMuons==0 && ele[0].MT<100.";
-  TString signalRegionCuts_muo = signalRegionCuts + " && NEles==0 && NMuons==1 && muo[0].MT<100.";
-
-  TTree* tree_ele = tree->CopyTree( signalRegionCuts_ele );
-  TTree* tree_muo = tree->CopyTree( signalRegionCuts_muo );
-
-  MT2LeptonTypeLLEstimate llest_ele = computeLeptonTypeLLEstimate( "Ele_"+signalRegionName, tree_ele, sample, sampleweight );
-  MT2LeptonTypeLLEstimate llest_muo = computeLeptonTypeLLEstimate( "Muo_"+signalRegionName, tree_muo, sample, sampleweight );
-
-  MT2LostLeptonEstimate returnEstimate;
-  returnEstimate.ele = llest_ele;
-  returnEstimate.muo = llest_muo;
-
-  return returnEstimate;
-
-}
-
-*/
 
 
 

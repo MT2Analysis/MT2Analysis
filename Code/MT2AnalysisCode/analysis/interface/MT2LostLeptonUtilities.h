@@ -50,7 +50,7 @@ class MT2SingleLLEstimate {
   TH1D* effMT_tot;
 
 
-  MT2SingleLLEstimate operator+( const MT2SingleLLEstimate& rhs );
+  MT2SingleLLEstimate operator+( const MT2SingleLLEstimate& rhs ) const;
 
   TEfficiency* effLept() {
     return new TEfficiency(*effLept_pass, *effLept_tot);
@@ -81,7 +81,7 @@ class MT2LeptonTypeLLEstimate {
   MT2SingleLLEstimate* getRecoRegion( const std::string& regionName ) const;
   MT2SingleLLEstimate* getGenRegion( const std::string& regionName ) const;
 
-  MT2LeptonTypeLLEstimate operator+( const MT2LeptonTypeLLEstimate& rhs );
+  MT2LeptonTypeLLEstimate operator+( const MT2LeptonTypeLLEstimate& rhs ) const;
 
   std::string name;
   std::string SName;
@@ -99,13 +99,18 @@ class MT2LostLeptonEstimate {
 
  public:
 
-  MT2LostLeptonEstimate( const std::string& aSName) {
+  MT2LostLeptonEstimate( const std::string& aname, const std::string& aSName="") {
+    name = aname;
     SName = aSName;
   }
   ~MT2LostLeptonEstimate() {};
 
-  MT2LostLeptonEstimate operator+(const MT2LostLeptonEstimate& rhs);
+  void add(const MT2LostLeptonEstimate& rhs);
 
+  MT2LostLeptonEstimate operator+(const MT2LostLeptonEstimate& rhs) const;
+  const MT2LostLeptonEstimate& operator=(const MT2LostLeptonEstimate& rhs);
+
+  std::string name;
   std::string SName;
   std::map< std::string, MT2LeptonTypeLLEstimate*> l; // "Ele" and "Muo"
 

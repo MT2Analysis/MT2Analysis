@@ -1,0 +1,727 @@
+############################################################################################
+GENERAL
+Path             /shome/
+#Path             dcap://t3se01.psi.ch/pnfs/psi.ch/cms/trivcat/store/user/leo/SUSY/MT2trees/MT2_V02-01-02/
+#__________________________________________________________________________________________
+# list of samples
+#
+## -------- QCD --------
+# Kfact = 0.92767 (noPU), 1.11 (PU)
+
+#Lumi: 19.5/fb
+# here a 0.935 SF for all nonQCD MC is applied
+
+#SAMPLE
+#Name            QCD_Pt_80to120
+#SName           QCD
+#ShapeName       QCD
+#File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-Pt-80to120-TuneZ2star-8TeV-pythia6-Summer12-DR53X-PU-S10-START53-V7A-v3.root
+#Xsection        1033680.0 
+#Kfact           1.16
+#Lumi            19500
+#Type            mc
+#Color           401
+#
+#SAMPLE
+#Name		QCD_Pt_120to170
+#SName		QCD
+#ShapeName	QCD
+#File           casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-Pt-120to170-TuneZ2star-8TeV-pythia6-Summer12-DR53X-PU-S10-START53-V7A-v3.root
+#Xsection  	156293.3
+#Kfact          1.16	
+#Lumi           19500
+#Type           mc
+#Color		401
+
+SAMPLE
+Name		QCD_Pt_170to300
+SName		QCD
+ShapeName	QCD
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-Pt-170to300-TuneZ2star-8TeV-pythia6-Summer12-DR53X-PU-S10-START53-V7A-v2.root
+Xsection  	34138.15
+Kfact           0.260856
+Lumi            19500
+Type            mc
+Color		401
+# 22.59 %
+
+SAMPLE
+Name		QCD_Pt_170to300-2
+SName		QCD
+ShapeName	QCD
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-Pt-170to300-TuneZ2star-8TeV-pythia6-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	34138.15
+Kfact           0.897914
+Lumi            19500
+Type            mc
+Color		401
+# 77.40 %
+
+SAMPLE
+Name		QCD_Pt_300to470
+SName		QCD
+ShapeName	QCD
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-Pt-300to470-TuneZ2star-8TeV-pythia6-Summer12-DR53X-PU-S10-START53-V7A-v2.root
+Xsection  	1759.549
+Kfact           0.236714
+Lumi            19500
+Type            mc
+Color		402
+# 20.41 %
+
+SAMPLE
+Name		QCD_Pt_300to470-2
+SName		QCD
+ShapeName	QCD
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-Pt-300to470-TuneZ2star-8TeV-pythia6-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	1759.549
+Kfact           0.138228
+Lumi            19500
+Type            mc
+Color		402
+# 11.92 %
+
+SAMPLE
+Name		QCD_Pt_300to470-3
+SName		QCD
+ShapeName	QCD
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-Pt-300to470-TuneZ2star-8TeV-pythia6-v3-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	1759.549
+Kfact           0.785058
+Lumi            19500
+Type            mc
+Color		402
+# 67.68 %
+
+SAMPLE
+Name		QCD_Pt_470to600
+SName		QCD
+ShapeName	QCD
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-Pt-470to600-TuneZ2star-8TeV-pythia6-Summer12-DR53X-PU-S10-START53-V7A-v2.root
+Xsection  	113.8791
+Kfact           1.16
+Lumi            19500
+Type            mc
+Color		403
+
+SAMPLE
+Name		QCD_Pt_600to800
+SName		QCD
+ShapeName	QCD
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-Pt-600to800-TuneZ2star-8TeV-pythia6-Summer12-DR53X-PU-S10-START53-V7A-v2.root
+Xsection  	26.9921
+Kfact           1.16	
+Lumi            19500
+Type            mc
+Color		404
+
+SAMPLE
+Name		QCD_Pt_800to1000
+SName		QCD
+ShapeName	QCD
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-Pt-800to1000-TuneZ2star-8TeV-pythia6-Summer12-DR53X-PU-S10-START53-V7A-v2.root
+Xsection  	3.550036
+Kfact           1.16	
+Lumi            19500
+Type            mc
+Color		406
+
+SAMPLE
+Name		QCD_Pt_1000to1400
+SName		QCD
+ShapeName	QCD
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-Pt-1000to1400-TuneZ2star-8TeV-pythia6-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	0.737844
+Kfact           1.16	
+Lumi            19500
+Type            mc
+Color		407
+
+SAMPLE
+Name		QCD_Pt_1400to1800
+SName		QCD
+ShapeName	QCD
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-Pt-1400to1800-TuneZ2star-8TeV-pythia6-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	0.03352235 
+Kfact           1.16	
+Lumi            19500
+Type            mc
+Color		408
+
+SAMPLE
+Name		QCD_Pt_1800
+SName		QCD
+ShapeName	QCD
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-Pt-1800-TuneZ2star-8TeV-pythia6-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	0.001829005 
+Kfact           1.16	
+Lumi            19500
+Type		mc
+Color		409
+
+#SAMPLE
+#Name		QCD_HT-100To250
+#SName		QCD
+#ShapeName	QCD
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-HT-100To250-TuneZ2star-8TeV-madgraph-pythia-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+#Xsection  	1.036e7
+#Kfact           1.16	
+#Lumi            19500
+#Type		mc
+#Color		401
+#
+#SAMPLE
+#Name		QCD_HT-250To500
+#SName		QCD
+#ShapeName	QCD
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-HT-250To500-TuneZ2star-8TeV-madgraph-pythia6-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+#Xsection  	276000.0
+#Kfact           1.16	
+#Lumi            19500
+#Type		mc
+#Color		402
+#
+#SAMPLE
+#Name		QCD_HT-500To1000
+#SName		QCD
+#ShapeName	QCD
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-HT-500To1000-TuneZ2star-8TeV-madgraph-pythia6-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+#Xsection  	8426.0
+#Kfact           1.16	
+#Lumi            19500
+#Type		mc
+#Color		403
+#
+#SAMPLE
+#Name		QCD_HT-1000ToInf
+#SName		QCD
+#ShapeName	QCD
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/QCD-HT-1000ToInf-TuneZ2star-8TeV-madgraph-pythia6-Summer12-DR53X-PU-S10-START53-V7A-v1-2.root
+#Xsection  	204.0
+#Kfact           1.16	
+#Lumi            19500
+#Type		mc
+#Color		404
+
+# -------- electroweak --------
+SAMPLE
+Name		WJetsToLNu_400_infty
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-HT-400ToInf-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	25.22
+Kfact           0.2332
+Lumi            19500
+Type            mc
+Color		417
+# 24.95%
+
+SAMPLE
+Name		WJetsToLNu_400_infty-2
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-HT-400ToInf-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	25.22
+Kfact           0.7017
+Lumi            19500
+Type            mc
+Color		417
+# 75.05%
+
+SAMPLE
+Name		WJetsToLNu_300_400
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-HT-300To400-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	38.3
+Kfact           0.2322
+Lumi            19500
+Type            mc
+Color		417
+# 24.84%
+
+SAMPLE
+Name		WJetsToLNu_300_400-2
+SName		Wtolnu
+ShapeName	WJets
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-HT-300To400-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	38.3
+Kfact           0.7027
+Lumi            19500
+Type            mc
+Color		417
+# 75.16%
+
+#SAMPLE
+#Name		WJetsToLNu_250_300
+#SName		Wtolnu
+#ShapeName	WJets
+#File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-HT-250To300-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+#Xsection  	48.01
+#Kfact           0.2324
+#Lumi            19500
+#Type            mc
+#Color		417
+## 24.86%
+#
+#SAMPLE
+#Name		WJetsToLNu_250_300-2
+#SName		Wtolnu
+#ShapeName	WJets
+#File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-HT-250To300-8TeV-madgraph-v2-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+#Xsection  	48.01
+#Kfact           0.7025
+#Lumi            19500
+#Type            mc
+#Color		417
+## 75.14%
+#
+#SAMPLE
+#Name		WJetsToLNu_200_250
+#SName		Wtolnu
+#ShapeName	WJets
+#File   		casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-HT-200To250-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7C-v1-2.root
+#Xsection  	90.27
+#Kfact          0.935
+#Lumi           19500
+#Type           mc
+#Color		417
+
+#SAMPLE
+#Name           WJetsToLNu
+#SName          Wtolnu
+#ShapeName      WJets
+#File           casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WJetsToLNu-TuneZ2Star-8TeV-madgraph-tarball-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+#Xsection       36257.2
+#Kfact           0.935
+#Lumi            19500
+#Type            mc
+#Color          417
+
+
+SAMPLE
+Name		ZJets_M50
+SName		DY
+ShapeName	ZJetsToLL
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/DYJetsToLL-M-50-TuneZ2Star-8TeV-madgraph-tarball-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	3503.71
+Kfact           0.935	
+Lumi            19500
+Type            mc
+Color		419
+
+SAMPLE
+Name		ZJets_M10
+SName		DY
+ShapeName	ZJetsToLL
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/DYJetsToLL-M-10To50filter-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	877.
+Kfact           0.935	
+Lumi            19500
+Type            mc
+Color		419
+
+SAMPLE
+Name		DYToNuNu_400_infty
+SName		DY
+ShapeName	ZJetsToNuNu
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-400-HT-inf-TuneZ2Star-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	5.274
+Kfact           0.1847
+Lumi            19500
+Type            mc
+Color		419
+# 19.76%
+
+SAMPLE
+Name		DYToNuNu_400_infty-2
+SName		DY
+ShapeName	ZJetsToNuNu
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-400-HT-inf-TuneZ2Star-8TeV-madgraph-ext-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	5.274
+Kfact           0.7502
+Lumi            19500
+Type            mc
+Color		419
+# 80.24%
+
+#SAMPLE
+#Name		DYToNuNu_200_400
+#SName		DY
+#ShapeName	ZJetsToNuNu
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-200-HT-400-TuneZ2Star-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+#Xsection  	41.49
+#Kfact           0.4850
+#Lumi            19500
+#Type            mc
+#Color		419
+## 51.88
+#
+#SAMPLE
+#Name		DYToNuNu_200_400-2
+#SName		DY
+#ShapeName	ZJetsToNuNu
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-200-HT-400-TuneZ2Star-8TeV-madgraph-ext-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+#Xsection  	41.49
+#Kfact           0.4499
+#Lumi            19500
+#Type            mc
+#Color		419
+## 48.12%
+#
+#SAMPLE
+#Name		DYToNuNu_100_200
+#SName		DY
+#ShapeName	ZJetsToNuNu
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-100-HT-200-TuneZ2Star-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+##Xsection  	160.3
+#Xsection  	80.15
+#Kfact           0.4134
+#Lumi            19500
+#Type            mc
+#Color		419
+## 44.22%
+#
+#SAMPLE
+#Name		DYToNuNu_100_200-2
+#SName		DY
+#ShapeName	ZJetsToNuNu
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-100-HT-200-TuneZ2Star-8TeV-madgraph-ext-Summer12-DR53X-PU-S10-START53-V7C-v1.root
+##Xsection  	160.3
+#Xsection  	80.15
+#Kfact           0.5215
+#Lumi            19500
+#Type            mc
+#Color		419
+## 55.78%
+#
+#SAMPLE
+#Name		DYToNuNu_50_100
+#SName		DY
+#ShapeName	ZJetsToNuNu
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-50-HT-100-TuneZ2Star-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+#Xsection  	381.2
+#Kfact           0.935
+#Lumi            19500
+#Type            mc
+#Color		419
+## 16.79%
+#
+#SAMPLE
+#Name		DYToNuNu_50_100-2
+#SName		DY
+#ShapeName	ZJetsToNuNu
+#File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZJetsToNuNu-50-HT-100-TuneZ2Star-8TeV-madgraph-ext-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+#Xsection  	381.2
+#Kfact           0.935
+#Lumi            19500
+#Type            mc
+#Color		419
+## 83.21%
+
+## --------------- Top ----------
+#SAMPLE
+#Name		TTbar
+#SName		Top
+#ShapeName	Top
+#File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/TTJets-MassiveBinDECAY-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+#Xsection  	234.
+#Kfact           0.7805
+#Lumi            19500
+#Type            mc
+#Color		855
+# 83.48%
+
+#SAMPLE
+#Name		TTbar-2
+#SName		Top
+#ShapeName	Top
+#File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/TTJets-MassiveBinDECAY-TuneZ2star-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7A-v2.root
+#Xsection  	234.
+#Kfact           0.1544
+#Lumi            19500
+#Type            mc
+#Color		855
+# 16.52%
+
+SAMPLE
+Name		TTbar_Madgraph0l
+SName		Top
+ShapeName	Top
+File            haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/TTJets-HadronicMGDecays-8TeV-madgraph-Summer12-DR53X-PU-S10-START53-V7A-ext-v1.root
+Xsection  	234.
+Kfact           0.41595
+Lumi            19600
+Type            mc
+Color		855
+
+SAMPLE
+Name		TTbar_Madgraph1l
+SName		Top
+ShapeName	Top
+File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130503_8TeV/highHT/TTJets-SemiLeptMGDecays-8TeV-madgraph-tauola-Summer12-DR53X-PU-S10-START53-V7C-v1.root
+Xsection  	234.
+Kfact           0.41435
+Lumi            19600
+Type            mc
+Color		855
+
+SAMPLE
+Name		TTbar_Madgraph2l
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130506_8TeV/highHT/TTJets-FullLeptMGDecays-8TeV-madgraph-tauola.root
+Xsection  	234.
+Kfact           0.10460
+Lumi            19600
+Type            mc
+Color		855
+
+SAMPLE
+Name		Tbar_s
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/Tbar-s-channel-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	1.76
+Kfact           0.935	
+Lumi            19500
+Type            mc
+Color		600
+
+SAMPLE
+Name		Tbar_t
+SName		Top
+ShapeName	Top
+File             mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/Tbar-t-channel-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	30.7
+Kfact           0.935	
+Lumi            19500
+Type            mc
+Color		600
+
+SAMPLE
+Name		Tbar_tW
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/Tbar-tW-channel-DR-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	11.1
+Kfact           0.935	
+Lumi            19500
+Type            mc
+Color		600
+
+SAMPLE
+Name		T_s
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/T-s-channel-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	3.79
+Kfact           0.935	
+Lumi            19500
+Type            mc
+Color		600
+
+SAMPLE
+Name		T_t
+SName		Top
+ShapeName	Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/T-t-channel-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v3.root
+Xsection  	56.4
+Kfact           0.935	
+Lumi            19500
+Type            mc
+Color		600
+
+SAMPLE
+Name            T_tw
+SName           Top
+ShapeName       Top
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/T-tW-channel-DR-TuneZ2star-8TeV-powheg-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection        11.1
+Kfact           0.935
+Lumi            19500
+Type            mc
+Color           600
+
+# ---------------- Diboson ------------------------
+
+SAMPLE
+Name		WW
+SName		VV
+ShapeName	Diboson
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WW-TuneZ2star-8TeV-pythia6-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection  	33.61
+Kfact           0.935	
+Lumi            19500
+Type            mc
+Color		600
+
+SAMPLE
+Name            WZ
+SName           VV
+ShapeName       Diboson
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/WZ-TuneZ2star-8TeV-pythia6-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection        12.63
+Kfact           0.935
+Lumi            19500
+Type            mc
+Color           600
+
+SAMPLE
+Name            ZZ
+SName           VV
+ShapeName       Diboson
+File            mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/ZZ-TuneZ2star-8TeV-pythia6-tauola-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection        5.2
+Kfact           0.935
+Lumi            19500
+Type            mc
+Color           600
+
+
+# ---------------- Signal ------------------------
+
+#SAMPLE
+Name           LM6
+SName          LM6
+ShapeName      Signal
+File           mmasciov/MT2Analysis/MT2trees/MT2_V02-03-02/20130430_8TeV/highHT/SUSY-LM6-sftsht-8TeV-pythia6-Summer12-DR53X-PU-S10-START53-V7A-v1.root
+Xsection       0.5047
+Kfact          1.
+Lumi           19500.0
+Type           susy
+Color          1
+
+#SAMPLE
+#Name           T2bb_350_50
+#SName          T2bb_350_50
+#ShapeName      Signal
+#File           casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/
+#Xsection       0.8073
+#Kfact          1.
+#Lumi           19500.0
+#Type           susy
+#Color          1
+
+#SAMPLE
+#Name           T2bb_450_150
+#SName          T2bb_450_150
+#ShapeName      Signal
+#File           casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/
+#Xsection       0.19668
+#Kfact          1.
+#Lumi           19500.0
+#Type           susy
+#Color          1
+
+#SAMPLE
+#Name           ETH_Edge1
+#SName          ETH_Edge1
+#ShapeName      Signal
+#File            casal/MT2Analysis/MT2trees/MT2_V02-03-02/20130318_8TeV/highHT/
+#Xsection       0.38952
+#Kfact           1.
+#Lumi            19500.0
+#Type            susy
+#Color          1
+
+#SAMPLE
+Name           T2tt_400_150
+SName          T2tt_400_150
+ShapeName      Signal
+File           haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20130717_8TeV_sms/skimmed_T2tt_400_150/SMS-T2tt-mStop-375to475-mLSP-0to375-8TeV-Pythia6Z-Summer12-START52-V9-FSIM-v1-2.root
+Xsection       0.35683
+Kfact          1.
+Lumi           19500.0
+Type           susy
+Color          1
+
+SAMPLE
+Name           T2tt_400_0
+SName          T2tt_400_0
+ShapeName      Signal
+File           haweber/MT2Analysis/MT2trees/MT2_V02-03-02/20140128_8TeV_sms/T2tt_400_0/SMS-8TeV-Pythia6Z-T2tt-mStop-150to475-mLSP-1-Summer12-START52-V9-FSIM-v1-2.root
+Xsection       0.35683
+Kfact          1.
+Lumi           19500.0
+Type           susy
+Color          1
+
+## --------- Data ---------------------------
+
+SAMPLE
+Name		HT-Run2012A-13Jul2012
+SName		HT-Data
+ShapeName	Data
+File            mangano/filterTOBTEC/codeHJ/CMSSW_5_3_11/myTest/MT2Code/output/bloc1/HT-Run2012A-13Jul2012-v1-2.root
+Xsection  	1.
+Kfact           1.	
+Lumi            1.
+Type            data
+Color		1
+
+SAMPLE
+Name		HT-Run2012A-recover-06Aug2012
+SName		HT-Data
+ShapeName	Data
+File            mangano/filterTOBTEC/codeHJ/CMSSW_5_3_11/myTest/MT2Code/output/bloc1/HT-Run2012A-recover-06Aug2012-v1-2.root
+Xsection  	1.
+Kfact           1.	
+Lumi            1.
+Type            data
+Color		1
+
+SAMPLE
+Name		JetHT-Run2012B-13Jul2012
+SName		HT-Data
+ShapeName	Data
+File            mangano/filterTOBTEC/codeHJ/CMSSW_5_3_11/myTest/MT2Code/output/bloc1/JetHT-Run2012B-13Jul2012-v1-2.root
+Xsection  	1.
+Kfact           1.	
+Lumi            1.
+Type            data
+Color		1
+
+SAMPLE
+Name		JetHT-Run2012C-24Aug2012
+SName		HT-Data
+ShapeName	Data
+File            mangano/filterTOBTEC/codeHJ/CMSSW_5_3_11/myTest/MT2Code/output/bloc1/JetHT-Run2012C-24Aug2012-v2-2.root
+Xsection  	1.
+Kfact           1.	
+Lumi            1.
+Type            data
+Color		1
+
+SAMPLE
+Name		JetHT-Run2012C-PromptReco-v2
+SName		HT-Data
+ShapeName	Data
+File            mangano/filterTOBTEC/codeHJ/CMSSW_5_3_11/myTest/MT2Code/output/bloc1/JetHT-Run2012C-PromptReco-v2-3.root
+Xsection  	1.
+Kfact    	1.	
+Lumi      	1.
+Type           	data
+Color		1
+
+SAMPLE
+Name		JetHT-Run2012C-EcalRecover-11Dec2012
+SName		HT-Data
+ShapeName	Data
+File            mangano/filterTOBTEC/codeHJ/CMSSW_5_3_11/myTest/MT2Code/output/bloc1/JetHT-Run2012C-EcalRecover-11Dec2012-v1-2.root
+Xsection  	1.
+Kfact    	1.	
+Lumi      	1.
+Type           	data
+Color		1
+
+SAMPLE
+Name		JetHT-Run2012D-PromptReco-v1
+SName		HT-Data
+ShapeName	Data
+File           	mangano/filterTOBTEC/codeHJ/CMSSW_5_3_11/myTest/MT2Code/output/bloc1/JetHT-Run2012D-PromptReco-v1-3.root
+Xsection  	1.
+Kfact          	1.	
+Lumi           	1.
+Type           	data
+Color		1

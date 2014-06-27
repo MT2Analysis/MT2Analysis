@@ -15,8 +15,7 @@ struct MT2Sample {
   std::string sname;
   std::string shapename;
   std::string type;
-  TFile *file;
-  TTree *tree;
+  std::string file;
   float xsection;
   float nevents;
   float kfact;

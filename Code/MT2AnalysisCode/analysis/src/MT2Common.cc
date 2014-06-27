@@ -240,10 +240,10 @@ std::vector<MT2Sample> MT2Common::loadSamples(const std::string& filename) {
       
       IN.getline(buffer, 200, '\n');
       sscanf(buffer, "File\t%s", StringValue);
-      TString file =fPath+StringValue;
-      TFile *f = TFile::Open(file);
-      s.file = f;
-      s.tree = (TTree*)f->Get("MassTree");
+      TString fileName =fPath+StringValue;
+      //TFile *f = TFile::Open(file);
+      s.file = fileName;
+      //s.tree = (TTree*)f->Get("MassTree");
       
       IN.getline(buffer, 200, '\n');
       sscanf(buffer, "Xsection\t%f", &ParValue);
@@ -266,16 +266,19 @@ std::vector<MT2Sample> MT2Common::loadSamples(const std::string& filename) {
       s.color = ParValue;
       
 
+      TFile* file = TFile::Open(s.file.c_str());
+      TTree* tree = (TTree*)file->Get("MassTree");
+
       if(s.type!="data"){
 
-        TH1F *h_PUWeights = (TH1F*) s.file->Get("h_PUWeights");
-        TH1F *h_Events    = (TH1F*) s.file->Get("h_Events");
+        TH1F *h_PUWeights = (TH1F*) file->Get("h_PUWeights");
+        TH1F *h_Events    = (TH1F*) file->Get("h_Events");
         if(h_PUWeights==0 || h_Events==0){
-          std::cout << "ERROR: sample " << (s.file)->GetName() << " does not have PU and NEvents histos! " << std::endl;
+          std::cout << "ERROR: sample " << (file)->GetName() << " does not have PU and NEvents histos! " << std::endl;
           exit(1);
         }
-        s.type!="data" ? s.PU_avg_weight = h_PUWeights->GetMean()    : s.PU_avg_weight =1;
-        s.type!="data" ? s.nevents       = h_Events   ->GetEntries() : s.nevents       =1;
+        s.PU_avg_weight = h_PUWeights->GetMean();
+        s.nevents       = h_Events   ->GetEntries();
         delete h_PUWeights;
         delete h_Events;
 
@@ -290,9 +293,9 @@ std::vector<MT2Sample> MT2Common::loadSamples(const std::string& filename) {
       std::cout << "  New sample added: " << s.name << std::endl;
       std::cout << "   Sample no.      " << counter << std::endl;
       std::cout << "   Short name:     " << s.sname << std::endl;
-      std::cout << "   File:           " << (s.file)->GetName() << std::endl;
+      std::cout << "   File:           " << s.file << std::endl;
       std::cout << "   Events:         " << s.nevents  << std::endl;
-      std::cout << "   Events in tree: " << s.tree->GetEntries() << std::endl; 
+      std::cout << "   Events in tree: " << tree->GetEntries() << std::endl; 
       std::cout << "   Xsection:       " << s.xsection << std::endl;
       std::cout << "   Lumi:           " << s.lumi << std::endl;
       std::cout << "   kfactor:        " << s.kfact << std::endl;
@@ -300,6 +303,8 @@ std::vector<MT2Sample> MT2Common::loadSamples(const std::string& filename) {
       std::cout << "   type:           " << s.type << std::endl;
       std::cout << "   Color:          " << s.color << std::endl;
       fSamples.push_back(s);
+      file->Close();
+      tree = 0;
       counter++;
     }
 

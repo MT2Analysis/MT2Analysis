@@ -45,7 +45,7 @@ class MT2SignalRegion {
   // univocal identifier:
   std::string getName() const;
 
-  std::string getSingleSignalRegionString( int n_min , int n_max, const std::string& suffix ) const;
+  std::string getSingleSignalRegionString( const std::string& suffix, int n_min , int n_max=-1 ) const;
   
   int nJetsMin; 
   int nJetsMax;

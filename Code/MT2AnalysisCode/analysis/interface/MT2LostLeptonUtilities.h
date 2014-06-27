@@ -78,7 +78,10 @@ class MT2LeptonTypeLLEstimate {
   ~MT2LeptonTypeLLEstimate() {};
 
 
-  MT2SingleLLEstimate* getRecoRegion( const std::string& regionName ) const;
+  MT2SingleLLEstimate* getRegion( const MT2Region& region ) const {
+    return this->getRegion( region.getName() );
+  }
+  MT2SingleLLEstimate* getRegion( const std::string& regionName ) const;
   MT2SingleLLEstimate* getGenRegion( const std::string& regionName ) const;
 
   MT2LeptonTypeLLEstimate operator+( const MT2LeptonTypeLLEstimate& rhs ) const;

@@ -37,14 +37,14 @@ MT2SingleLLEstimate::MT2SingleLLEstimate( const std::string& aname, const MT2Reg
   yield->Sumw2();
 
   effLept_pass = new TH1D(Form("effLept_%s_pass", name.c_str()), "", 1, 0., 1000000.);
-  effLept_pass->Sumw2();
+  //effLept_pass->Sumw2();
   effLept_tot  = new TH1D(Form("effLept_%s_tot", name.c_str()), "", 1, 0., 1000000.);
-  effLept_tot->Sumw2();
+  //effLept_tot->Sumw2();
 
   effMT_pass = new TH1D(Form("effMT_%s_pass", name.c_str()), "", 1, 0., 1000000.);
-  effMT_pass->Sumw2();
+  //effMT_pass->Sumw2();
   effMT_tot  = new TH1D(Form("effMT_%s_tot", name.c_str()), "", 1, 0., 1000000.);
-  effMT_tot->Sumw2();
+  //effMT_tot->Sumw2();
 
 }
 
@@ -126,7 +126,7 @@ MT2LeptonTypeLLEstimate::MT2LeptonTypeLLEstimate( const std::string& aname, cons
 
 
 
-MT2SingleLLEstimate* MT2LeptonTypeLLEstimate::getRecoRegion( const std::string& regionName ) const {
+MT2SingleLLEstimate* MT2LeptonTypeLLEstimate::getRegion( const std::string& regionName ) const {
 
 
   MT2SingleLLEstimate* theRegion = 0;
@@ -247,7 +247,7 @@ void MT2LostLeptonEstimate::add(const MT2LostLeptonEstimate& rhs) {
 MT2LostLeptonEstimate MT2LostLeptonEstimate::operator+( const MT2LostLeptonEstimate& rhs ) const {
 
 
-  MT2LostLeptonEstimate result("tmp");
+  MT2LostLeptonEstimate result("");
 
   if( l.size()==0 ) {
 

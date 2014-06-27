@@ -66,8 +66,8 @@ MT2SignalRegion::MT2SignalRegion( const MT2SignalRegion& rhs ) {
 
 std::string MT2SignalRegion::getName() const {
  
-  std::string jString = getSingleSignalRegionString( nJetsMin, nJetsMax  , "j");
-  std::string bString = getSingleSignalRegionString( nBJetsMin, nBJetsMax , "b");
+  std::string jString = getSingleSignalRegionString( "j", nJetsMin, nJetsMax   );
+  std::string bString = getSingleSignalRegionString( "b", nBJetsMin, nBJetsMax );
 
   std::string signal_region = jString + bString;
 
@@ -77,9 +77,10 @@ std::string MT2SignalRegion::getName() const {
 
 
 
-std::string MT2SignalRegion::getSingleSignalRegionString( int n_min , int n_max, const std::string& suffix ) const {
+std::string MT2SignalRegion::getSingleSignalRegionString( const std::string& suffix, int n_min , int n_max ) const {
 
-  if( n_max==999 ) n_max=n_min;
+  if( n_min==-1 && n_max==-1 ) return std::string("");
+  if( n_max==-1 ) n_max=n_min;
 
   char signal_region_ch[64];
   if( n_max!=n_min )
@@ -104,19 +105,19 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     const int nBins_tmp                      = 6;
     bins = new double[nBins_tmp+1]{120, 150, 200, 260, 350, 550, 900};
     nBins = nBins_tmp;
-  } else if( regionName == "HTge1200_2j1b" ) {
+  } else if( regionName == "HTge1200_2j1to2b" ) {
     const int nBins_tmp                      = 2;
     bins = new double[nBins_tmp+1]{100, 180, 350};
     nBins = nBins_tmp;
-  } else if( regionName == "HTge1200_3j0b" ) {
+  } else if( regionName == "HTge1200_3to5j0b" ) {
     const int nBins_tmp                      = 7;
     bins = new double[nBins_tmp+1]{160, 185, 220, 270, 350, 450, 650, 1000};
     nBins = nBins_tmp;
-  } else if( regionName == "HTge1200_3j1b" ) {
+  } else if( regionName == "HTge1200_3to5j1b" ) {
     const int nBins_tmp                      = 4;
     bins = new double[nBins_tmp+1]{150, 180, 230, 350, 550};
     nBins = nBins_tmp;
-  } else if( regionName == "HTge1200_3j2b" ) {
+  } else if( regionName == "HTge1200_3to5j2b" ) {
     const int nBins_tmp                      = 2;
     bins = new double[nBins_tmp+1]{130, 200, 350};
     nBins = nBins_tmp;
@@ -142,19 +143,19 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     const int nBins_tmp                      = 9;
     bins = new double[nBins_tmp+1]{125, 150, 180, 220, 270, 325, 425, 580, 780, 1000};
     nBins = nBins_tmp;
-  } else if( regionName == "HTge750_2j1b" ) {
+  } else if( regionName == "HTge750_2j1to2b" ) {
     const int nBins_tmp                      = 5;
     bins = new double[nBins_tmp+1]{100, 135, 170, 260, 450, 700};
     nBins = nBins_tmp;
-  } else if( regionName == "HTge750_3j0b" ) {
+  } else if( regionName == "HTge750_3to5j0b" ) {
     const int nBins_tmp                      = 9;
     bins = new double[nBins_tmp+1]{160, 185, 215, 250, 300, 370, 480, 640, 800, 1000};
     nBins = nBins_tmp;
-  } else if( regionName == "HTge750_3j1b" ) {
+  } else if( regionName == "HTge750_3to5j1b" ) {
     const int nBins_tmp                      = 6;
     bins = new double[nBins_tmp+1]{150, 175, 210, 270, 380, 600, 900};
     nBins = nBins_tmp;
-  } else if( regionName == "HTge750_3j2b" ) {
+  } else if( regionName == "HTge750_3to5j2b" ) {
     const int nBins_tmp                      = 5;
     bins = new double[nBins_tmp+1]{130, 160, 200, 270, 370, 500};
     nBins = nBins_tmp;
@@ -180,19 +181,19 @@ void MT2Region::getBins( int &nBins, double*& bins) const {
     const int nBins_tmp                      = 8;
     bins = new double[nBins_tmp+1]{200, 240, 290, 350, 420, 490, 570, 650, 750};
     nBins = nBins_tmp;
-  } else if( regionName == "HTge450_2j1b" ) {
+  } else if( regionName == "HTge450_2j1to2b" ) {
     const int nBins_tmp                      = 6;
     bins = new double[nBins_tmp+1]{200, 250, 310, 380, 450, 550, 700};
     nBins = nBins_tmp;
-  } else if( regionName == "HTge450_3j0b" ) {
+  } else if( regionName == "HTge450_3to5j0b" ) {
   const int nBins_tmp                      = 8;
   bins = new double[nBins_tmp+1]{200, 240, 290, 350, 420, 490, 570, 650, 750};
     nBins = nBins_tmp;
-  } else if( regionName == "HTge450_3j1b" ) {
+  } else if( regionName == "HTge450_3to5j1b" ) {
     const int nBins_tmp                      = 6;
     bins = new double[nBins_tmp+1]{200, 250, 310, 380, 460, 550, 700};
     nBins = nBins_tmp;
-  } else if( regionName == "HTge450_3j2b" ) {
+  } else if( regionName == "HTge450_3to5j2b" ) {
     const int nBins_tmp                      = 4;
     bins = new double[nBins_tmp+1]{200, 250, 325, 425, 550};
     nBins = nBins_tmp;

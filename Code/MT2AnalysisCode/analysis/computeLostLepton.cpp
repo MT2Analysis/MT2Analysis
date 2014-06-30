@@ -57,13 +57,13 @@ int main( int argc, char* argv[] ) {
   std::vector<MT2SignalRegion> signalRegions;
   signalRegions.push_back(MT2SignalRegion(2, 2, 0, 0));  // 2j0b
   signalRegions.push_back(MT2SignalRegion(2, 2, 1, 2));  // 2j1to2b
-  signalRegions.push_back(MT2SignalRegion(-1, -1, 3, -1));  // 3b
   signalRegions.push_back(MT2SignalRegion(3, 5, 0, 0));  // 3to5j0b
   signalRegions.push_back(MT2SignalRegion(3, 5, 1, 1));  // 3to5j1b
   signalRegions.push_back(MT2SignalRegion(3, 5, 2, 2));  // 3to5j2b
   signalRegions.push_back(MT2SignalRegion(6, 6, 0, 0));  // 6j0b
   signalRegions.push_back(MT2SignalRegion(6, 6, 1, 1));  // 6j1b
   signalRegions.push_back(MT2SignalRegion(6, 6, 2, 2));  // 6j2b
+  signalRegions.push_back(MT2SignalRegion(-1, -1, 3, -1));  // 3b
 
 
 

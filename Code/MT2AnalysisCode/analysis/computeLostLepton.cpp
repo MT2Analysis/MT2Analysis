@@ -270,8 +270,10 @@ MT2LeptonTypeLLEstimate* getLeptonTypeLLEstimate( const std::string& leptType, T
 
       for( unsigned iSR=0; iSR<signalRegions.size(); ++iSR ) {
 
-        if( njets <signalRegions[iSR].nJetsMin   || njets >signalRegions[iSR].nJetsMax ) continue;
-        if( nbjets<signalRegions[iSR].nBJetsMin  || nbjets>signalRegions[iSR].nBJetsMax ) continue;
+        if( signalRegions[iSR].nJetsMin  >= 0  &&  njets  < signalRegions[iSR].nJetsMin ) continue;
+        if( signalRegions[iSR].nJetsMax  >= 0  &&  njets  > signalRegions[iSR].nJetsMax ) continue;
+        if( signalRegions[iSR].nBJetsMin >= 0  &&  nbjets < signalRegions[iSR].nBJetsMin ) continue;
+        if( signalRegions[iSR].nBJetsMax >= 0  &&  nbjets > signalRegions[iSR].nBJetsMax ) continue;
 
         MT2Region thisRegion( &HTRegions[iHT], &signalRegions[iSR] );
 

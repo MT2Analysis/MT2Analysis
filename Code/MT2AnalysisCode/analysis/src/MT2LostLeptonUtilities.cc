@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cstdlib>
+#include <cmath>
 
 
 
@@ -83,7 +84,18 @@ MT2SingleLLEstimate MT2SingleLLEstimate::operator+( const MT2SingleLLEstimate& r
 }
 
 
+void MT2SingleLLEstimate::addOverflow() {
 
+  yield->SetBinContent(yield->GetNbinsX(),
+      yield->GetBinContent(yield->GetNbinsX()  )+
+      yield->GetBinContent(yield->GetNbinsX()+1)  );
+  yield->SetBinError(  yield->GetNbinsX(),
+      sqrt(yield->GetBinError(yield->GetNbinsX()  )*
+           yield->GetBinError(yield->GetNbinsX()  )+
+           yield->GetBinError(yield->GetNbinsX()+1)*
+           yield->GetBinError(yield->GetNbinsX()+1)  ));
+
+}
 
 
 
@@ -111,11 +123,11 @@ MT2LeptonTypeLLEstimate::MT2LeptonTypeLLEstimate( const std::string& aname, cons
 
       MT2Region thisRegion(&(HTRegions[iHR]), &(signalRegions[iSR]));
 
-      MT2SingleLLEstimate* recoEst = new MT2SingleLLEstimate( "reco_" + suffix, thisRegion );
-      MT2SingleLLEstimate* genEst  = new MT2SingleLLEstimate( "gen_"  + suffix, thisRegion );
+      MT2SingleLLEstimate* newPred = new MT2SingleLLEstimate( "pred_" + suffix, thisRegion );
+      pred.push_back(newPred);
 
-      reco.push_back(recoEst);
-       gen.push_back(genEst);
+      MT2SingleLLEstimate* newsimtruth = new MT2SingleLLEstimate( "simtruth_" + suffix, thisRegion );
+      simtruth.push_back(newsimtruth);
 
     } // for SR
 
@@ -131,11 +143,11 @@ MT2SingleLLEstimate* MT2LeptonTypeLLEstimate::getRegion( const std::string& regi
 
   MT2SingleLLEstimate* theRegion = 0;
 
-  for( unsigned i=0; i<reco.size(); ++i ) {
+  for( unsigned i=0; i<pred.size(); ++i ) {
 
-    if( reco[i]->regionName() == regionName ) {
+    if( pred[i]->regionName() == regionName ) {
 
-      theRegion = reco[i];
+      theRegion = pred[i];
       break;
 
     }
@@ -150,17 +162,16 @@ MT2SingleLLEstimate* MT2LeptonTypeLLEstimate::getRegion( const std::string& regi
 
 
 
+MT2SingleLLEstimate* MT2LeptonTypeLLEstimate::getRegionGen( const std::string& regionName ) const {
 
-MT2SingleLLEstimate* MT2LeptonTypeLLEstimate::getGenRegion( const std::string& regionName ) const {
 
+  MT2SingleLLEstimate* theRegion = 0;
 
-  MT2SingleLLEstimate* theRegion;
+  for( unsigned i=0; i<simtruth.size(); ++i ) {
 
-  for( unsigned i=0; i<gen.size(); ++i ) {
+    if( simtruth[i]->regionName() == regionName ) {
 
-    if( gen[i]->regionName() == regionName ) {
-
-      theRegion = gen[i];
+      theRegion = simtruth[i];
       break;
 
     }
@@ -171,6 +182,9 @@ MT2SingleLLEstimate* MT2LeptonTypeLLEstimate::getGenRegion( const std::string& r
   return theRegion;
 
 }
+
+
+
 
 
 
@@ -184,20 +198,20 @@ MT2LeptonTypeLLEstimate MT2LeptonTypeLLEstimate::operator+( const MT2LeptonTypeL
 
   MT2LeptonTypeLLEstimate result( newname, newSName );
 
-  int nRegions = this->reco.size();
+  int nRegions = this->pred.size();
 
   for( unsigned i=0; i<nRegions; ++i ) {
 
-    if( (this->reco[i]->regionName() != rhs.reco[i]->regionName()) || (this->gen[i]->regionName() != rhs.gen[i]->regionName())) {
+    if( (this->pred[i]->regionName() != rhs.pred[i]->regionName()) ) {
       std::cout << "[MT2LeptonTypeLLEstimate::operator+] ERROR! Can't add estimates with different regions. Exiting." << std::endl;
       exit(313);
     }
 
-    MT2SingleLLEstimate* reco_sum = new MT2SingleLLEstimate( *(this->reco[i]) + *(rhs.reco[i]) );
-    MT2SingleLLEstimate* gen_sum  = new MT2SingleLLEstimate( *(this->gen[i])  + *(rhs.gen[i]) );
+    MT2SingleLLEstimate* reco_sum = new MT2SingleLLEstimate( *(this->pred[i]) + *(rhs.pred[i]) );
+    result.pred.push_back( reco_sum );
 
-    result.reco.push_back( reco_sum );
-    result.gen.push_back( gen_sum );
+    MT2SingleLLEstimate* gen_sum = new MT2SingleLLEstimate( *(this->simtruth[i]) + *(rhs.simtruth[i]) );
+    result.simtruth.push_back( gen_sum );
 
   }
 
@@ -209,6 +223,15 @@ MT2LeptonTypeLLEstimate MT2LeptonTypeLLEstimate::operator+( const MT2LeptonTypeL
 
 
 
+void MT2LeptonTypeLLEstimate::addOverflow() {
+
+  for( unsigned i=0; i<pred.size(); ++i )
+    pred[i]->addOverflow();
+ 
+  for( unsigned i=0; i<simtruth.size(); ++i )
+    simtruth[i]->addOverflow();
+ 
+}
 
 
 

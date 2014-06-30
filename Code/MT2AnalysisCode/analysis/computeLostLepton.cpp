@@ -26,6 +26,7 @@ float getISRCorrection( MT2tree* fMT2tree, const MT2Sample& sample );
 void getBTagScaleFactor( MT2tree* fMT2tree, int njets, int nbjets, float& btagSF, float& btagSFerr );
 MT2LostLeptonEstimate* mergeEstimates( std::vector<MT2LostLeptonEstimate*> llest, const std::string& n1, const std::string& n2="", const std::string& n3="", const std::string& n4="", const std::string& n5="" );
 std::vector<TH1D*> getPredictionHistos( const std::string& prefix, const std::string& leptType, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions, MT2LostLeptonEstimate* ll_tot, MT2LostLeptonEstimate* ll_bg, MT2LostLeptonEstimate* ll_eff );
+std::vector<TH1D*> getSimTruthHistos( const std::string& prefix, const std::string& leptType, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions, MT2LostLeptonEstimate* ll_tot );
 
 
 
@@ -94,8 +95,8 @@ int main( int argc, char* argv[] ) {
   std::vector<TH1D*> vh1_mc_ele   = getPredictionHistos( "PredictionMC", "Ele", HTRegions, signalRegions, ll_allMC, ll_bg, ll_topW );
   std::vector<TH1D*> vh1_mc_mu    = getPredictionHistos( "PredictionMC", "Muo", HTRegions, signalRegions, ll_allMC, ll_bg, ll_topW );
 
-  std::vector<TH1D*> vh1_sim_ele = getPredictionHistos( "SimulationTruth", "EleSim", HTRegions, signalRegions, ll_topW, 0, 0 );
-  std::vector<TH1D*> vh1_sim_mu  = getPredictionHistos( "SimulationTruth", "MuoSim", HTRegions, signalRegions, ll_topW, 0, 0 );
+  std::vector<TH1D*> vh1_sim_ele = getSimTruthHistos( "SimulationTruth", "Ele", HTRegions, signalRegions, ll_topW );
+  std::vector<TH1D*> vh1_sim_mu  = getSimTruthHistos( "SimulationTruth", "Muo", HTRegions, signalRegions, ll_topW );
 
 
 
@@ -193,32 +194,34 @@ MT2LostLeptonEstimate* computeLostLepton( const MT2Sample& sample, std::vector<M
   TString trigger = triggerStream.str().c_str();
   TString cuts = ( sample.type=="data") ? (preselection + " && " + trigger) : preselection;
   
-  TString cuts_ele    = cuts + " && NEles==1 && NMuons==0";
-  TString cuts_muo    = cuts + " && NEles==0 && NMuons==1";
-  TString cuts_noreco = cuts + " && NEles==0 && NMuons==0";
+  //TString cuts_ele    = cuts + " && NEles==1 && NMuons==0";
+  //TString cuts_muo    = cuts + " && NEles==0 && NMuons==1";
+  //TString cuts_noreco = cuts + " && NEles==0 && NMuons==0";
 
   gROOT->cd();
 
 
-  TTree* tree_ele    = tree->CopyTree(cuts_ele);
-  TTree* tree_muo    = tree->CopyTree(cuts_muo);
-  TTree* tree_noreco = tree->CopyTree(cuts_noreco);
+  TTree* tree_reduced= tree->CopyTree(cuts);
+  //TTree* tree_ele    = tree->CopyTree(cuts_ele);
+  //TTree* tree_muo    = tree->CopyTree(cuts_muo);
+  //TTree* tree_noreco = tree->CopyTree(cuts_noreco);
 
 
-  MT2LeptonTypeLLEstimate* llest_ele    = getLeptonTypeLLEstimate( "Ele"   , tree_ele,    sample, HTRegions, signalRegions );
-  MT2LeptonTypeLLEstimate* llest_muo    = getLeptonTypeLLEstimate( "Muo"   , tree_muo,    sample, HTRegions, signalRegions );
-  MT2LeptonTypeLLEstimate* llest_eleSim = getLeptonTypeLLEstimate( "EleSim", tree_noreco, sample, HTRegions, signalRegions );
-  MT2LeptonTypeLLEstimate* llest_muoSim = getLeptonTypeLLEstimate( "MuoSim", tree_noreco, sample, HTRegions, signalRegions );
+  MT2LeptonTypeLLEstimate* llest_ele    = getLeptonTypeLLEstimate( "Ele"   , tree_reduced, sample, HTRegions, signalRegions );
+  MT2LeptonTypeLLEstimate* llest_muo    = getLeptonTypeLLEstimate( "Muo"   , tree_reduced, sample, HTRegions, signalRegions );
+  //MT2LeptonTypeLLEstimate* llest_eleSim = getLeptonTypeLLEstimate( "EleSim", tree_noreco, sample, HTRegions, signalRegions );
+  //MT2LeptonTypeLLEstimate* llest_muoSim = getLeptonTypeLLEstimate( "MuoSim", tree_noreco, sample, HTRegions, signalRegions );
 
   MT2LostLeptonEstimate* llest = new MT2LostLeptonEstimate(sample.name, sample.sname);
   llest->l["Ele"] = llest_ele;
   llest->l["Muo"] = llest_muo;
-  llest->l["EleSim"] = llest_eleSim;
-  llest->l["MuoSim"] = llest_muoSim;
+  //llest->l["EleSim"] = llest_eleSim;
+  //llest->l["MuoSim"] = llest_muoSim;
 
   delete tree;
-  delete tree_ele;
-  delete tree_muo;
+  delete tree_reduced;
+  //delete tree_ele;
+  //delete tree_muo;
   file->Close();
 
   return llest;
@@ -232,9 +235,11 @@ MT2LeptonTypeLLEstimate* getLeptonTypeLLEstimate( const std::string& leptType, T
 
 
   int pdgIdLept = -999;
-  if(leptType=="Ele" || leptType=="EleSim") {
+  if(leptType=="Ele") {
+  //if(leptType=="Ele" || leptType=="EleSim") {
     pdgIdLept = 11;
-  } else if(leptType=="Muo" || leptType=="MuoSim") {
+  } else if(leptType=="Muo") {
+  //} else if(leptType=="Muo" || leptType=="MuoSim") {
     pdgIdLept = 13;
   } else {
     std::cout << "Unkown lepton type: " << leptType << "! Exiting." << std::endl;
@@ -284,12 +289,20 @@ MT2LeptonTypeLLEstimate* getLeptonTypeLLEstimate( const std::string& leptType, T
     }
 
 
-    float mt = 0.;
-    if(leptType=="Ele") mt = fMT2tree->ele[0].MT;
-    if(leptType=="Muo") mt = fMT2tree->muo[0].MT;
-
     int ngenlept = fMT2tree->GenNumLeptFromW(pdgIdLept, 0, 1000, fIncludeTaus);
-    if( (leptType=="EleSim" || leptType=="MuoSim") && ngenlept!=1 ) continue;
+
+    float mt = 0.;
+    bool hasRecoLep = false;
+    if( leptType=="Ele" ) {
+      hasRecoLep = (fMT2tree->NEles==1 && fMT2tree->NMuons==0);
+      mt = (hasRecoLep) ? fMT2tree->ele[0].MT : 0.;
+    } else if( leptType=="Muo" ) {
+      hasRecoLep = (fMT2tree->NEles==0 && fMT2tree->NMuons==1);
+      mt = (hasRecoLep) ? fMT2tree->muo[0].MT : 0.;
+    }
+
+    bool noRecoLep = (fMT2tree->NEles==0 && fMT2tree->NMuons==0);
+
 
     bool foundRegion = false;
 
@@ -306,20 +319,32 @@ MT2LeptonTypeLLEstimate* getLeptonTypeLLEstimate( const std::string& leptType, T
 
         MT2Region thisRegion( &HTRegions[iHT], &signalRegions[iSR] );
 
-        MT2SingleLLEstimate* thisPred = llest->getRegion( thisRegion.getName() );
+        MT2SingleLLEstimate* thisPred     = llest->getRegion   ( thisRegion.getName() );
+        MT2SingleLLEstimate* thisSimTruth = llest->getRegionGen( thisRegion.getName() );
 
-        thisPred->yield->Fill( mt2, fullweight );
 
-        thisPred->effMT_tot->Fill( mt2, fullweight );
-        if( mt<100. ) thisPred->effMT_pass->Fill( mt2, fullweight );
+        if( hasRecoLep ) {
 
-        thisPred->effLept_tot->Fill( mt2, fullweight );
-        if( ngenlept>0 ) thisPred->effLept_pass->Fill( mt2, fullweight );
+          thisPred->yield->Fill( mt2, fullweight );
+
+          thisPred->effMT_tot->Fill( mt2, fullweight );
+          if( mt<100. ) thisPred->effMT_pass->Fill( mt2, fullweight );
+
+          if( ngenlept==1 ) { 
+            thisPred->effLept_pass->Fill( mt2, fullweight );
+          }
+           
+        } 
+
+
+        if( ngenlept==1 ) 
+          thisPred->effLept_tot->Fill( mt2, fullweight );
+ 
+        if( ngenlept==1 && noRecoLep ) thisSimTruth->yield->Fill( mt2, fullweight );
+
 
         foundRegion = true; // found region, move on
 
-if( leptType=="EleSim")
-std::cout << thisPred->yield->GetEntries() << std::endl;
       }  // for iSR
 
     }  // for iHT
@@ -385,16 +410,13 @@ std::vector<TH1D*> getPredictionHistos( const std::string& prefix, const std::st
   int nHistos = HTRegions.size();
   int nBins = signalRegions.size();
 
-  std::string leptType_forHisto(leptType);
-  if( leptType_forHisto=="EleSim" ) leptType_forHisto = "Ele";
-  if( leptType_forHisto=="MuoSim" ) leptType_forHisto = "Muo";
 
   
   std::vector<TH1D*> histos;
 
   for( unsigned i=0; i<nHistos; ++i ) {
 
-    TH1D* h1 = new TH1D(Form("%s_%s_%s", prefix.c_str(), leptType_forHisto.c_str(), HTRegions[i].name.c_str()), "", nBins, 0., nBins);
+    TH1D* h1 = new TH1D(Form("%s_%s_%s", prefix.c_str(), leptType.c_str(), HTRegions[i].name.c_str()), "", nBins, 0., nBins);
     h1->Sumw2();
 
     for( unsigned j=0; j<nBins; ++j ) {
@@ -412,8 +434,57 @@ std::vector<TH1D*> getPredictionHistos( const std::string& prefix, const std::st
       float  effLept = (ll_eff!=0 && ll_eff->l[leptType.c_str()]!=0) ? ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effLept()->GetEfficiency(1) : 0.;
 
       float pred = (effLept>0. && effMT>0.) ? (totYield-bgYield)*(1.-effLept)/(effLept*effMT) : (totYield-bgYield);
+if( prefix=="PredictionMC" ) {
+std::cout << std::endl <<  thisRegion.getName() << " (" << leptType << ")" << std::endl;
+std::cout << "totYield: " << totYield << std::endl;
+std::cout << "bgYield: " << bgYield << std::endl;
+std::cout << "effMT: " << effMT << std::endl;
+std::cout << "effLept: " << effLept << std::endl;
+std::cout << "pred: " << pred << std::endl;
+}
 
       h1->SetBinContent( iBin, pred );
+
+    }
+
+    histos.push_back(h1);
+
+  } // for
+
+  return histos;
+
+}
+
+
+
+
+
+std::vector<TH1D*> getSimTruthHistos( const std::string& prefix, const std::string& leptType, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions, MT2LostLeptonEstimate* ll_tot ) {
+
+
+  int nHistos = HTRegions.size();
+  int nBins = signalRegions.size();
+
+
+  
+  std::vector<TH1D*> histos;
+
+  for( unsigned i=0; i<nHistos; ++i ) {
+
+    TH1D* h1 = new TH1D(Form("%s_%s_%s", prefix.c_str(), leptType.c_str(), HTRegions[i].name.c_str()), "", nBins, 0., nBins);
+    h1->Sumw2();
+
+    for( unsigned j=0; j<nBins; ++j ) {
+  
+      int iBin = j+1;
+
+      MT2Region thisRegion( &HTRegions[i], &signalRegions[j] );
+
+      h1->GetXaxis()->SetBinLabel(iBin, signalRegions[j].getName().c_str());
+
+      float totYield = (ll_tot!=0 && ll_tot->l[leptType.c_str()]!=0) ? ll_tot->l[leptType.c_str()]->getRegionGen(thisRegion.getName())->yield->Integral() : 0.;
+
+      h1->SetBinContent( iBin, totYield );
 
     }
 

@@ -60,6 +60,8 @@ class MT2SingleLLEstimate {
     return new TEfficiency(*effMT_pass, *effMT_tot);
   }
 
+  void addOverflow();
+
  private:
 
 };
@@ -81,16 +83,21 @@ class MT2LeptonTypeLLEstimate {
   MT2SingleLLEstimate* getRegion( const MT2Region& region ) const {
     return this->getRegion( region.getName() );
   }
+  MT2SingleLLEstimate* getRegionGen( const MT2Region& region ) const {
+    return this->getRegionGen( region.getName() );
+  }
   MT2SingleLLEstimate* getRegion( const std::string& regionName ) const;
-  MT2SingleLLEstimate* getGenRegion( const std::string& regionName ) const;
+  MT2SingleLLEstimate* getRegionGen( const std::string& regionName ) const;
 
   MT2LeptonTypeLLEstimate operator+( const MT2LeptonTypeLLEstimate& rhs ) const;
+
+  void addOverflow();
 
   std::string name;
   std::string SName;
 
-  std::vector< MT2SingleLLEstimate* > reco;
-  std::vector< MT2SingleLLEstimate* > gen;
+  std::vector< MT2SingleLLEstimate* > pred;
+  std::vector< MT2SingleLLEstimate* > simtruth;
 
  private:
 
@@ -112,6 +119,7 @@ class MT2LostLeptonEstimate {
 
   MT2LostLeptonEstimate operator+(const MT2LostLeptonEstimate& rhs) const;
   const MT2LostLeptonEstimate& operator=(const MT2LostLeptonEstimate& rhs);
+
 
   std::string name;
   std::string SName;

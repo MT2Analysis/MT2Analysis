@@ -22,8 +22,8 @@ bool fIncludeTaus = true;
 
 MT2LostLeptonEstimate* computeLostLepton( const MT2Sample& sample, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions );
 MT2LeptonTypeLLEstimate* getLeptonTypeLLEstimate( const std::string& leptType, TTree* tree, MT2Sample sample, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions );
-//float getISRCorrection( MT2tree* fMT2tree, const MT2Sample& sample, const std::string& sampletype );
-//void getBTagSF( int njets, int nbjets, double& btagSF, double& btagSFerr );
+float getISRCorrection( MT2tree* fMT2tree, const MT2Sample& sample );
+void getBTagScaleFactor( MT2tree* fMT2tree, int njets, int nbjets, float& btagSF, float& btagSFerr );
 MT2LostLeptonEstimate* mergeEstimates( std::vector<MT2LostLeptonEstimate*> llest, const std::string& n1, const std::string& n2="", const std::string& n3="", const std::string& n4="", const std::string& n5="" );
 std::vector<TH1D*> getPredictionHistos( const std::string& prefix, const std::string& leptType, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions, MT2LostLeptonEstimate* ll_tot, MT2LostLeptonEstimate* ll_bg, MT2LostLeptonEstimate* ll_eff );
 
@@ -60,9 +60,9 @@ int main( int argc, char* argv[] ) {
   signalRegions.push_back(MT2SignalRegion(3, 5, 0, 0));  // 3to5j0b
   signalRegions.push_back(MT2SignalRegion(3, 5, 1, 1));  // 3to5j1b
   signalRegions.push_back(MT2SignalRegion(3, 5, 2, 2));  // 3to5j2b
-  signalRegions.push_back(MT2SignalRegion(6, 6, 0, 0));  // 6j0b
-  signalRegions.push_back(MT2SignalRegion(6, 6, 1, 1));  // 6j1b
-  signalRegions.push_back(MT2SignalRegion(6, 6, 2, 2));  // 6j2b
+  signalRegions.push_back(MT2SignalRegion(6, -1, 0, 0));  // 6j0b
+  signalRegions.push_back(MT2SignalRegion(6, -1, 1, 1));  // 6j1b
+  signalRegions.push_back(MT2SignalRegion(6, -1, 2, 2));  // 6j2b
   signalRegions.push_back(MT2SignalRegion(-1, -1, 3, -1));  // 3b
 
 
@@ -91,8 +91,11 @@ int main( int argc, char* argv[] ) {
   std::vector<TH1D*> vh1_data_ele = getPredictionHistos( "Prediction", "Ele", HTRegions, signalRegions, ll_data, ll_bg, ll_topW );
   std::vector<TH1D*> vh1_data_mu  = getPredictionHistos( "Prediction", "Muo", HTRegions, signalRegions, ll_data, ll_bg, ll_topW );
 
-  std::vector<TH1D*> vh1_mc_ele   = getPredictionHistos( "SimulationTruth", "Ele", HTRegions, signalRegions, ll_allMC, ll_bg, ll_topW );
-  std::vector<TH1D*> vh1_mc_mu    = getPredictionHistos( "SimulationTruth", "Muo", HTRegions, signalRegions, ll_allMC, ll_bg, ll_topW );
+  std::vector<TH1D*> vh1_mc_ele   = getPredictionHistos( "PredictionMC", "Ele", HTRegions, signalRegions, ll_allMC, ll_bg, ll_topW );
+  std::vector<TH1D*> vh1_mc_mu    = getPredictionHistos( "PredictionMC", "Muo", HTRegions, signalRegions, ll_allMC, ll_bg, ll_topW );
+
+  std::vector<TH1D*> vh1_sim_ele = getPredictionHistos( "SimulationTruth", "EleSim", HTRegions, signalRegions, ll_topW, 0, 0 );
+  std::vector<TH1D*> vh1_sim_mu  = getPredictionHistos( "SimulationTruth", "MuoSim", HTRegions, signalRegions, ll_topW, 0, 0 );
 
 
 
@@ -100,7 +103,7 @@ int main( int argc, char* argv[] ) {
   system(Form("mkdir -p %s", outputdir.c_str()));
 
   
-  TFile* outfile = TFile::Open(Form("%s/ll_%s.root", outputdir.c_str(), sampleName.c_str()), "recreate");
+  TFile* outfile = TFile::Open(Form("%s/LostLepton_%s.root", outputdir.c_str(), sampleName.c_str()), "recreate");
   outfile->cd();
 
   for( unsigned i=0; i<HTRegions.size(); ++i ) {
@@ -110,6 +113,9 @@ int main( int argc, char* argv[] ) {
 
     vh1_mc_ele  [i]->Write();
     vh1_mc_mu   [i]->Write();
+
+    vh1_sim_ele [i]->Write();
+    vh1_sim_mu  [i]->Write();
 
   }
 
@@ -187,21 +193,28 @@ MT2LostLeptonEstimate* computeLostLepton( const MT2Sample& sample, std::vector<M
   TString trigger = triggerStream.str().c_str();
   TString cuts = ( sample.type=="data") ? (preselection + " && " + trigger) : preselection;
   
-  TString cuts_ele = cuts + " && NEles==1 && NMuons==0";
-  TString cuts_muo = cuts + " && NEles==0 && NMuons==1";
+  TString cuts_ele    = cuts + " && NEles==1 && NMuons==0";
+  TString cuts_muo    = cuts + " && NEles==0 && NMuons==1";
+  TString cuts_noreco = cuts + " && NEles==0 && NMuons==0";
 
   gROOT->cd();
 
-  TTree* tree_ele = tree->CopyTree(cuts_ele);
-  TTree* tree_muo = tree->CopyTree(cuts_muo);
+
+  TTree* tree_ele    = tree->CopyTree(cuts_ele);
+  TTree* tree_muo    = tree->CopyTree(cuts_muo);
+  TTree* tree_noreco = tree->CopyTree(cuts_noreco);
 
 
-  MT2LeptonTypeLLEstimate* llest_ele = getLeptonTypeLLEstimate( "Ele", tree_ele, sample, HTRegions, signalRegions );
-  MT2LeptonTypeLLEstimate* llest_muo = getLeptonTypeLLEstimate( "Muo", tree_muo, sample, HTRegions, signalRegions );
+  MT2LeptonTypeLLEstimate* llest_ele    = getLeptonTypeLLEstimate( "Ele"   , tree_ele,    sample, HTRegions, signalRegions );
+  MT2LeptonTypeLLEstimate* llest_muo    = getLeptonTypeLLEstimate( "Muo"   , tree_muo,    sample, HTRegions, signalRegions );
+  MT2LeptonTypeLLEstimate* llest_eleSim = getLeptonTypeLLEstimate( "EleSim", tree_noreco, sample, HTRegions, signalRegions );
+  MT2LeptonTypeLLEstimate* llest_muoSim = getLeptonTypeLLEstimate( "MuoSim", tree_noreco, sample, HTRegions, signalRegions );
 
   MT2LostLeptonEstimate* llest = new MT2LostLeptonEstimate(sample.name, sample.sname);
   llest->l["Ele"] = llest_ele;
   llest->l["Muo"] = llest_muo;
+  llest->l["EleSim"] = llest_eleSim;
+  llest->l["MuoSim"] = llest_muoSim;
 
   delete tree;
   delete tree_ele;
@@ -219,9 +232,9 @@ MT2LeptonTypeLLEstimate* getLeptonTypeLLEstimate( const std::string& leptType, T
 
 
   int pdgIdLept = -999;
-  if(leptType=="Ele") {
+  if(leptType=="Ele" || leptType=="EleSim") {
     pdgIdLept = 11;
-  } else if(leptType=="Muo") {
+  } else if(leptType=="Muo" || leptType=="MuoSim") {
     pdgIdLept = 13;
   } else {
     std::cout << "Unkown lepton type: " << leptType << "! Exiting." << std::endl;
@@ -245,6 +258,8 @@ MT2LeptonTypeLLEstimate* getLeptonTypeLLEstimate( const std::string& leptType, T
 
   int nentries = tree->GetEntries();
 
+  float fullweight = weight;
+
 
   for( unsigned iEntry=0; iEntry<nentries; ++iEntry ) {
 
@@ -258,17 +273,31 @@ MT2LeptonTypeLLEstimate* getLeptonTypeLLEstimate( const std::string& leptType, T
     int njets  = fMT2tree->NJetsIDLoose40;
     int nbjets = fMT2tree->NBJets40CSVM;
 
-    float mt = (leptType=="Ele") ? fMT2tree->ele[0].MT : fMT2tree->muo[0].MT;
+    fullweight = weight;
+
+    if( !(sample.type=="data") ) {
+      float puweight =  fMT2tree->pileUp.Weight;
+      float isrweight = getISRCorrection( fMT2tree, sample );
+      float btagSF, btagSFerr;
+      getBTagScaleFactor( fMT2tree, njets, nbjets, btagSF, btagSFerr );
+      fullweight = weight * puweight * isrweight *btagSF;
+    }
+
+
+    float mt = 0.;
+    if(leptType=="Ele") mt = fMT2tree->ele[0].MT;
+    if(leptType=="Muo") mt = fMT2tree->muo[0].MT;
 
     int ngenlept = fMT2tree->GenNumLeptFromW(pdgIdLept, 0, 1000, fIncludeTaus);
+    if( (leptType=="EleSim" || leptType=="MuoSim") && ngenlept!=1 ) continue;
 
+    bool foundRegion = false;
 
-    for( unsigned iHT=0; iHT<HTRegions.size(); ++iHT ) {
-
+    for( unsigned iHT=0; iHT<HTRegions.size() && !(foundRegion); ++iHT ) {
 
       if( ht<HTRegions[iHT].htMin || ht>=HTRegions[iHT].htMax || met<HTRegions[iHT].metMin ) continue;
 
-      for( unsigned iSR=0; iSR<signalRegions.size(); ++iSR ) {
+      for( unsigned iSR=0; iSR<signalRegions.size() && !(foundRegion); ++iSR ) {
 
         if( signalRegions[iSR].nJetsMin  >= 0  &&  njets  < signalRegions[iSR].nJetsMin ) continue;
         if( signalRegions[iSR].nJetsMax  >= 0  &&  njets  > signalRegions[iSR].nJetsMax ) continue;
@@ -277,22 +306,28 @@ MT2LeptonTypeLLEstimate* getLeptonTypeLLEstimate( const std::string& leptType, T
 
         MT2Region thisRegion( &HTRegions[iHT], &signalRegions[iSR] );
 
-        MT2SingleLLEstimate* thisRecoEst = llest->getRegion( thisRegion.getName() );
+        MT2SingleLLEstimate* thisPred = llest->getRegion( thisRegion.getName() );
 
-        thisRecoEst->yield->Fill( mt2, weight );
+        thisPred->yield->Fill( mt2, fullweight );
 
-        thisRecoEst->effMT_tot->Fill( mt2, weight );
-        if( mt<100. ) thisRecoEst->effMT_pass->Fill( mt2, weight );
+        thisPred->effMT_tot->Fill( mt2, fullweight );
+        if( mt<100. ) thisPred->effMT_pass->Fill( mt2, fullweight );
 
-        thisRecoEst->effLept_tot->Fill( mt2, weight );
-        if( ngenlept>0 ) thisRecoEst->effLept_pass->Fill( mt2, weight );
+        thisPred->effLept_tot->Fill( mt2, fullweight );
+        if( ngenlept>0 ) thisPred->effLept_pass->Fill( mt2, fullweight );
 
+        foundRegion = true; // found region, move on
+
+if( leptType=="EleSim")
+std::cout << thisPred->yield->GetEntries() << std::endl;
       }  // for iSR
 
     }  // for iHT
 
   } // for entries
 
+
+  llest->addOverflow();
 
   std::cout << "  -> Finished lepton type: " << leptType << std::endl;
   std::cout << std::endl << std::endl;
@@ -350,12 +385,16 @@ std::vector<TH1D*> getPredictionHistos( const std::string& prefix, const std::st
   int nHistos = HTRegions.size();
   int nBins = signalRegions.size();
 
+  std::string leptType_forHisto(leptType);
+  if( leptType_forHisto=="EleSim" ) leptType_forHisto = "Ele";
+  if( leptType_forHisto=="MuoSim" ) leptType_forHisto = "Muo";
+
   
   std::vector<TH1D*> histos;
 
   for( unsigned i=0; i<nHistos; ++i ) {
 
-    TH1D* h1 = new TH1D(Form("%s_%s_%s", prefix.c_str(), leptType.c_str(), HTRegions[i].name.c_str()), "", nBins, 0., nBins);
+    TH1D* h1 = new TH1D(Form("%s_%s_%s", prefix.c_str(), leptType_forHisto.c_str(), HTRegions[i].name.c_str()), "", nBins, 0., nBins);
     h1->Sumw2();
 
     for( unsigned j=0; j<nBins; ++j ) {
@@ -366,13 +405,13 @@ std::vector<TH1D*> getPredictionHistos( const std::string& prefix, const std::st
 
       h1->GetXaxis()->SetBinLabel(iBin, signalRegions[j].getName().c_str());
 
-      float totYield = (ll_tot->l[leptType.c_str()]!=0) ? ll_tot->l[leptType.c_str()]->getRegion(thisRegion.getName())->yield->Integral() : 0.;
-      float  bgYield = (ll_bg ->l[leptType.c_str()]!=0) ? ll_bg ->l[leptType.c_str()]->getRegion(thisRegion.getName())->yield->Integral() : 0.;
+      float totYield = (ll_tot!=0 && ll_tot->l[leptType.c_str()]!=0) ? ll_tot->l[leptType.c_str()]->getRegion(thisRegion.getName())->yield->Integral() : 0.;
+      float  bgYield = (ll_bg !=0 && ll_bg ->l[leptType.c_str()]!=0) ? ll_bg ->l[leptType.c_str()]->getRegion(thisRegion.getName())->yield->Integral() : 0.;
 
-      float  effMT   = (ll_eff->l[leptType.c_str()]!=0) ? ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effMT()  ->GetEfficiency(1) : 0.;
-      float  effLept = (ll_eff->l[leptType.c_str()]!=0) ? ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effLept()->GetEfficiency(1) : 0.;
+      float  effMT   = (ll_eff!=0 && ll_eff->l[leptType.c_str()]!=0) ? ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effMT()  ->GetEfficiency(1) : 0.;
+      float  effLept = (ll_eff!=0 && ll_eff->l[leptType.c_str()]!=0) ? ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effLept()->GetEfficiency(1) : 0.;
 
-      float pred = (effLept>0. && effMT>0.) ? (totYield-bgYield)*(1.-effLept)/(effLept*effMT) : 0.;
+      float pred = (effLept>0. && effMT>0.) ? (totYield-bgYield)*(1.-effLept)/(effLept*effMT) : (totYield-bgYield);
 
       h1->SetBinContent( iBin, pred );
 
@@ -393,9 +432,23 @@ std::vector<TH1D*> getPredictionHistos( const std::string& prefix, const std::st
 
 
 
-/*
 
-float getISRCorrection( MT2tree* fMT2tree, const MT2Sample& sample, const std::string& sampletype ) {
+
+float getISRCorrection( MT2tree* fMT2tree, const MT2Sample& sample ) {
+
+  //assign all samples to its type
+  string sampletype = (string)sample.type;
+  if(sampletype==(string)"mc"){
+    if(sample.sname=="QCD")         sampletype = (string)"QCD";
+    else if(sample.sname=="Wtolnu") sampletype = (string)"WJets";
+    else if(sample.sname=="DY")     sampletype = (string)"ZJets";
+    else if(sample.name=="TTbar")   sampletype = (string)"TTbar";
+    else if(sample.name=="TTbar_Madgraph0l")   sampletype = (string)"TTbar";
+    else if(sample.name=="TTbar_Madgraph1l")   sampletype = (string)"TTbar";
+    else if(sample.name=="TTbar_Madgraph2l")   sampletype = (string)"TTbar";
+    else if(sample.sname=="Top")    sampletype = (string)"SingleTop";//no ttbar, includes TTZ, TTW
+    else sampletype = (string)"Other";
+  }
 
   TLorentzVector hardgenlv; hardgenlv.SetPtEtaPhiM(0,0,0,0);
   if(sampletype=="WJets"){
@@ -503,7 +556,7 @@ float getISRCorrection( MT2tree* fMT2tree, const MT2Sample& sample, const std::s
 
 
 
-void getBTagSF( int njets, int nbjets, double& btagSF, double& btagSFerr ) {
+void getBTagScaleFactor( MT2tree* fMT2tree, int njets, int nbjets, float& btagSF, float& btagSFerr ) {
 
 
   if( njets < 2 ) { // shouldnt be possible
@@ -557,4 +610,4 @@ void getBTagSF( int njets, int nbjets, double& btagSF, double& btagSFerr ) {
 
 }
 
-*/
+

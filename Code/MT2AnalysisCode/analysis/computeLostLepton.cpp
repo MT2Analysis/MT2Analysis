@@ -11,7 +11,7 @@
 
 
 
-bool fFast = false;
+bool fFast = true;
 bool fISRreweight = true;
 bool fbTagReweight = true;
 bool fIncludeTaus = true;

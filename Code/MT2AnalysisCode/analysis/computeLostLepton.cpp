@@ -68,8 +68,7 @@ int main( int argc, char* argv[] ) {
   signalRegions.push_back(MT2SignalRegion(-1, -1, 3, -1));  // 3b
 
 
-
-  TH1::AddDirectory(kFALSE);
+  TH1::AddDirectory(kFALSE); // stupid ROOT memory allocation needs this
 
   
   std::vector<MT2LostLeptonEstimate*> llest;
@@ -150,27 +149,27 @@ MT2LostLeptonEstimate* computeLostLepton( const MT2Sample& sample, std::vector<M
 
   std::ostringstream preselectionStream;
   preselectionStream << " " 
-    << "NTausIDLoose3Hits==0"                   << "&&"
-    << "misc.Jet0Pass ==1"                      << "&&"
-    << "misc.Jet1Pass ==1"                      << "&&"
-    << "misc.Vectorsumpt < 70"                  << "&&" 
-    << "misc.MinMetJetDPhi4Pt40 >0.3"           << "&&"
-    << "misc.MET>30.";
-  if( fFast ) preselectionStream << "&&misc.MT2>=100.";//lowest border in MT2
+    << "(NTausIDLoose3Hits==0)"                   << " && "
+    << "(misc.Jet0Pass ==1)"                      << " && "
+    << "(misc.Jet1Pass ==1)"                      << " && "
+    << "(misc.Vectorsumpt < 70)"                  << " && " 
+    << "(misc.MinMetJetDPhi4Pt40 >0.3)"           << " && "
+    << "(misc.MET>30.)";
+  if( fFast ) preselectionStream << " && (misc.MT2>=100.) ";//lowest border in MT2
 
   // add "base" cuts:
   preselectionStream << " && " 
-    << "misc.PassJet40ID ==1"                             << "&&"
-    << "(misc.HBHENoiseFlag == 0 || misc.ProcessID==10)"  << "&&" // signal samples (fastsim) do not have this filter
-    << "misc.CSCTightHaloIDFlag == 0"                     << "&&"
-    << "misc.trackingFailureFlag==0"                      << "&&"
-    << "misc.eeBadScFlag==0"                              << "&&"
-    << "misc.EcalDeadCellTriggerPrimitiveFlag==0"         << "&&"
-    << "misc.TrackingManyStripClusFlag==0"                << "&&"
-    << "misc.TrackingTooManyStripClusFlag==0"             << "&&"
-    << "misc.TrackingLogErrorTooManyClustersFlag==0"      << "&&"
-    << "misc.CrazyHCAL==0";
-  preselectionStream << "&&misc.MET/misc.CaloMETRaw<=2.";//HO cut
+    << "(misc.PassJet40ID ==1)"                             << " && "
+    << "((misc.HBHENoiseFlag == 0 || misc.ProcessID==10))"  << " && " // signal samples (fastsim) do not have this filter
+    << "(misc.CSCTightHaloIDFlag == 0)"                     << " && "
+    << "(misc.trackingFailureFlag==0)"                      << " && "
+    << "(misc.eeBadScFlag==0)"                              << " && "
+    << "(misc.EcalDeadCellTriggerPrimitiveFlag==0)"         << " && "
+    << "(misc.TrackingManyStripClusFlag==0)"                << " && "
+    << "(misc.TrackingTooManyStripClusFlag==0)"             << " && "
+    << "(misc.TrackingLogErrorTooManyClustersFlag==0)"      << " && "
+    << "(misc.CrazyHCAL==0)";
+  preselectionStream << " && (misc.MET/misc.CaloMETRaw<=2.)";//HO cut
 
   
 
@@ -197,7 +196,7 @@ MT2LostLeptonEstimate* computeLostLepton( const MT2Sample& sample, std::vector<M
 
 
   std::ostringstream oneLeptonStream;
-  oneLeptonStream << "(NEles==1 && NMuons==0) || (NEles==0 && NMuons==1)";
+  oneLeptonStream << "((NEles==1 && NMuons==0) || (NEles==0 && NMuons==1))";
   TString oneLeptonCuts = oneLeptonStream.str().c_str();
 
 
@@ -249,9 +248,6 @@ MT2LostLeptonEstimate* computeLostLepton( const MT2Sample& sample, std::vector<M
 
 
 std::vector<MT2LeptonTypeLLEstimate*> getLeptonTypeLLEstimate( std::vector<std::string> leptType, TTree* tree, MT2Sample sample, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions ) {
-
-
-  //std::cout << "  -> Starting lepton type: " << leptType << std::endl;
 
 
   bool isData = (sample.type=="data");
@@ -381,6 +377,13 @@ std::vector<MT2LeptonTypeLLEstimate*> getLeptonTypeLLEstimate( std::vector<std::
         if( signalRegions[iSR].nJetsMax  >= 0  &&  njets  > signalRegions[iSR].nJetsMax ) continue;
         if( signalRegions[iSR].nBJetsMin >= 0  &&  nbjets < signalRegions[iSR].nBJetsMin ) continue;
         if( signalRegions[iSR].nBJetsMax >= 0  &&  nbjets > signalRegions[iSR].nBJetsMax ) continue;
+
+//if( iSR==0 && iHT==1 ) {
+//  std::cout << std::endl;
+//  std::cout << "run: " << fMT2tree->misc.Run << std::endl;
+//  std::cout << "event: " << fMT2tree->misc.Event << std::endl;
+//  std::cout << "MT2: " << fMT2tree->misc.MT2 << std::endl;
+//}
 
         // found region
 

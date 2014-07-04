@@ -13,17 +13,19 @@ MT2HTRegion::MT2HTRegion( const MT2HTRegion& rhs ) {
   htMin = rhs.htMin;
   htMax = rhs.htMax;
   metMin = rhs.metMin;
+  HLT_selection = rhs.HLT_selection;
   
 }
 
 
 
-MT2HTRegion::MT2HTRegion( const std::string& aname, float ahtMin, float ahtMax, float ametMin ) {
+MT2HTRegion::MT2HTRegion( const std::string& aname, float ahtMin, float ahtMax, float ametMin, const std::string& aHLT_selection ) {
 
   name = aname;
   htMin = ahtMin;
   htMax = ahtMax;
   metMin = ametMin;
+  HLT_selection = aHLT_selection;
 
 }
 

@@ -12,7 +12,7 @@ class MT2HTRegion {
  public:
 
   MT2HTRegion( const MT2HTRegion& rhs );
-  MT2HTRegion( const std::string& aname, float ahtMin, float ahtMax, float ametMin );
+  MT2HTRegion( const std::string& aname, float ahtMin, float ahtMax, float ametMin, const std::string& aHLT_selection="" );
   ~MT2HTRegion() {};
 
 
@@ -24,6 +24,8 @@ class MT2HTRegion {
   float htMin;
   float htMax;
   float metMin;
+
+  std::string HLT_selection;
 
  private:
 

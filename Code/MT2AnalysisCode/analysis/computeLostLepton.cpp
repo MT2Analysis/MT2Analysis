@@ -5,6 +5,8 @@
 #include "helper/Utilities.hh"
 #include "Utilities.hh"
 
+#include <TTreeFormula.h>
+
 #include "interface/MT2Common.h"
 #include "interface/MT2Region.h"
 #include "interface/MT2LostLeptonUtilities.h"
@@ -50,11 +52,29 @@ int main( int argc, char* argv[] ) {
 
   std::vector<MT2Sample> fSamples = MT2Common::loadSamples(samplesFileName);
 
- 
+
+
+  std::ostringstream HLT_metHT;
+  HLT_metHT << "( ( ("
+      << "trigger.HLT_PFMET150_v2 == 1 || trigger.HLT_PFMET150_v3 == 1 || trigger.HLT_PFMET150_v4 == 1 || "
+      << "trigger.HLT_PFMET150_v5 == 1 || trigger.HLT_PFMET150_v6 == 1 || trigger.HLT_PFMET150_v7 == 1 )"
+      << "||("
+      << "trigger.HLT_PFHT350_PFMET100_v3==1 || trigger.HLT_PFHT350_PFMET100_v4==1 || trigger.HLT_PFHT350_PFMET100_v5==1 || "
+      << "trigger.HLT_PFHT350_PFMET100_v6==1 || trigger.HLT_PFHT350_PFMET100_v7==1 || trigger.HLT_PFNoPUHT350_PFMET100_v1==1 || "
+      << "trigger.HLT_PFNoPUHT350_PFMET100_v3==1 || trigger.HLT_PFNoPUHT350_PFMET100_v4==1 ) ) &&TOBTECTagger<=8&&ExtraBeamHaloFilter==0)";
+
+  std::ostringstream HLT_HT;
+  HLT_HT << "( ("
+      << "trigger.HLT_PFHT650_v5 == 1 || trigger.HLT_PFHT650_v6 == 1 || trigger.HLT_PFHT650_v7 == 1 || "
+      << "trigger.HLT_PFHT650_v8 == 1 || trigger.HLT_PFHT650_v9 == 1 || "
+      << "trigger.HLT_PFNoPUHT650_v1 == 1 || trigger.HLT_PFNoPUHT650_v3 == 1 || trigger.HLT_PFNoPUHT650_v4 == 1) &&TOBTECTagger<=8&&ExtraBeamHaloFilter==0)";
+
+
+
   std::vector<MT2HTRegion> HTRegions;
-  HTRegions.push_back(MT2HTRegion("lowHT",    450.,    750., 200.));
-  HTRegions.push_back(MT2HTRegion("mediumHT", 750.,   1200.,  30.));
-  HTRegions.push_back(MT2HTRegion("highHT",  1200., 100000.,  30.));
+  HTRegions.push_back(MT2HTRegion("lowHT",    450.,    750., 200., HLT_metHT.str()));
+  HTRegions.push_back(MT2HTRegion("mediumHT", 750.,   1200.,  30., HLT_HT.str()));
+  HTRegions.push_back(MT2HTRegion("highHT",  1200., 100000.,  30., HLT_HT.str()));
 
   std::vector<MT2SignalRegion> signalRegions;
   signalRegions.push_back(MT2SignalRegion(2, 2, 0, 0));  // 2j0b
@@ -173,28 +193,6 @@ MT2LostLeptonEstimate* computeLostLepton( const MT2Sample& sample, std::vector<M
 
   
 
-  std::ostringstream triggerStream;
-  bool isMET = false;
-  if( isMET ) {
-
-    triggerStream << "( ( ("
-      << "trigger.HLT_PFMET150_v2 == 1 || trigger.HLT_PFMET150_v3 == 1 || trigger.HLT_PFMET150_v4 == 1 || "
-      << "trigger.HLT_PFMET150_v5 == 1 || trigger.HLT_PFMET150_v6 == 1 || trigger.HLT_PFMET150_v7 == 1 )"
-      << "||("
-      << "trigger.HLT_PFHT350_PFMET100_v3==1 || trigger.HLT_PFHT350_PFMET100_v4==1 || trigger.HLT_PFHT350_PFMET100_v5==1 || "
-      << "trigger.HLT_PFHT350_PFMET100_v6==1 || trigger.HLT_PFHT350_PFMET100_v7==1 || trigger.HLT_PFNoPUHT350_PFMET100_v1==1 || "
-      << "trigger.HLT_PFNoPUHT350_PFMET100_v3==1 || trigger.HLT_PFNoPUHT350_PFMET100_v4==1 ) ) &&TOBTECTagger<=8&&ExtraBeamHaloFilter==0)";
-
-  } else  {
-
-    triggerStream << "( ("
-      << "trigger.HLT_PFHT650_v5 == 1 || trigger.HLT_PFHT650_v6 == 1 || trigger.HLT_PFHT650_v7 == 1 || "
-      << "trigger.HLT_PFHT650_v8 == 1 || trigger.HLT_PFHT650_v9 == 1 || "
-      << "trigger.HLT_PFNoPUHT650_v1 == 1 || trigger.HLT_PFNoPUHT650_v3 == 1 || trigger.HLT_PFNoPUHT650_v4 == 1) &&TOBTECTagger<=8&&ExtraBeamHaloFilter==0)";
-
-  }
-
-
   std::ostringstream oneLeptonStream;
   oneLeptonStream << "((NEles==1 && NMuons==0) || (NEles==0 && NMuons==1))";
   TString oneLeptonCuts = oneLeptonStream.str().c_str();
@@ -203,8 +201,9 @@ MT2LostLeptonEstimate* computeLostLepton( const MT2Sample& sample, std::vector<M
 
 
   TString preselection = preselectionStream.str().c_str();
-  TString trigger = triggerStream.str().c_str();
-  TString cuts = ( sample.type=="data") ? (preselection + " && " + trigger) : preselection;
+  //TString trigger = triggerStream.str().c_str();
+  //TString cuts = ( sample.type=="data") ? (preselection + " && " + trigger) : preselection;
+  TString cuts = preselection;
 
 
   bool requireRecoLepton = !(sample.sname=="Top" || sample.sname=="Wtolnu"); // only these used for efficiencies
@@ -262,6 +261,15 @@ std::vector<MT2LeptonTypeLLEstimate*> getLeptonTypeLLEstimate( std::vector<std::
     pdgIdLept.push_back( getPdgId(leptType[i]) );
   }
 
+  // instantiate HLT TTreeFormulas
+  std::vector<TTreeFormula*> ttf_hlt;
+  if( isData ) {
+    for( unsigned iHT=0; iHT<HTRegions.size(); ++iHT ) {
+      TTreeFormula* this_ttf = new TTreeFormula(Form("ttf_hlt_%s", HTRegions[iHT].getName().c_str()), HTRegions[iHT].HLT_selection.c_str(), tree);
+      ttf_hlt.push_back(this_ttf);
+    }
+  }
+
 
   MT2tree* fMT2tree = new MT2tree();
   tree->SetBranchAddress("MT2tree", &fMT2tree);
@@ -303,6 +311,11 @@ std::vector<MT2LeptonTypeLLEstimate*> getLeptonTypeLLEstimate( std::vector<std::
     for( unsigned iHT=0; iHT<HTRegions.size() && !(foundRegion); ++iHT ) {
 
       if( ht<HTRegions[iHT].htMin || ht>=HTRegions[iHT].htMax || met<HTRegions[iHT].metMin ) continue;
+
+      if( isData ) { // apply HLT
+        if( ttf_hlt[iHT]->EvalInstance()==0. ) continue;
+      }
+
 
       for( unsigned iSR=0; iSR<signalRegions.size() && !(foundRegion); ++iSR ) {
 

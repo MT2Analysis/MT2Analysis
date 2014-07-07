@@ -241,9 +241,7 @@ std::vector<MT2Sample> MT2Common::loadSamples(const std::string& filename) {
       IN.getline(buffer, 200, '\n');
       sscanf(buffer, "File\t%s", StringValue);
       TString fileName =fPath+StringValue;
-      //TFile *f = TFile::Open(file);
       s.file = fileName;
-      //s.tree = (TTree*)f->Get("MassTree");
       
       IN.getline(buffer, 200, '\n');
       sscanf(buffer, "Xsection\t%f", &ParValue);

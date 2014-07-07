@@ -25,7 +25,7 @@ bool fIncludeTaus = true;
 MT2LostLeptonEstimate* computeLostLepton( const MT2Sample& sample, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions );
 std::vector<MT2LeptonTypeLLEstimate*> getLeptonTypeLLEstimate( std::vector<std::string> leptType, TTree* tree, MT2Sample sample, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions );
 float getISRCorrection( MT2tree* fMT2tree, const MT2Sample& sample );
-void getBTagScaleFactor( MT2tree* fMT2tree, int njets, int nbjets, float& btagSF, float& btagSFerr );
+void getBTagScaleFactor( MT2tree* fMT2tree, int nbjets, float& btagSF, float& btagSFerr );
 MT2LostLeptonEstimate* mergeEstimates( std::vector<MT2LostLeptonEstimate*> llest, const std::string& n1, const std::string& n2="", const std::string& n3="", const std::string& n4="", const std::string& n5="" );
 std::vector<TH1D*> getPredictionHistos( const std::string& prefix, const std::string& leptType, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions, MT2LostLeptonEstimate* ll_tot, MT2LostLeptonEstimate* ll_bg, MT2LostLeptonEstimate* ll_eff );
 std::vector<TH1D*> getSimTruthHistos( const std::string& prefix, const std::string& leptType, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions, MT2LostLeptonEstimate* ll_tot );
@@ -201,8 +201,6 @@ MT2LostLeptonEstimate* computeLostLepton( const MT2Sample& sample, std::vector<M
 
 
   TString preselection = preselectionStream.str().c_str();
-  //TString trigger = triggerStream.str().c_str();
-  //TString cuts = ( sample.type=="data") ? (preselection + " && " + trigger) : preselection;
   TString cuts = preselection;
 
 
@@ -299,11 +297,12 @@ std::vector<MT2LeptonTypeLLEstimate*> getLeptonTypeLLEstimate( std::vector<std::
       float puweight =  fMT2tree->pileUp.Weight;
       float isrweight = getISRCorrection( fMT2tree, sample );
       float btagSF, btagSFerr;
-      getBTagScaleFactor( fMT2tree, njets, nbjets, btagSF, btagSFerr );
+      getBTagScaleFactor( fMT2tree, nbjets, btagSF, btagSFerr );
       fullweight = weight * puweight * isrweight *btagSF;
     }
 
 
+    int ngenleptot = fMT2tree->GenNumLeptFromW(1113,0,1000, fIncludeTaus);
 
 
     bool foundRegion = false;
@@ -332,8 +331,6 @@ std::vector<MT2LeptonTypeLLEstimate*> getLeptonTypeLLEstimate( std::vector<std::
 
         for( unsigned iLept=0; iLept<leptType.size(); ++iLept ) {
 
-          int ngenlept = fMT2tree->GenNumLeptFromW(pdgIdLept[iLept], 0, 1000, fIncludeTaus);
-
           float mt = 0.;
           bool hasRecoLep = false;
           if( leptType[iLept]=="Ele" ) {
@@ -359,8 +356,16 @@ std::vector<MT2LeptonTypeLLEstimate*> getLeptonTypeLLEstimate( std::vector<std::
 
           } 
 
+          bool genlept = fMT2tree->GenLeptFromW(pdgIdLept[iLept], 0 , 1000,fIncludeTaus);
+          bool hasGenLept = (genlept) && (ngenleptot==1);
+//if( hasGenLept && leptType[iLept]=="Muo" && thisRegion.getName()=="HTge750_2j0b" ) {
+//std::cout << "xxx: " << fMT2tree->misc.Event << " " << fullweight << std::endl;
+//std::cout << "effMT_tot: " << thisPred->effMT_tot->GetXaxis()->GetXmin() << " " << thisPred->effMT_tot->GetXaxis()->GetXmax() << std::endl;
+//std::cout << "effLept_tot: " << thisPred->effLept_tot->GetXaxis()->GetXmin() << " " << thisPred->effLept_tot->GetXaxis()->GetXmax() << std::endl;
+//totweight += fullweight;
+//}
 
-          if( ngenlept==1 ) {
+          if( hasGenLept ) {
             thisPred->effLept_tot->Fill( mt2, fullweight );
             if( hasRecoLep ) {
               thisPred->effLept_pass->Fill( mt2, fullweight );
@@ -368,7 +373,7 @@ std::vector<MT2LeptonTypeLLEstimate*> getLeptonTypeLLEstimate( std::vector<std::
           }
  
           bool noRecoLep = (fMT2tree->NEles==0 && fMT2tree->NMuons==0);
-          if( ngenlept==1 && noRecoLep ) thisSimTruth->yield->Fill( mt2, fullweight );
+          if( genlept && noRecoLep ) thisSimTruth->yield->Fill( mt2, fullweight );
 
 
         } // for leptType
@@ -464,24 +469,6 @@ std::vector<TH1D*> getPredictionHistos( const std::string& prefix, const std::st
 
       float  effMT      = (ll_eff!=0 && ll_eff->l[leptType.c_str()]!=0) ? ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effMT()  ->GetEfficiency(1) : 0.;
       float  effLept    = (ll_eff!=0 && ll_eff->l[leptType.c_str()]!=0) ? ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effLept()->GetEfficiency(1) : 0.;
-//if( thisRegion.getName()=="HTge750_2j0b" ) {
-//std::cout << std::endl;
-//std::cout << leptType << std::endl;
-//std::cout << thisRegion.getName() << std::endl;
-//TFile* file = TFile::Open("prova.root", "recreate");
-//file->cd();
-//ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effLept_pass->Write();
-//ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effLept_tot->Write();
-//ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effMT_pass->Write();
-//ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effMT_tot->Write();
-//file->Close();
-//std::cout << "effLept_pass->GetEntries(): " << ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effLept_pass->GetEntries() << std::endl;
-//std::cout << "effLept_tot->GetEntries(): " << ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effLept_tot->GetEntries() << std::endl;
-//std::cout << "effMT_pass->GetEntries(): " << ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effMT_pass->GetEntries() << std::endl;
-//std::cout << "effMT_tot->GetEntries(): " << ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effMT_tot->GetEntries() << std::endl;
-//std::cout << "effMT: " << effMT << std::endl;
-//std::cout << "effLept: " << effLept << std::endl;
-//}
 
       float effMT_err   = (ll_eff!=0 && ll_eff->l[leptType.c_str()]!=0) ? ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effMT()  ->GetEfficiencyErrorLow(1) : 0.; 
       float effLept_err = (ll_eff!=0 && ll_eff->l[leptType.c_str()]!=0) ? ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effLept()->GetEfficiencyErrorLow(1) : 0.;
@@ -489,6 +476,27 @@ std::vector<TH1D*> getPredictionHistos( const std::string& prefix, const std::st
       float pred = (effLept>0. && effMT>0.) ? (tot-bg)*(1.-effLept)/(effLept*effMT) : (tot-bg);
 
       h1->SetBinContent( iBin, pred );
+if( thisRegion.getName()=="HTge750_2j0b" ) {
+std::cout << std::endl;
+std::cout << leptType << std::endl;
+std::cout << thisRegion.getName() << std::endl;
+TFile* file = TFile::Open("prova.root", "recreate");
+file->cd();
+ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effLept_pass->Write();
+ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effLept_tot->Write();
+ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effMT_pass->Write();
+ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effMT_tot->Write();
+file->Close();
+std::cout << "effLept_pass->Integral(): " << ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effLept_pass->Integral() << std::endl;
+std::cout << "effLept_tot->Integral(): " << ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effLept_tot->Integral() << std::endl;
+std::cout << "effMT_pass->Integral(): " << ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effMT_pass->Integral() << std::endl;
+std::cout << "effMT_tot->Integral(): " << ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effMT_tot->Integral() << std::endl;
+std::cout << "effMT: " << effMT << std::endl;
+std::cout << "effLept: " << effLept << std::endl;
+std::cout << "tot: " << tot << std::endl;
+std::cout << "bg: " << bg << std::endl;
+std::cout << "pred: " << pred << std::endl;
+}
 
       float statErr = sqrt(tot)*(1.-effLept)/(effLept*effMT);
       float sysErr_deffLept = (tot-bg)*effLept_err/(effLept*effLept*effMT);
@@ -685,56 +693,20 @@ float getISRCorrection( MT2tree* fMT2tree, const MT2Sample& sample ) {
 
 
 
-void getBTagScaleFactor( MT2tree* fMT2tree, int njets, int nbjets, float& btagSF, float& btagSFerr ) {
+void getBTagScaleFactor( MT2tree* fMT2tree, int nbjets, float& btagSF, float& btagSFerr ) {
 
-
-  if( njets < 2 ) { // shouldnt be possible
-    btagSF=0.;
-    btagSFerr=0.;
-    return;
-  }
-
-
-
-  if( nbjets >= 3 ) {
-
-    btagSF = fMT2tree->SFWeight.BTagCSV40ge3; 
-    btagSFerr = fMT2tree->SFWeight.BTagCSV40ge3Error; 
-
-  } else {
-
-    if( njets == 2 ) {  
-      if( nbjets == 0) { 
-        btagSF = fMT2tree->SFWeight.BTagCSV40eq0; 
-        btagSFerr = fMT2tree->SFWeight.BTagCSV40eq0Error; 
-      } else {
-        btagSF = fMT2tree->SFWeight.BTagCSV40ge1; 
-        btagSFerr = fMT2tree->SFWeight.BTagCSV40ge1Error; 
-      }
-    } else if( njets >= 3 && njets <= 5 ) {
-      if( nbjets == 0) { 
-        btagSF = fMT2tree->SFWeight.BTagCSV40eq0; 
-        btagSFerr = fMT2tree->SFWeight.BTagCSV40eq0Error;
-      } else if( nbjets == 1) { 
-        btagSF = fMT2tree->SFWeight.BTagCSV40eq1; 
-        btagSFerr = fMT2tree->SFWeight.BTagCSV40eq1Error;
-      } else { // this is only nbjets==2 (see above for nbjets>=3)
-        btagSF = fMT2tree->SFWeight.BTagCSV40eq2; 
-        btagSFerr = fMT2tree->SFWeight.BTagCSV40eq2Error;
-      }
-    } else { // this is njets >=6 (but still nbjets < 3 )
-      if( nbjets == 0) { 
-        btagSF = fMT2tree->SFWeight.BTagCSV40eq0; 
-        btagSFerr = fMT2tree->SFWeight.BTagCSV40eq0Error;
-      } else if( nbjets == 1) { 
-        btagSF = fMT2tree->SFWeight.BTagCSV40eq1; 
-        btagSFerr = fMT2tree->SFWeight.BTagCSV40eq1Error; 
-      } else { // this is only nbjets==2 (see above for nbjets>=3)
-        btagSF = fMT2tree->SFWeight.BTagCSV40eq2; 
-        btagSFerr = fMT2tree->SFWeight.BTagCSV40eq2Error; 
-      }
-    }
-
+  if( nbjets == 0 ) {
+    btagSF = fMT2tree->SFWeight.BTagCSV40eq0; 
+    btagSFerr = fMT2tree->SFWeight.BTagCSV40eq0Error; 
+  } else if( nbjets == 1 ) {
+    btagSF = fMT2tree->SFWeight.BTagCSV40eq1; 
+    btagSFerr = fMT2tree->SFWeight.BTagCSV40eq1Error; 
+  } else if( nbjets == 2 ) {
+    btagSF = fMT2tree->SFWeight.BTagCSV40eq2; 
+    btagSFerr = fMT2tree->SFWeight.BTagCSV40eq2Error; 
+  } else { // >= 3
+    btagSF = fMT2tree->SFWeight.BTagCSV40eq3; 
+    btagSFerr = fMT2tree->SFWeight.BTagCSV40eq3Error; 
   }
 
 }

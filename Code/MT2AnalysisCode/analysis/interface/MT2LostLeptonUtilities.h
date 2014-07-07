@@ -9,15 +9,19 @@
 
 
 
-class MT2SingleLLEstimate {
+
+
+
+// this class for simtruth estimates (has only yield)
+
+class MT2SingleLLEstimateBase {
 
  public:
 
-  MT2SingleLLEstimate( const MT2SingleLLEstimate& rhs );
-  MT2SingleLLEstimate( const std::string& aname, const MT2Region& aregion );
-  ~MT2SingleLLEstimate() {};
-
-
+  MT2SingleLLEstimateBase( const MT2SingleLLEstimateBase& rhs );  
+  MT2SingleLLEstimateBase( const std::string& aname, const MT2Region& aregion );
+  ~MT2SingleLLEstimateBase();
+ 
   // this is just a name to differentiate different
   // instances of the same class
   std::string name;
@@ -44,6 +48,29 @@ class MT2SingleLLEstimate {
 
   TH1D* yield;
 
+  MT2SingleLLEstimateBase operator+( const MT2SingleLLEstimateBase& rhs ) const;
+  void addOverflow();
+
+  void writeTable( const std::string& fileName ) const;
+
+ private:
+
+};
+
+
+
+
+// this class for reco estimates (has also efficiencies)
+
+class MT2SingleLLEstimate : public MT2SingleLLEstimateBase {
+
+ public:
+
+  MT2SingleLLEstimate( const MT2SingleLLEstimate& rhs );
+  MT2SingleLLEstimate( const std::string& aname, const MT2Region& aregion );
+  ~MT2SingleLLEstimate();
+
+
   TH1D* effLept_pass;
   TH1D* effLept_tot;
   TH1D* effMT_pass;
@@ -60,8 +87,6 @@ class MT2SingleLLEstimate {
     return new TEfficiency(*effMT_pass, *effMT_tot);
   }
 
-  void addOverflow();
-
  private:
 
 };
@@ -77,17 +102,17 @@ class MT2LeptonTypeLLEstimate {
     SName = aSName;
   }
   MT2LeptonTypeLLEstimate( const std::string& aname, const std::string& aSName, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions );
-  ~MT2LeptonTypeLLEstimate() {};
+  ~MT2LeptonTypeLLEstimate();
 
 
   MT2SingleLLEstimate* getRegion( const MT2Region& region ) const {
     return this->getRegion( region.getName() );
   }
-  MT2SingleLLEstimate* getRegionGen( const MT2Region& region ) const {
+  MT2SingleLLEstimateBase* getRegionGen( const MT2Region& region ) const {
     return this->getRegionGen( region.getName() );
   }
   MT2SingleLLEstimate* getRegion( const std::string& regionName ) const;
-  MT2SingleLLEstimate* getRegionGen( const std::string& regionName ) const;
+  MT2SingleLLEstimateBase* getRegionGen( const std::string& regionName ) const;
 
   MT2LeptonTypeLLEstimate operator+( const MT2LeptonTypeLLEstimate& rhs ) const;
 
@@ -97,7 +122,7 @@ class MT2LeptonTypeLLEstimate {
   std::string SName;
 
   std::vector< MT2SingleLLEstimate* > pred;
-  std::vector< MT2SingleLLEstimate* > simtruth;
+  std::vector< MT2SingleLLEstimateBase* > simtruth;
 
  private:
 

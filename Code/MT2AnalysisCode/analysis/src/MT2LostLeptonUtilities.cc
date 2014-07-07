@@ -8,24 +8,25 @@
 
 
 
-// ***************************
-//                           | 
-//                           | 
-//   MT2SingleLLEstimate     |
-//                           |
-//                           |
-// ***************************
+// *******************************
+//                               | 
+//                               | 
+//   MT2SingleLLEstimateBase     |
+//                               |
+//                               |
+// *******************************
 
 
-MT2SingleLLEstimate::MT2SingleLLEstimate( const MT2SingleLLEstimate& rhs ) {
 
-  MT2SingleLLEstimate( rhs.name, *(rhs.region) );
+MT2SingleLLEstimateBase::MT2SingleLLEstimateBase( const MT2SingleLLEstimateBase& rhs ) {
+
+  MT2SingleLLEstimateBase( rhs.name, *(rhs.region) );
 
 }
 
 
 
-MT2SingleLLEstimate::MT2SingleLLEstimate( const std::string& aname, const MT2Region& aregion ) {
+MT2SingleLLEstimateBase::MT2SingleLLEstimateBase( const std::string& aname, const MT2Region& aregion ) {
 
   region = new MT2Region(aregion);
   name = aname;
@@ -37,17 +38,105 @@ MT2SingleLLEstimate::MT2SingleLLEstimate( const std::string& aname, const MT2Reg
   yield = new TH1D(Form("yield_%s", name.c_str()), "", nBins, bins);
   yield->Sumw2();
 
-  effLept_pass = new TH1D(Form("effLept_%s_pass", name.c_str()), "", 1, 0., 1000000.);
-  //effLept_pass->Sumw2();
-  effLept_tot  = new TH1D(Form("effLept_%s_tot", name.c_str()), "", 1, 0., 1000000.);
-  //effLept_tot->Sumw2();
-
-  effMT_pass = new TH1D(Form("effMT_%s_pass", name.c_str()), "", 1, 0., 1000000.);
-  //effMT_pass->Sumw2();
-  effMT_tot  = new TH1D(Form("effMT_%s_tot", name.c_str()), "", 1, 0., 1000000.);
-  //effMT_tot->Sumw2();
 
 }
+
+
+
+MT2SingleLLEstimateBase::~MT2SingleLLEstimateBase() {
+
+  delete region;
+  delete yield;
+
+}
+
+
+
+void MT2SingleLLEstimateBase::addOverflow() {
+
+  yield->SetBinContent(yield->GetNbinsX(),
+      yield->GetBinContent(yield->GetNbinsX()  )+
+      yield->GetBinContent(yield->GetNbinsX()+1)  );
+  yield->SetBinError(  yield->GetNbinsX(),
+      sqrt(yield->GetBinError(yield->GetNbinsX()  )*
+           yield->GetBinError(yield->GetNbinsX()  )+
+           yield->GetBinError(yield->GetNbinsX()+1)*
+           yield->GetBinError(yield->GetNbinsX()+1)  ));
+
+}
+
+
+
+
+MT2SingleLLEstimateBase MT2SingleLLEstimateBase::operator+( const MT2SingleLLEstimateBase& rhs ) const {
+
+
+  if( this->region->getName() != rhs.region->getName() ) {
+    std::cout << "[MT2SingleLLEstimateBase::operator+] ERROR! Can't add MT2SingleLLEstimate with different MT2Regions!" << std::endl;
+    exit(113);
+  }
+
+  std::string newname = this->name + "_" + rhs.name;
+
+  MT2SingleLLEstimateBase result(newname, *(this->region) );
+
+  result.yield->Add(this->yield);
+  result.yield->Add(rhs.yield);
+
+  return result;
+
+}
+
+
+
+// ***************************
+//                           | 
+//                           | 
+//   MT2SingleLLEstimate     |
+//                           |
+//                           |
+// ***************************
+
+
+
+
+MT2SingleLLEstimate::MT2SingleLLEstimate( const MT2SingleLLEstimate& rhs ) : MT2SingleLLEstimateBase( rhs.name, *(rhs.region) ) {
+
+  MT2SingleLLEstimate( rhs.name, *(rhs.region) );
+
+}
+
+
+
+MT2SingleLLEstimate::MT2SingleLLEstimate( const std::string& aname, const MT2Region& aregion ) : MT2SingleLLEstimateBase( aname, aregion ) {
+
+  int nBins;
+  double* bins;
+  region->getBins(nBins, bins);
+  float xMin = bins[0];
+  float xMax = bins[nBins];
+
+  // efficiencies are inclusive (one big bin):
+  effLept_pass = new TH1D(Form("effLept_%s_pass", name.c_str()), "", 1, xMin, xMax );
+  effLept_tot  = new TH1D(Form("effLept_%s_tot", name.c_str()), "", 1, xMin, xMax );
+
+  effMT_pass = new TH1D(Form("effMT_%s_pass", name.c_str()), "", 1, xMin, xMax );
+  effMT_tot  = new TH1D(Form("effMT_%s_tot", name.c_str()), "", 1, xMin, xMax );
+
+}
+
+
+
+
+MT2SingleLLEstimate::~MT2SingleLLEstimate() {
+
+  delete effLept_pass;
+  delete effLept_tot;
+  delete effMT_pass;
+  delete effMT_tot;
+
+}
+
 
 
 
@@ -84,19 +173,6 @@ MT2SingleLLEstimate MT2SingleLLEstimate::operator+( const MT2SingleLLEstimate& r
 }
 
 
-void MT2SingleLLEstimate::addOverflow() {
-
-  yield->SetBinContent(yield->GetNbinsX(),
-      yield->GetBinContent(yield->GetNbinsX()  )+
-      yield->GetBinContent(yield->GetNbinsX()+1)  );
-  yield->SetBinError(  yield->GetNbinsX(),
-      sqrt(yield->GetBinError(yield->GetNbinsX()  )*
-           yield->GetBinError(yield->GetNbinsX()  )+
-           yield->GetBinError(yield->GetNbinsX()+1)*
-           yield->GetBinError(yield->GetNbinsX()+1)  ));
-
-}
-
 
 
 
@@ -126,7 +202,7 @@ MT2LeptonTypeLLEstimate::MT2LeptonTypeLLEstimate( const std::string& aname, cons
       MT2SingleLLEstimate* newPred = new MT2SingleLLEstimate( "pred_" + suffix, thisRegion );
       pred.push_back(newPred);
 
-      MT2SingleLLEstimate* newsimtruth = new MT2SingleLLEstimate( "simtruth_" + suffix, thisRegion );
+      MT2SingleLLEstimateBase* newsimtruth = new MT2SingleLLEstimateBase( "simtruth_" + suffix, thisRegion );
       simtruth.push_back(newsimtruth);
 
     } // for SR
@@ -162,10 +238,10 @@ MT2SingleLLEstimate* MT2LeptonTypeLLEstimate::getRegion( const std::string& regi
 
 
 
-MT2SingleLLEstimate* MT2LeptonTypeLLEstimate::getRegionGen( const std::string& regionName ) const {
+MT2SingleLLEstimateBase* MT2LeptonTypeLLEstimate::getRegionGen( const std::string& regionName ) const {
 
 
-  MT2SingleLLEstimate* theRegion = 0;
+  MT2SingleLLEstimateBase* theRegion = 0;
 
   for( unsigned i=0; i<simtruth.size(); ++i ) {
 
@@ -210,7 +286,7 @@ MT2LeptonTypeLLEstimate MT2LeptonTypeLLEstimate::operator+( const MT2LeptonTypeL
     MT2SingleLLEstimate* reco_sum = new MT2SingleLLEstimate( *(this->pred[i]) + *(rhs.pred[i]) );
     result.pred.push_back( reco_sum );
 
-    MT2SingleLLEstimate* gen_sum = new MT2SingleLLEstimate( *(this->simtruth[i]) + *(rhs.simtruth[i]) );
+    MT2SingleLLEstimateBase* gen_sum = new MT2SingleLLEstimateBase( *(this->simtruth[i]) + *(rhs.simtruth[i]) );
     result.simtruth.push_back( gen_sum );
 
   }
@@ -243,6 +319,20 @@ void MT2LeptonTypeLLEstimate::addOverflow() {
 //                            |
 // ****************************
 
+
+MT2LeptonTypeLLEstimate::~MT2LeptonTypeLLEstimate() {
+
+  for( unsigned i=0; i<pred.size(); ++i ) {
+    delete pred[i];
+    pred[i] = 0;
+  }
+
+  for( unsigned i=0; i<simtruth.size(); ++i ) {
+    delete simtruth[i];
+    simtruth[i] = 0;
+  }
+
+}
 
 
 
@@ -307,3 +397,77 @@ MT2LostLeptonEstimate MT2LostLeptonEstimate::operator+( const MT2LostLeptonEstim
 
 }
 
+
+
+/*
+void MT2LostLeptonEstimate::writeTable( const std::string& fileName ) const {
+
+
+  ofstream ofs(fileName.c_str());
+
+  ofs << "\\begin{table}"              << endl
+       << "\\begin{center}"             << endl
+       << "\\small"                     << endl
+       << "\\begin{tabular}{lccccccc}"  << endl
+       << "\\hline\\hline"              << endl;
+  
+  else        ofs << "signal region       ";
+  ofs  << " & $" << "N^{QCD}" << "$ & $" << "N^{Z}" << "$  & $" << "N^{W}" << "$  & $" << "N^{Top}" << "$  & $" << "N^{Other}" << "$ &           $"  << "N^{MC}" << "$      & $" << "N^{data}" << "$ ";
+  ofs << "\\\\" << endl << "\\hline\\hline"             << endl;
+  string oldlep = "dummy";
+  string oldsr = "dummy";
+  string oldHT = "dummy";
+
+  for(unsigned int n = 0; n<sr.size(); ++n){
+
+    string lep;
+    if(lepr[n]==0) lep="Muo";
+    else if(lepr[n]==1) lep="Ele";
+    else continue;
+    string sigreg;
+    if(sr[n]==0) sigreg="2j, 0b";
+    if(sr[n]==1) sigreg="2j, $\\ge 1$b";
+    if(sr[n]==2) sigreg="$3-5$j, 0b";
+    if(sr[n]==3) sigreg="$3-5$j, 1b";
+    if(sr[n]==4) sigreg="$3-5$j, 2b";
+    if(sr[n]==5) sigreg="$\\ge 6$j, 0b";
+    if(sr[n]==6) sigreg="$\\ge 6$j, 1b";
+    if(sr[n]==7) sigreg="$\\ge 6$j, 2b";
+    if(sr[n]==8) sigreg="$\\ge 3$j, $\\ge 3$b";
+    string htreg;
+    if(htr[n]==0 && fMET) htreg = "450 GeV $\\leq H_{T} < 750$ GeV";
+    if(htr[n]==1 && fHT) htreg = "750 GeV $\\leq H_{T} < 1200$ GeV";
+    if(htr[n]==2 && fHT) htreg = "$H_{T}\\ge 1200$ GeV";
+    if(htreg!=oldHT){
+      ofs << " \\hline " << endl << "\\multicolumn{7}{l}{" <<  htreg << "} \\\\ " << endl << "\\hline" << endl;
+      oldHT = htreg;
+    }
+    if(lep!=oldlep){
+      ofs << " \\hline " << endl << lep << "\\\\ " << endl << "\\hline" << endl;
+      oldlep = lep;
+    }
+    if(!fRebin){
+    if(sigreg!=oldsr){
+      ofs << " \\hline  " << endl << sigreg << "\\\\" << endl;
+      oldsr = sigreg;
+    }
+    if(MT2up[n]==10000.) ofs << "$" << int(MT2low[n]) << "-" << "\\infty$" << " " << setw(4) << " & ";
+    else            ofs << "$" << int(MT2low[n]) << "-" << int(MT2up[n]) << "$" << " " << setw(7) << " & ";
+    }
+    else ofs << " " << setw(18) << sigreg << " & ";
+    ofs << fixed << setprecision(2)
+    << " " << setw(7) << numQCD[n] << " & " << " " << setw(7) << numZ[n] << " & " << " " << setw(7) << numW[n] << " &  " << " " << setw(8) << numT[n] << " & " << " " << setw(10) << numOther[n] << " & " << " " << setw(10) 
+    << numMC[n] << "$\\pm" << " " << setw(7) << BGerr[n] << "$ & ";
+    ofs << " " << setw(10) << int(numData[n]) << " \\\\" << endl;
+  }
+  ofs << "\\hline\\hline"                                                                                            << endl
+      << "\\end{tabular}"                                                                                                << endl
+      << "\\end{center}"                                                                                                 << endl
+      << "\\end{table}"                                                                                                  << endl;
+  ofs << endl << endl;
+
+  ofs.close();
+
+}
+
+*/

@@ -25,7 +25,7 @@ bool fIncludeTaus = true;
 MT2LostLeptonEstimate* computeLostLepton( const MT2Sample& sample, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions );
 std::vector<MT2LeptonTypeLLEstimate*> getLeptonTypeLLEstimate( std::vector<std::string> leptType, TTree* tree, MT2Sample sample, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions );
 float getISRCorrection( MT2tree* fMT2tree, const MT2Sample& sample );
-void getBTagScaleFactor( MT2tree* fMT2tree, int njets, int nbjets, float& btagSF, float& btagSFerr );
+void getBTagScaleFactor( MT2tree* fMT2tree, MT2Region* region, float& btagSF, float& btagSFerr );
 MT2LostLeptonEstimate* mergeEstimates( std::vector<MT2LostLeptonEstimate*> llest, const std::string& n1, const std::string& n2="", const std::string& n3="", const std::string& n4="", const std::string& n5="" );
 std::vector<TH1D*> getPredictionHistos( const std::string& prefix, const std::string& leptType, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions, MT2LostLeptonEstimate* ll_tot, MT2LostLeptonEstimate* ll_bg, MT2LostLeptonEstimate* ll_eff );
 std::vector<TH1D*> getSimTruthHistos( const std::string& prefix, const std::string& leptType, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions, MT2LostLeptonEstimate* ll_tot );
@@ -100,7 +100,8 @@ int main( int argc, char* argv[] ) {
 
   std::cout << "-> Done looping on samples. Start merging." << std::endl;
 
-  MT2LostLeptonEstimate* ll_data  = mergeEstimates( llest, "HT-Data" );
+  MT2LostLeptonEstimate* ll_data  = mergeEstimates( llest, "HT-Data", "MET-Data" );
+  //MT2LostLeptonEstimate* ll_data  = mergeEstimates( llest, "HT-Data", "MET-Data" );
   MT2LostLeptonEstimate* ll_top   = mergeEstimates( llest, "Top" );
   MT2LostLeptonEstimate* ll_qcd   = mergeEstimates( llest, "QCD" );
   MT2LostLeptonEstimate* ll_wjets = mergeEstimates( llest, "Wtolnu" );
@@ -277,6 +278,8 @@ std::vector<MT2LeptonTypeLLEstimate*> getLeptonTypeLLEstimate( std::vector<std::
   int nentries = tree->GetEntries();
 
   float fullweight = weight;
+  float fullweight_btagUp = weight;
+  float fullweight_btagDown = weight;
 
 
   for( unsigned iEntry=0; iEntry<nentries; ++iEntry ) {
@@ -294,6 +297,8 @@ std::vector<MT2LeptonTypeLLEstimate*> getLeptonTypeLLEstimate( std::vector<std::
     int nbjets = fMT2tree->NBJets40CSVM;
 
     fullweight = weight;
+    fullweight_btagUp = weight;
+    fullweight_btagDown = weight;
 
 
     int ngenleptot = fMT2tree->GenNumLeptFromW(1113,0,1000, fIncludeTaus);
@@ -325,12 +330,16 @@ std::vector<MT2LeptonTypeLLEstimate*> getLeptonTypeLLEstimate( std::vector<std::
 
         // compute weight
         if( !isData ) {
+
           float puweight =  fMT2tree->pileUp.Weight;
           float isrweight = getISRCorrection( fMT2tree, sample );
           float btagSF, btagSFerr;
-          getBTagScaleFactor( fMT2tree, njets, nbjets, btagSF, btagSFerr );
+          getBTagScaleFactor( fMT2tree, &thisRegion, btagSF, btagSFerr );
 
-          fullweight = weight * puweight * isrweight *btagSF;
+          fullweight          = weight * puweight * isrweight * btagSF;
+          fullweight_btagUp   = weight * puweight * isrweight *(btagSF + btagSFerr);
+          fullweight_btagDown = weight * puweight * isrweight *(btagSF - btagSFerr);
+
         }
 
 
@@ -354,9 +363,16 @@ std::vector<MT2LeptonTypeLLEstimate*> getLeptonTypeLLEstimate( std::vector<std::
           if( hasRecoLep ) {
 
             thisPred->effMT_tot->Fill( mt2, fullweight );
+
+
             if( mt<100. ) {
+
               thisPred->effMT_pass->Fill( mt2, fullweight );
+
               thisPred->yield->Fill( mt2, fullweight );
+              thisPred->yield_btagUp->Fill( mt2, fullweight_btagUp );
+              thisPred->yield_btagDown->Fill( mt2, fullweight_btagDown );
+
             }
 
           } 
@@ -465,6 +481,8 @@ std::vector<TH1D*> getPredictionHistos( const std::string& prefix, const std::st
 
       float tot = (ll_tot!=0 && ll_tot->l[leptType.c_str()]!=0) ? ll_tot->l[leptType.c_str()]->getRegion(thisRegion.getName())->yield->Integral() : 0.;
       float  bg = (ll_bg !=0 && ll_bg ->l[leptType.c_str()]!=0) ? ll_bg ->l[leptType.c_str()]->getRegion(thisRegion.getName())->yield->Integral() : 0.;
+      float  bg_btagUp = (ll_bg !=0 && ll_bg ->l[leptType.c_str()]!=0) ? ll_bg ->l[leptType.c_str()]->getRegion(thisRegion.getName())->yield_btagUp->Integral() : 0.;
+      float  bg_btagDown = (ll_bg !=0 && ll_bg ->l[leptType.c_str()]!=0) ? ll_bg ->l[leptType.c_str()]->getRegion(thisRegion.getName())->yield_btagDown->Integral() : 0.;
 
       float  effMT      = (ll_eff!=0 && ll_eff->l[leptType.c_str()]!=0) ? ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effMT()  ->GetEfficiency(1) : 0.;
       float  effLept    = (ll_eff!=0 && ll_eff->l[leptType.c_str()]!=0) ? ll_eff->l[leptType.c_str()]->getRegion(thisRegion.getName())->effLept()->GetEfficiency(1) : 0.;
@@ -476,13 +494,31 @@ std::vector<TH1D*> getPredictionHistos( const std::string& prefix, const std::st
 
       h1->SetBinContent( iBin, pred );
 
+std::cout << "tot: " << tot << std::endl;
+std::cout << "bg: " << bg << std::endl;
+std::cout << "effMT: " << effMT << std::endl;
+std::cout << "effLept: " << effLept << std::endl;
+std::cout << "pred: " << pred << std::endl;
 
       float statErr = sqrt(tot)*(1.-effLept)/(effLept*effMT);
       float sysErr_deffLept = (tot-bg)*effLept_err/(effLept*effLept*effMT);
       float sysErr_deffMT = (tot-bg)*effMT_err*(1.-effLept)/(effLept*effMT*effMT);
       float sysErr_dbg = 0.5*bg*(1.-effLept)/(effLept*effMT); // 50% uncert on BG estimate
-      float sysErr_MT = 0.05*(1.-effLept)/(effLept*effMT*effMT);
-      float sysErr = sqrt( sysErr_deffLept*sysErr_deffLept + sysErr_deffMT*sysErr_deffMT + sysErr_dbg*sysErr_dbg + sysErr_MT*sysErr_MT );
+      float sysErr_MT = 0.05*(1.-effLept)/(effLept*effMT*effMT); // 5% uncert on MT cut
+      float bg_SFerrUp = fabs(bg_btagUp-bg);
+      float bg_SFerrDown = fabs(bg_btagDown-bg);
+      float bg_SFerr = 0.5*(bg_SFerrUp+bg_SFerrDown);
+      float sysErr_btag = bg_SFerr*(1-effLept)/(effLept*effMT);
+
+      //float sysErr_dLL = nWT_goodrecoevt_dLL*(1.*effLept_err/(effLept*effLept*effMT));//additional error due to double lost with 100% uncert
+
+      float sysErr = sqrt( sysErr_deffLept*sysErr_deffLept + sysErr_deffMT*sysErr_deffMT + sysErr_dbg*sysErr_dbg + sysErr_MT*sysErr_MT + sysErr_btag*sysErr_btag );
+std::cout << "sysErr_deffLept: " << sysErr_deffLept << std::endl;
+std::cout << "sysErr_deffMT: " << sysErr_deffMT << std::endl;
+std::cout << "sysErr_dbg: " << sysErr_dbg << std::endl;
+std::cout << "sysErr_MT: " << sysErr_MT << std::endl;
+std::cout << "sysErr_btag: " << sysErr_btag << std::endl;
+std::cout << "sysErr: " << sysErr<< std::endl;
       //if(mtefferr==1) pred_error_sys  = sqrt(  pow((nData-bg) *(prob_nomt_err_sys/(prob_nomt*prob_nomt*mteff)),2) + pow(rel_sys_uncert_bg*bg*(1.-prob_nomt)/(prob_nomt*mteff),2));
       //if(fbTagError) pred_error_sys = sqrt( pow(pred_error_sys,2) + pow(bg_SFerr *(1-prob_nomt)/(prob_nomt*mteff),2) );
       //pred_error_sys = sqrt(pred_error_sys*pred_error_sys +    pow((frelMTerr*(1.-prob_nomt)/(prob_nomt*mteff*mteff)),2) );//addtional MT cut error
@@ -672,51 +708,64 @@ float getISRCorrection( MT2tree* fMT2tree, const MT2Sample& sample ) {
 
 
 
-void getBTagScaleFactor( MT2tree* fMT2tree, int njets, int nbjets, float& btagSF, float& btagSFerr ) {
+void getBTagScaleFactor( MT2tree* fMT2tree, MT2Region* region, float& btagSF, float& btagSFerr ) {
 
-  if( njets < 2 ) {
-    std::cout << "[getBTagScaleFactor] There's an error: njets<2!! This shouldn't be possible. Exiting." << std::endl;
-    exit(55);
-  }
+  int nbjetsmin = region->nBJetsMin();
+  int nbjetsmax = region->nBJetsMax();
 
+  if( nbjetsmin != nbjetsmax ) {  // use "ge"
 
-  if( nbjets >= 3 ) {
+    if( nbjetsmin >= 3 ) {
 
-    btagSF = fMT2tree->SFWeight.BTagCSV40ge3;
-    btagSFerr = fMT2tree->SFWeight.BTagCSV40ge3Error;
+      btagSF = fMT2tree->SFWeight.BTagCSV40ge3;
+      btagSFerr = fMT2tree->SFWeight.BTagCSV40ge3Error;
 
-  } else if( nbjets == 0 ) {
+    } else if( nbjetsmin == 2 ) {
 
-    btagSF = fMT2tree->SFWeight.BTagCSV40eq0;
-    btagSFerr = fMT2tree->SFWeight.BTagCSV40eq0Error;
+      btagSF = fMT2tree->SFWeight.BTagCSV40ge2;
+      btagSFerr = fMT2tree->SFWeight.BTagCSV40ge2Error;
 
-  } else { // only 1 and 2 remaining
-
-    if( njets==2 ) {
+    } else if( nbjetsmin == 1 ) {
 
       btagSF = fMT2tree->SFWeight.BTagCSV40ge1;
       btagSFerr = fMT2tree->SFWeight.BTagCSV40ge1Error;
 
+    } else { // use "eq"
+
+      btagSF = 1.;
+      btagSFerr = 0.;
+
+    }
+
+  } else { // if nbjetsmin==nbjetsmax
+
+    if( nbjetsmin >= 3 ) {
+
+      btagSF = fMT2tree->SFWeight.BTagCSV40eq3;
+      btagSFerr = fMT2tree->SFWeight.BTagCSV40eq3Error;
+
+    } else if( nbjetsmin == 2 ) {
+
+      btagSF = fMT2tree->SFWeight.BTagCSV40eq2;
+      btagSFerr = fMT2tree->SFWeight.BTagCSV40eq2Error;
+
+    } else if( nbjetsmin == 1 ) {
+
+      btagSF = fMT2tree->SFWeight.BTagCSV40eq1;
+      btagSFerr = fMT2tree->SFWeight.BTagCSV40eq1Error;
+
     } else {
 
-      if( nbjets==1 ) {
+      btagSF = 1.;
+      btagSFerr = 0.;
 
-        btagSF = fMT2tree->SFWeight.BTagCSV40eq1;
-        btagSFerr = fMT2tree->SFWeight.BTagCSV40eq1Error;
-
-      } else { // only nbjets==2 is left
-      
-        btagSF = fMT2tree->SFWeight.BTagCSV40eq2;
-        btagSFerr = fMT2tree->SFWeight.BTagCSV40eq2Error;
-
-      }
-
-    } // if njets == 2 or more
+    }
 
   }
 
 
 }
+
 
 
 int getPdgId( const std::string leptType ) {

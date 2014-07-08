@@ -113,8 +113,18 @@ MT2SingleLLEstimate::MT2SingleLLEstimate( const std::string& aname, const MT2Reg
   int nBins;
   double* bins;
   region->getBins(nBins, bins);
+
+
+  yield_btagUp = new TH1D(Form("yield_btagUp_%s", name.c_str()), "", nBins, bins);
+  yield_btagUp->Sumw2();
+
+  yield_btagDown = new TH1D(Form("yield_btagDown_%s", name.c_str()), "", nBins, bins);
+  yield_btagDown->Sumw2();
+
+
   float xMin = bins[0];
   float xMax = bins[nBins];
+
 
   // efficiencies are inclusive (one big bin):
   effLept_pass = new TH1D(Form("effLept_%s_pass", name.c_str()), "", 1, xMin, xMax );
@@ -123,6 +133,7 @@ MT2SingleLLEstimate::MT2SingleLLEstimate( const std::string& aname, const MT2Reg
   effMT_pass = new TH1D(Form("effMT_%s_pass", name.c_str()), "", 1, xMin, xMax );
   effMT_tot  = new TH1D(Form("effMT_%s_tot", name.c_str()), "", 1, xMin, xMax );
 
+
 }
 
 
@@ -130,6 +141,8 @@ MT2SingleLLEstimate::MT2SingleLLEstimate( const std::string& aname, const MT2Reg
 
 MT2SingleLLEstimate::~MT2SingleLLEstimate() {
 
+  delete yield_btagUp;
+  delete yield_btagDown;
   delete effLept_pass;
   delete effLept_tot;
   delete effMT_pass;
@@ -155,6 +168,12 @@ MT2SingleLLEstimate MT2SingleLLEstimate::operator+( const MT2SingleLLEstimate& r
   result.yield->Add(this->yield);
   result.yield->Add(rhs.yield);
 
+  result.yield_btagUp->Add(this->yield_btagUp);
+  result.yield_btagUp->Add(rhs.yield_btagUp);
+
+  result.yield_btagDown->Add(this->yield_btagDown);
+  result.yield_btagDown->Add(rhs.yield_btagDown);
+
   result.effLept_pass->Add(this->effLept_pass);
   result.effLept_pass->Add(rhs.effLept_pass);
 
@@ -171,6 +190,41 @@ MT2SingleLLEstimate MT2SingleLLEstimate::operator+( const MT2SingleLLEstimate& r
   return result;
 
 }
+
+
+
+
+void MT2SingleLLEstimate::addOverflow() {
+
+  yield->SetBinContent(yield->GetNbinsX(),
+      yield->GetBinContent(yield->GetNbinsX()  )+
+      yield->GetBinContent(yield->GetNbinsX()+1)  );
+  yield->SetBinError(  yield->GetNbinsX(),
+      sqrt(yield->GetBinError(yield->GetNbinsX()  )*
+           yield->GetBinError(yield->GetNbinsX()  )+
+           yield->GetBinError(yield->GetNbinsX()+1)*
+           yield->GetBinError(yield->GetNbinsX()+1)  ));
+
+  yield_btagUp->SetBinContent(yield_btagUp->GetNbinsX(),
+      yield_btagUp->GetBinContent(yield_btagUp->GetNbinsX()  )+
+      yield_btagUp->GetBinContent(yield_btagUp->GetNbinsX()+1)  );
+  yield_btagUp->SetBinError(  yield_btagUp->GetNbinsX(),
+      sqrt(yield_btagUp->GetBinError(yield_btagUp->GetNbinsX()  )*
+           yield_btagUp->GetBinError(yield_btagUp->GetNbinsX()  )+
+           yield_btagUp->GetBinError(yield_btagUp->GetNbinsX()+1)*
+           yield_btagUp->GetBinError(yield_btagUp->GetNbinsX()+1)  ));
+
+  yield_btagDown->SetBinContent(yield_btagDown->GetNbinsX(),
+      yield_btagDown->GetBinContent(yield_btagDown->GetNbinsX()  )+
+      yield_btagDown->GetBinContent(yield_btagDown->GetNbinsX()+1)  );
+  yield_btagDown->SetBinError(  yield_btagDown->GetNbinsX(),
+      sqrt(yield_btagDown->GetBinError(yield_btagDown->GetNbinsX()  )*
+           yield_btagDown->GetBinError(yield_btagDown->GetNbinsX()  )+
+           yield_btagDown->GetBinError(yield_btagDown->GetNbinsX()+1)*
+           yield_btagDown->GetBinError(yield_btagDown->GetNbinsX()+1)  ));
+
+}
+
 
 
 

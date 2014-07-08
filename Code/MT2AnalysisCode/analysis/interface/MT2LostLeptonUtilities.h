@@ -71,6 +71,9 @@ class MT2SingleLLEstimate : public MT2SingleLLEstimateBase {
   ~MT2SingleLLEstimate();
 
 
+  TH1D* yield_btagUp;
+  TH1D* yield_btagDown;
+
   TH1D* effLept_pass;
   TH1D* effLept_tot;
   TH1D* effMT_pass;
@@ -78,6 +81,8 @@ class MT2SingleLLEstimate : public MT2SingleLLEstimateBase {
 
 
   MT2SingleLLEstimate operator+( const MT2SingleLLEstimate& rhs ) const;
+
+  void addOverflow();
 
   TEfficiency* effLept() {
     return new TEfficiency(*effLept_pass, *effLept_tot);

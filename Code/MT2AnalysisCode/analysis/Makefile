@@ -4,7 +4,7 @@ CFLAGS = -Wall -c -g
 ROOFIT_INCLUDE := $(shell cd $(CMSSW_BASE); scram tool info roofitcore | grep INCLUDE= | sed 's|INCLUDE=||')
 ROOFIT_LIBDIR := $(shell cd $(CMSSW_BASE); scram tool info roofitcore | grep LIBDIR= | sed 's|LIBDIR=||')
 
-INCLUDES = -I. -I$(ROOTSYS)/include -I$(ROOFIT_INCLUDE)/ -I$(CMSSW_BASE)/src -I$(CMSSW_BASE)/src/CommonTools -I$(CMSSW_BASE)/src/UserCode/pandolf/ -I$(CMSSW_BASE)/src/CondFormats/JetMETObjects/interface -I$(CMSSW_BASE)/src/MT2Analysis/Code/MT2AnalysisCode/MT2Code/include/ -I$(CMSSW_BASE)/src/MT2Analysis/Code/MT2AnalysisCode/RootMacros/include/ -I$(CMSSW_BASE)/src/MT2Analysis/Code/MT2AnalysisCode/TESCO/include/
+INCLUDES = -I. -I$(ROOTSYS)/include -I$(ROOFIT_INCLUDE)/ -I$(CMSSW_BASE)/src -I$(CMSSW_BASE)/src/CommonTools -I$(CMSSW_BASE)/src/UserCode/mmasciov/ -I$(CMSSW_BASE)/src/CondFormats/JetMETObjects/interface -I$(CMSSW_BASE)/src/MT2Analysis/Code/MT2AnalysisCode/MT2Code/include/ -I$(CMSSW_BASE)/src/MT2Analysis/Code/MT2AnalysisCode/RootMacros/include/ -I$(CMSSW_BASE)/src/MT2Analysis/Code/MT2AnalysisCode/TESCO/include/
 
 ROOTSYS ?= ERROR_RootSysIsNotDefined
 
@@ -15,7 +15,7 @@ EXTRALIBS := -L$(ROOTSYS)/lib -L$(ROOFIT_LIBDIR)/ -L$(CMSSW_BASE)/lib/slc5_amd64
 
 
 
-all: computeLostLepton compareToHJ
+all: computeLostLepton regionEventYields
 
 
 prova: prova.cpp 
@@ -27,6 +27,9 @@ computeLostLepton: computeLostLepton.cpp MT2Region.o MT2LostLeptonUtilities.o MT
 compareToHJ: compareToHJ.cpp DrawBase.o fitTools.o
 	$(CC) -Wall $(INCLUDES) -o compareToHJ compareToHJ.cpp DrawBase.o fitTools.o $(ROOTFLAG) $(EXTRALIBS)
 
+
+regionEventYields: regionEventYields.cpp MT2Region.o MT2RegionAnalysisUtilities.o MT2Common.o
+	$(CC) -Wall $(INCLUDES) -o regionEventYields regionEventYields.cpp MT2Region.o MT2RegionAnalysisUtilities.o MT2Common.o $(CMSSW_BASE)/src/MT2Analysis/Code/MT2AnalysisCode/MT2Code/src/MT2tree.o $(ROOTFLAG) $(EXTRALIBS)
 
 
 
@@ -40,6 +43,8 @@ MT2Region.o: src/MT2Region.cc
 MT2LostLeptonUtilities.o: src/MT2LostLeptonUtilities.cc MT2Region.o
 	$(CC) -Wall $(INCLUDES) -c src/MT2LostLeptonUtilities.cc MT2Region.o $(ROOTFLAG) $(EXTRALIBS)
 
+MT2RegionAnalysisUtilities.o: src/MT2RegionAnalysisUtilities.cc MT2Region.o
+	$(CC) -Wall $(INCLUDES) -c src/MT2RegionAnalysisUtilities.cc MT2Region.o $(ROOTFLAG) $(EXTRALIBS)
 
 
 DrawBase.o: $(CMSSW_BASE)/src/CommonTools/DrawBase.C

@@ -120,7 +120,7 @@ int main( int argc, char* argv[] ) {
   std::cout << "-> Done merging. Start computing event yields." << std::endl;
 
 
-  std::string outputdir = "EventYields_T1tttt_1500-100";
+  std::string outputdir = "EventYields_WJets-HT400to600";
   system(Form("mkdir -p %s", outputdir.c_str()));
 
   TFile* outfile = TFile::Open(Form("%s/EventYields_%s.root", outputdir.c_str(), sampleName.c_str()), "recreate");
@@ -130,15 +130,21 @@ int main( int argc, char* argv[] ) {
   logfile.open(Form("%s/EventYields_%s.txt", outputdir.c_str(), sampleName.c_str()));
   
 
-  //std::vector<TH1D*> vh1_data = getYieldHistos( "EventYield_data", "", HTRegions, signalRegions, EventYield_data, EventYield_allMC );
-  //std::vector<TH1D*> vh1_data = getYieldHistos( "EventYield_top", "", HTRegions, signalRegions, EventYield_top, EventYield_bg );
-  std::vector<TH1D*> vh1_data = getYieldHistos( "EventYield_signal", "", HTRegions, signalRegions, EventYield_signal, EventYield_allMC, logfile ); 
+  // For data yield:
+  //std::vector<TH1D*> vh1_data = getYieldHistos( "EventYield_data", "", HTRegions, signalRegions, EventYield_data, EventYield_allMC, logfile );
+  
+  // For topW yield:
+  std::vector<TH1D*> vh1_data = getYieldHistos( "EventYield_topW", "", HTRegions, signalRegions, EventYield_topW, EventYield_bg, logfile );
+  
+  // For signal yield:
+  //std::vector<TH1D*> vh1_data = getYieldHistos( "EventYield_signal", "", HTRegions, signalRegions, EventYield_signal, EventYield_allMC, logfile ); 
 
-  //std::vector<TH1D*> vh1_mc   = getYieldHistos( "EventYield_MC", "", HTRegions, signalRegions, EventYield_allMC, EventYield_bg );
-  std::vector<TH1D*> vh1_mc   = getYieldHistos( "EventYield_WJets", "", HTRegions, signalRegions, EventYield_wjets, EventYield_bg, logfile );
+  // For all SM yield:
+  std::vector<TH1D*> vh1_mc   = getYieldHistos( "EventYield_MC", "", HTRegions, signalRegions, EventYield_allMC, EventYield_bg, logfile );
+  //std::vector<TH1D*> vh1_mc   = getYieldHistos( "EventYield_WJets", "", HTRegions, signalRegions, EventYield_wjets, EventYield_bg, logfile );
 
-  //std::vector<TH1D*> vh1_sim  = getSimTruthYieldHistos( "SimulationTruthEventYield", "", HTRegions, signalRegions, EventYield_allMC );
-  std::vector<TH1D*> vh1_sim  = getSimTruthYieldHistos( "SimulationTruthEventYield", "", HTRegions, signalRegions, EventYield_signal );
+  std::vector<TH1D*> vh1_sim  = getSimTruthYieldHistos( "SimulationTruthEventYield", "", HTRegions, signalRegions, EventYield_allMC );
+  //std::vector<TH1D*> vh1_sim  = getSimTruthYieldHistos( "SimulationTruthEventYield", "", HTRegions, signalRegions, EventYield_signal );
  
 
   for( unsigned i=0; i<HTRegions.size(); ++i ) {

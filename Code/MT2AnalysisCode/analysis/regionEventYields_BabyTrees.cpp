@@ -1,5 +1,7 @@
 #include <iostream>
 #include <sstream>
+#include <fstream>
+#include <iomanip>
 
 //#include "MT2tree.hh"
 #include "helper/Utilities.hh"
@@ -25,7 +27,7 @@ std::vector<MT2YieldPreAnalysis*> getEventYield( std::vector<std::string> fakeID
 //float getISRCorrection( MT2tree* fMT2tree, const MT2SampleBaby_basic& sample );
 //void getBTagScaleFactor( MT2tree* fMT2tree, MT2Region* region, float& btagSF, float& btagSFerr );
 MT2YieldAnalysis* mergeYields( std::vector<MT2YieldAnalysis*> EventYield, const std::string& n1, const std::string& n2="", const std::string& n3="", const std::string& n4="", const std::string& n5="" );
-std::vector<TH1D*> getYieldHistos( const std::string& prefix, const std::string& fakeID, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions, MT2YieldAnalysis* EventYield_tot, MT2YieldAnalysis* EventYield_bg );
+std::vector<TH1D*> getYieldHistos( const std::string& prefix, const std::string& fakeID, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions, MT2YieldAnalysis* EventYield_tot, MT2YieldAnalysis* EventYield_bg, std::ofstream& logfile );
 std::vector<TH1D*> getSimTruthYieldHistos( const std::string& prefix, const std::string& fakeID, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions, MT2YieldAnalysis* EventYield_tot );
 
 
@@ -39,7 +41,6 @@ int main( int argc, char* argv[] ) {
     std::cout << "Exiting." << std::endl;
     exit(11);
   }
-
 
   std::string sampleName(argv[1]);
 
@@ -119,24 +120,26 @@ int main( int argc, char* argv[] ) {
   std::cout << "-> Done merging. Start computing event yields." << std::endl;
 
 
+  std::string outputdir = "EventYields_T1tttt_1500-100";
+  system(Form("mkdir -p %s", outputdir.c_str()));
+
+  TFile* outfile = TFile::Open(Form("%s/EventYields_%s.root", outputdir.c_str(), sampleName.c_str()), "recreate");
+  outfile->cd();
+  
+  std::ofstream logfile;
+  logfile.open(Form("%s/EventYields_%s.txt", outputdir.c_str(), sampleName.c_str()));
+  
+
   //std::vector<TH1D*> vh1_data = getYieldHistos( "EventYield_data", "", HTRegions, signalRegions, EventYield_data, EventYield_allMC );
   //std::vector<TH1D*> vh1_data = getYieldHistos( "EventYield_top", "", HTRegions, signalRegions, EventYield_top, EventYield_bg );
-  std::vector<TH1D*> vh1_data = getYieldHistos( "EventYield_signal", "", HTRegions, signalRegions, EventYield_signal, EventYield_allMC ); 
+  std::vector<TH1D*> vh1_data = getYieldHistos( "EventYield_signal", "", HTRegions, signalRegions, EventYield_signal, EventYield_allMC, logfile ); 
 
   //std::vector<TH1D*> vh1_mc   = getYieldHistos( "EventYield_MC", "", HTRegions, signalRegions, EventYield_allMC, EventYield_bg );
-  std::vector<TH1D*> vh1_mc   = getYieldHistos( "EventYield_WJets", "", HTRegions, signalRegions, EventYield_wjets, EventYield_bg );
+  std::vector<TH1D*> vh1_mc   = getYieldHistos( "EventYield_WJets", "", HTRegions, signalRegions, EventYield_wjets, EventYield_bg, logfile );
 
   //std::vector<TH1D*> vh1_sim  = getSimTruthYieldHistos( "SimulationTruthEventYield", "", HTRegions, signalRegions, EventYield_allMC );
   std::vector<TH1D*> vh1_sim  = getSimTruthYieldHistos( "SimulationTruthEventYield", "", HTRegions, signalRegions, EventYield_signal );
  
-
-
-  std::string outputdir = "EventYields_T1tttt_1500-100";
-  system(Form("mkdir -p %s", outputdir.c_str()));
-
-  
-  TFile* outfile = TFile::Open(Form("%s/EventYields_%s.root", outputdir.c_str(), sampleName.c_str()), "recreate");
-  outfile->cd();
 
   for( unsigned i=0; i<HTRegions.size(); ++i ) {
 
@@ -426,7 +429,7 @@ MT2YieldAnalysis* mergeYields( std::vector<MT2YieldAnalysis*> EventYield, const 
 
 
 
-std::vector<TH1D*> getYieldHistos( const std::string& prefix, const std::string& fakeID, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions, MT2YieldAnalysis* EventYield_tot, MT2YieldAnalysis* EventYield_bg ) {
+std::vector<TH1D*> getYieldHistos( const std::string& prefix, const std::string& fakeID, std::vector<MT2HTRegion> HTRegions, std::vector<MT2SignalRegion> signalRegions, MT2YieldAnalysis* EventYield_tot, MT2YieldAnalysis* EventYield_bg, std::ofstream& logfile ) {
 
 
   int nHistos = HTRegions.size();
@@ -436,8 +439,10 @@ std::vector<TH1D*> getYieldHistos( const std::string& prefix, const std::string&
   std::vector<TH1D*> histos;
   
   std::cout << std::endl << std::endl;
-  std::cout << "Event yield: " << prefix.c_str() << std::endl;
-
+  std::cout << "Event yield for sample " << prefix.c_str() << std::endl;
+  
+  logfile << std::endl << std::endl <<  "Event yield for sample " << prefix.c_str() << std::endl;
+  
   for( int i=0; i<nHistos; ++i ) {
 
     TH1D* h1 = new TH1D(Form("%s_%s", prefix.c_str(), HTRegions[i].name.c_str()), "", nBins, 0., nBins);
@@ -448,6 +453,7 @@ std::vector<TH1D*> getYieldHistos( const std::string& prefix, const std::string&
 
     std::cout << std::endl << std::endl;
     std::cout << "HT region: " << HTRegions[i].name.c_str() << std::endl;
+    logfile << std::endl << "HT region: " << HTRegions[i].name.c_str() << std::endl;
 
     for( int j=0; j<nBins; ++j ) {
   
@@ -473,14 +479,15 @@ std::vector<TH1D*> getYieldHistos( const std::string& prefix, const std::string&
 
       double err_histo = 0;
       float  tot = (EventYield_tot!=0 && EventYield_tot->f[fakeID.c_str()]!=0) ? EventYield_tot->f[fakeID.c_str()]->getRegion(thisRegion.getName())->yield->IntegralAndError(0, 2, err_histo) : 0.;
-      float  bg = (EventYield_bg !=0 && EventYield_bg ->f[fakeID.c_str()]!=0) ? EventYield_bg ->f[fakeID.c_str()]->getRegion(thisRegion.getName())->yield->Integral() : 0.;
+      //float  bg = (EventYield_bg !=0 && EventYield_bg ->f[fakeID.c_str()]!=0) ? EventYield_bg ->f[fakeID.c_str()]->getRegion(thisRegion.getName())->yield->Integral() : 0.;
       //float  bg_btagUp = (EventYield_bg !=0 && EventYield_bg ->f[fakeID.c_str()]!=0) ? EventYield_bg ->f[fakeID.c_str()]->getRegion(thisRegion.getName())->yield_btagUp->Integral() : 0.;
       //float  bg_btagDown = (EventYield_bg !=0 && EventYield_bg ->f[fakeID.c_str()]!=0) ? EventYield_bg ->f[fakeID.c_str()]->getRegion(thisRegion.getName())->yield_btagDown->Integral() : 0.;
 
-      float EventYield = tot-bg;
-      //float EventYield = tot;
-
+      //float EventYield = tot-bg;
+      
+      float EventYield = tot;
       h1->SetBinContent( iBin, EventYield );
+      h1->SetBinError( iBin, err_histo );
 
       //cout << "tot " << tot << endl;
       
@@ -496,15 +503,21 @@ std::vector<TH1D*> getYieldHistos( const std::string& prefix, const std::string&
       //h1->SetBinContent( iBin, EventYield );
 
       std::cout << std::endl;
-      std::cout << "Signal region: " << signalRegions[j].getName().c_str() << std::endl; 
-
-      std::cout << "tot: " << tot << std::endl;
-      std::cout << "bg: " << bg << std::endl;
+      std::cout << "Signal region: " << signalRegions[j].getName().c_str() << std::endl;  
+     
+      //std::cout << "tot: " << tot << std::endl;
+      //std::cout << "bg: " << bg << std::endl;
+      
       std::cout << "yield: " << EventYield << std::endl;
       std::cout << "hist_err: " << err_histo << std::endl;
-      
-      float statErr = sqrt(tot);
-      float sysErr_dbg = 0.5*bg; // 50% uncert on BG estimate
+           
+      if(EventYield >= 10)
+	logfile << fixed << setprecision(1) << EventYield << " \\pm " << err_histo << " & ";
+      else if(EventYield < 10)
+	logfile << fixed << setprecision(2) << EventYield << " \\pm " << err_histo << " & ";
+
+      //float statErr = sqrt(tot);
+      //float sysErr_dbg = 0.5*bg; // 50% uncert on BG estimate
       //float bg_SFerrUp = fabs(bg_btagUp-bg);
       //float bg_SFerrDown = fabs(bg_btagDown-bg);
       //float bg_SFerr = 0.5*(bg_SFerrUp+bg_SFerrDown);
@@ -513,11 +526,10 @@ std::vector<TH1D*> getYieldHistos( const std::string& prefix, const std::string&
       //float sysErr_dLL = nWT_goodrecoevt_dLL*(1.*effLept_err/(effLept*effLept*effMT));//additional error due to double lost with 100% uncert
 
       //float sysErr = sqrt( sysErr_dbg*sysErr_dbg + sysErr_btag*sysErr_btag );
-      float sysErr = 0.;
       //std::cout << "sysErr_dbg: " << sysErr_dbg << std::endl;
       //std::cout << "sysErr_btag: " << sysErr_btag << std::endl;
       //std::cout << "sysErr: " << sysErr<< std::endl;
-      std::cout << "statErr: " << statErr<< std::endl; 
+      //std::cout << "statErr: " << statErr<< std::endl; 
 
       //h1->SetBinError( iBin, sqrt(statErr*statErr + sysErr*sysErr) );
       h1->SetBinError( iBin, err_histo );

@@ -891,42 +891,42 @@ Path		 /scratch/
 #Lumi            1000
 
 ### Signal
-SAMPLE
-Name            T1tttt_1500-100
-SName           Signal
-File            mmasciov/SMS_T1tttt_2J_mGl1500_mLSP100_PU_S14_POSTLS170_babyTree.root
-Xsection        0.0141903
-Kfact           1.0
-Lumi            1000
-
-SAMPLE
-Name		T1tttt_1200-800
-SName		Signal
-File            mmasciov/SMS_T1tttt_2J_mGl1200_mLSP800_PU_S14_POSTLS170_babyTree.root
-Xsection	0.0856418
-Kfact           1.0
-Lumi            1000
+//SAMPLE
+//Name            T1tttt_1500-100
+//SName           Signal
+//File            mmasciov/SMS_T1tttt_2J_mGl1500_mLSP100_PU_S14_POSTLS170_babyTree.root
+//Xsection        0.0141903
+//Kfact           100
+//Lumi            1000
+//
+//SAMPLE
+//Name		T1tttt_1200-800
+//SName		Signal
+//File            mmasciov/SMS_T1tttt_2J_mGl1200_mLSP800_PU_S14_POSTLS170_babyTree.root
+//Xsection	0.0856418
+//Kfact           100
+//Lumi            1000
 
 SAMPLE
 Name		T1bbbb_1000-900
 SName		Signal
 File            mmasciov/SMS_T1bbbb_2J_mGl1000_mLSP900_PU_S14_POSTLS170_babyTree.root
 Xsection	0.325388
-Kfact           1.0
+Kfact           100
 Lumi            1000
 
-SAMPLE
-Name		T1bbbb_1500-100
-SName		Signal
-File            mmasciov/SMS_T1bbbb_2J_mGl1500_mLSP100_PU_S14_POSTLS170_babyTree.root
-Xsection	0.0141903
-Kfact           1.0
-Lumi            1000
-
-SAMPLE
-Name		T1qqqq_1400-100
-SName		Signal
-File            mmasciov/SMS_T1qqqq_2J_mGl1400_mLSP100_PU_S14_POSTLS170_babyTree.root
-Xsection	0.0252977
-Kfact           1.0
-Lumi            1000
+//SAMPLE
+//Name		T1bbbb_1500-100
+//SName		Signal
+//File            mmasciov/SMS_T1bbbb_2J_mGl1500_mLSP100_PU_S14_POSTLS170_babyTree.root
+//Xsection	0.0141903
+//Kfact           100
+//Lumi            1000
+//
+//SAMPLE
+//Name		T1qqqq_1400-100
+//SName		Signal
+//File            mmasciov/SMS_T1qqqq_2J_mGl1400_mLSP100_PU_S14_POSTLS170_babyTree.root
+//Xsection	0.0252977
+//Kfact           100
+//Lumi            1000

@@ -1,3 +1,2 @@
 #input		output			filter	k-factor	xsec(pb)	id
 /scratch/mmasciov/WJetsToLNu_HT400to600_PU_S14_POSTLS170_babyTree.root		/scratch/mmasciov/WJetsToLNu_HT400to600_PU_S14_POSTLS170_babyTree_post.root 1.0 1.23 55.61 504
-

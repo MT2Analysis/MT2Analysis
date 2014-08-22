@@ -106,6 +106,7 @@ int postProcessing(string inputFile,
   TTree *clone = new TTree("mt2", "post processed baby tree for mt2 analysis");
 
   clone = t->CloneTree(-1);
+  clone->SetName("mt2");
 
   /*
   if(SortBasketsByEntry)
@@ -119,9 +120,7 @@ int postProcessing(string inputFile,
   //Calculate scaling factor and put variables into tree 
   int events = t->GetEntries();
   float scale1fb = xsec*kfactor*1000*filter/(Float_t)events;
-  //Float_t scale1fb = 6789;
-
-
+ 
   /*
   if(isdata){
 	scale1fb = 1.0;
@@ -150,8 +149,10 @@ int postProcessing(string inputFile,
   }
   //-------------------------------------------------------------
 
+  out->cd();
   clone->Write(); 
   out->Close();
+
   f->Close();
   return 0;
   

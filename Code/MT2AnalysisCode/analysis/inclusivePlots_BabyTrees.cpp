@@ -29,17 +29,7 @@ int main( int argc, char* argv[] ) {
     exit(11);
   }
   
-//  if( argc == 2 ) {
-//    std::cout << "USAGE: ./inclusivePlots_BabyTrees [samplesFileName] [reduceTree]" << std::endl;
-//    std::cout << "Argument is taken as [samplesFileName], and [reduceTree] is set to 'false' by default." << std::endl;
-//    //exit(11);
-//  }
-//  else if( argc != 3 ) {
-//    std::cout << "USAGE: ./inclusivePlots_BabyTrees [samplesFileName] [reduceTree]" << std::endl;
-//    std::cout << "Argument [sampleFileName] is mandatory. If only one argument is passed, it is taken as [samplesFileName], and [reduceTree] is set to 'false' by default." << std::endl;
-//    std::cout << "Exiting." << std::endl;
-//    exit(11);
-//  }
+  bool isReduceTree = false;
 
   std::string sampleName(argv[1]);
   
@@ -53,14 +43,6 @@ int main( int argc, char* argv[] ) {
   std::string outputdir = "InclusivePlots/T1bbbb_1500-100";
   system(Form("mkdir -p %s", outputdir.c_str()));
 
-  //bool isReduceTree = false;
-  //std::string reduceTree(argv[2]);
-  //if( reduceTree == "reduceTree" ) {
-  //
-  //  cout<<"You decided to reduce the tree before filling histograms. This might take some time."<<endl;
-  //  isReduceTree = true;   
-  //
-  //}
 
   std::cout << "-> Starting declaration of stack histograms..." << std::endl;
 
@@ -230,38 +212,47 @@ int main( int argc, char* argv[] ) {
     TFile* file = TFile::Open(fSamples[i].file.c_str());
     TTree* tree = (TTree*)file->Get("treeProducerSusyFullHad");
 
-    treeProducerSusyFullHad myTree;
-    myTree.Init(tree);
-
-    /*
-    std::cout << std::endl << std::endl;
-    std::cout << "-> Defining preselection..." << std::endl;
-
-    
-    std::ostringstream preselectionStream;
-    preselectionStream << " "
-      //<< "(nTaus20==0 && nMuons10==0 && nElectrons10==0)"                   << " && "
-		       << "(nVert > 0)";                      
-      //<< " && "
-      //		       << "(nJet40 > 1)"                     << " && "
-      //		       << "(jet_pt[1] > 100)"                << " && "
-      //		       << "(deltaPhiMin > 0.3)"              << " && "
-      //		       << "(diffMetMht < 70)";
-
-    TString preselection = preselectionStream.str().c_str();
-    TString cuts = preselection;
-
     TFile* tmpFile = TFile::Open("tmp.root", "recreate");
-    tmpFile->cd();
-    TTree* tree_reduced = tree->CopyTree(cuts);
+    TTree* tree_reduced;
 
-    treeProducerSusyFullHad myTree_reduced;
-    myTree_reduced.Init(tree_reduced);
-    */
+    if(isReduceTree){
+    
+      // Define selection if reducing the tree before looping over entries:
+
+      std::ostringstream preselectionStream;
+      preselectionStream << " "
+	//<< "(nTaus20==0 && nMuons10==0 && nElectrons10==0)"                   << " && "
+			 << "(nVert > 0)";                      
+        //<< " && "
+        //		       << "(nJet40 > 1)"                     << " && "
+        //		       << "(jet_pt[1] > 100)"                << " && "
+        //		       << "(deltaPhiMin > 0.3)"              << " && "
+        //		       << "(diffMetMht < 70)";
+      
+      TString preselection = preselectionStream.str().c_str();
+      TString cuts = preselection;
+      
+      /*
+	TFile* tmpFile = TFile::Open("tmp.root", "recreate");
+	tmpFile->cd();
+	TTree* tree_reduced = tree->CopyTree(cuts);
+      */
+
+      tmpFile->cd();
+      tree_reduced = tree->CopyTree(cuts);
+      
+    }// reduceTree
+
+    treeProducerSusyFullHad myTree;
+    if(isReduceTree)
+      myTree.Init(tree_reduced);
+    else
+      myTree.Init(tree);
 
     // global sample weight:
     //Double_t weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents*fSamples[i].PU_avg_weight);
     Double_t weight = fSamples[i].xsection * fSamples[i].kfact * fSamples[i].lumi / (fSamples[i].nevents);
+    
     //std::cout << "Weight = " << weight << std::endl;
     //cout<<fSamples[i].xsection<<endl;
     //cout<<fSamples[i].kfact<<endl;
@@ -269,12 +260,23 @@ int main( int argc, char* argv[] ) {
     //cout<<fSamples[i].nevents<<endl;
     //cout<<fSamples[i].PU_avg_weight<<endl;
 
-    //int nentries = tree_reduced->GetEntries();
-    int nentries = tree->GetEntries(); 
-
+    int nentries;
 
     // Performance statistics
-    TTreePerfStats *ps = new TTreePerfStats("ioperf", tree);
+    TTreePerfStats *ps;
+    
+    if(isReduceTree){      
+
+      nentries = tree_reduced->GetEntries();
+      ps = new TTreePerfStats("ioperf", tree_reduced);
+      
+    }
+    else {
+
+      nentries = tree->GetEntries(); 
+      ps = new TTreePerfStats("ioperf", tree);
+    
+    }
     
     std::cout << std::endl << std::endl;
     std::cout << "-> Starting loop over " << nentries << " entries..." << std::endl;
@@ -283,11 +285,14 @@ int main( int argc, char* argv[] ) {
 
       if( iEntry % 50000 == 0 ) std::cout << "    Entry: " << iEntry << " / " << nentries << std::endl;
 
-      //myTree_reduced.GetEntry(iEntry);
-
       myTree.GetEntry(iEntry);
-
-      if ( myTree.nVert < 1 ) continue;
+      
+      if(!isReduceTree){
+	
+	//Define event selection if NOT reducing the input tree:
+	if ( myTree.nVert < 1 ) continue;
+	
+      }
       
       float ht       = myTree.ht;
       float met      = myTree.met_pt;
@@ -298,26 +303,8 @@ int main( int argc, char* argv[] ) {
       int nelectrons = myTree.nElectrons10;
       int ntaus      = myTree.nTaus20;
       int nleptons   = nmuons+nelectrons+ntaus;
-      
       int njet_all   = myTree.njet;
-      //float jetpt[njet_all];
-      //for (int jeti=0; jeti<njet_all; ++jeti)
-      //jetpt[jeti]  = myTree.jet_pt[jeti];
-
-      //float ht       = myTree_reduced.ht;
-      //float met      = myTree_reduced.met_pt;
-      //float mt2      = myTree_reduced.mt2;
-      //int njets      = myTree_reduced.nJet40;
-      //int nbjets     = myTree_reduced.nBJetMedium40;
-      //int nmuons     = myTree_reduced.nMuons10;
-      //int nelectrons = myTree_reduced.nElectrons10;
-      //int ntaus      = myTree_reduced.nTaus20;
-      //int nleptons   = nmuons+nelectrons+ntaus;
-
-      //fullweight = weight;
-      //fullweight_btagUp = weight;
-      //fullweight_btagDown = weight;
-
+      
       h_njets[i]    ->Fill(njets, weight);
       h_nbjets[i]   ->Fill(nbjets, weight);
       h_nleptons[i] ->Fill(nleptons, weight);
@@ -327,9 +314,10 @@ int main( int argc, char* argv[] ) {
 
       for (int jeti=0; jeti<njet_all; ++jeti)
 	h_jetpt[i]  ->Fill(myTree.jet_pt[jeti]);
-
+      
+      
     }// entries
-   
+    
     std::cout << "Done with sample " << fSamples[i].name << std::endl << std::endl; 
  
     h_njets_stack    ->Add(h_njets[i]);
@@ -346,18 +334,19 @@ int main( int argc, char* argv[] ) {
     
     delete ps;
 
-    //delete tree_reduced;
+    if(isReduceTree)
+      delete tree_reduced;
     delete tree;
-
-    //tmpFile->Close();
-    //delete tmpFile;
-
+    
+    tmpFile->Close();
+    delete tmpFile;
+       
     file->Close();
     delete file;
 
   }// samples
 
-  //system( "rm tmp.root" );
+  system( "rm tmp.root" );
 
   // Declaring empty histos for legend definition
   TH1F* hWJets = new TH1F("WJets", "WJets", 1, 0, 1);

@@ -1,3 +1,4 @@
+
 CC = g++
 CFLAGS = -Wall -c -g
 
@@ -15,7 +16,7 @@ EXTRALIBS := -L$(ROOTSYS)/lib -L$(ROOFIT_LIBDIR)/ -L$(CMSSW_BASE)/lib/slc5_amd64
 
 
 
-all: computeLostLepton regionEventYields
+all: computeLostLepton regionEventYields regionEventYields_BabyTrees inclusivePlots_BabyTrees
 
 
 prova: prova.cpp 
@@ -31,11 +32,15 @@ compareToHJ: compareToHJ.cpp DrawBase.o fitTools.o
 regionEventYields: regionEventYields.cpp MT2Region.o MT2RegionAnalysisUtilities.o MT2Common.o
 	$(CC) -Wall $(INCLUDES) -o regionEventYields regionEventYields.cpp MT2Region.o MT2RegionAnalysisUtilities.o MT2Common.o $(CMSSW_BASE)/src/MT2Analysis/Code/MT2AnalysisCode/MT2Code/src/MT2tree.o $(ROOTFLAG) $(EXTRALIBS)
 
+regionEventYields_BabyTrees: regionEventYields_BabyTrees.cpp MT2Region.o MT2RegionAnalysisUtilities.o MT2Common.o
+	$(CC) -Wall $(INCLUDES) -o regionEventYields_BabyTrees regionEventYields_BabyTrees.cpp MT2Region.o MT2RegionAnalysisUtilities.o MT2Common.o $(CMSSW_BASE)/src/MT2Analysis/Code/MT2AnalysisCode/MT2Code/src/MT2tree.o $(ROOTFLAG) $(EXTRALIBS)
+
+inclusivePlots_BabyTrees: inclusivePlots_BabyTrees.cpp MT2Region.o MT2RegionAnalysisUtilities.o MT2Common.o
+	$(CC) -Wall $(INCLUDES) -o inclusivePlots_BabyTrees inclusivePlots_BabyTrees.cpp MT2Region.o MT2RegionAnalysisUtilities.o MT2Common.o $(CMSSW_BASE)/src/MT2Analysis/Code/MT2AnalysisCode/MT2Code/src/MT2tree.o $(ROOTFLAG) $(EXTRALIBS)
 
 
 MT2Common.o: src/MT2Common.cc
 	$(CC) -Wall $(INCLUDES) -c src/MT2Common.cc $(ROOTFLAG) $(EXTRALIBS)
-
 
 MT2Region.o: src/MT2Region.cc
 	$(CC) -Wall $(INCLUDES) -c src/MT2Region.cc $(ROOTFLAG) $(EXTRALIBS)

@@ -428,6 +428,107 @@ std::vector<MT2SampleBaby> MT2Common::loadSamplesBaby(const std::string& dir, co
 }
 
 
+//////
+std::vector<MT2SampleBaby_basic> MT2Common::loadSamplesBaby_basic(const std::string& filename) {
+
+  std::vector<MT2SampleBaby_basic> fSamples;
+
+  char buffer[200];
+  ifstream IN(filename.c_str());
+
+  //char ParName[100];                                                                                                                                                                                                           
+  char StringValue[1000];
+  float ParValue;
+
+  std::cout << "------------------------------------" << std::endl;
+  std::cout << "Sample File  " << filename << std::endl;
+
+  int counter(0);
+  TString fPath;
+
+
+  while( IN.getline(buffer, 200, '\n') ) {
+
+    // ok = false;                                                                                                                                                                                                               
+    if (buffer[0] == '#') {
+      continue; // Skip lines commented with '#'                                                                                                                                                                                 
+    }
+
+    if( !strcmp(buffer, "GENERAL") ) {
+
+      IN.getline(buffer, 200, '\n');
+      sscanf(buffer, "Path\t%s", StringValue);
+      fPath = StringValue;
+
+      std::cout << " ----  " << std::endl;
+      std::cout << "  Path " << fPath << std::endl;
+
+    }
+
+    if( !strcmp(buffer, "SAMPLE")){
+
+      MT2SampleBaby_basic s;
+      IN.getline(buffer, 200, '\n');
+      sscanf(buffer, "Name\t%s", StringValue);
+      s.name = TString(StringValue);
+
+      IN.getline(buffer, 200, '\n');
+      sscanf(buffer, "SName\t%s", StringValue);
+      s.sname = TString(StringValue);
+
+      IN.getline(buffer, 200, '\n');
+      sscanf(buffer, "File\t%s", StringValue);
+      TString fileName =fPath+StringValue;
+      s.file = fileName;
+      
+      IN.getline(buffer, 200, '\n');
+      sscanf(buffer, "Xsection\t%f", &ParValue);
+      s.xsection = ParValue;
+
+      IN.getline(buffer, 200, '\n');
+      sscanf(buffer, "Kfact\t%f", &ParValue);
+      s.kfact = ParValue;
+
+      IN.getline(buffer, 200, '\n');
+      sscanf(buffer, "Lumi\t%f", &ParValue);
+      s.lumi = ParValue;
+
+
+      TFile* file = TFile::Open(s.file.c_str());
+      TTree* tree = (TTree*)file->Get("treeProducerSusyFullHad");
+
+      s.PU_avg_weight = 1;
+      s.nevents       = tree->GetEntries();
+
+      
+      std::cout << " ---- " << std::endl;
+      std::cout << "  New sample added: " << s.name << std::endl;
+      std::cout << "   Sample no.      " << counter << std::endl;
+      std::cout << "   Short name:     " << s.sname << std::endl;
+      std::cout << "   File:           " << s.file << std::endl;
+      std::cout << "   Events:         " << s.nevents  << std::endl;
+      //std::cout << "   Events in tree: " << tree->GetEntries() << std::endl;
+      std::cout << "   Xsection:       " << s.xsection << std::endl;
+      std::cout << "   Lumi:           " << s.lumi << std::endl;
+      std::cout << "   kfactor:        " << s.kfact << std::endl;
+      std::cout << "   avg PU weight:  " << s.PU_avg_weight << std::endl;
+      //std::cout << "   type:           " << s.type << std::endl;
+      //std::cout << "   Color:          " << s.color << std::endl;
+      fSamples.push_back(s);
+      file->Close();
+      tree = 0;
+      counter++;
+    }
+
+  }
+
+  std::cout << "------------------------------------" << std::endl;
+
+  return fSamples;
+
+}
+//////
+
 
 std::string MT2Common::getSampleType( MT2Sample sample ) {
 

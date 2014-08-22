@@ -46,7 +46,7 @@ class MT2RegionAnalysisBase {
 
   MT2Region* region;
 
-  TH1D* yield;
+  TH1F* yield;
 
   MT2RegionAnalysisBase operator+( const MT2RegionAnalysisBase& rhs ) const;
   void addOverflow();

@@ -35,9 +35,11 @@ MT2RegionAnalysisBase::MT2RegionAnalysisBase( const std::string& aname, const MT
   double* bins;
   region->getBins(nBins, bins);
 
-  yield = new TH1D(Form("yield_%s", name.c_str()), "", nBins, bins);
-  yield->Sumw2();
+  //yield = new TH1D(Form("yield_%s", name.c_str()), "", nBins, bins);
+  //yield->Sumw2();
 
+  yield = new TH1F(Form("yiled_%s", name.c_str()), "", 2, 0., 2.);
+  yield->Sumw2();
 
 }
 
@@ -115,10 +117,12 @@ MT2RegionAnalysis::MT2RegionAnalysis( const std::string& aname, const MT2Region&
   region->getBins(nBins, bins);
 
 
-  yield_btagUp = new TH1D(Form("yield_btagUp_%s", name.c_str()), "", nBins, bins);
+  //yield_btagUp = new TH1D(Form("yield_btagUp_%s", name.c_str()), "", nBins, bins);
+  yield_btagUp = new TH1D(Form("yield_btagUp_%s", name.c_str()), "", 2, 0., 2.);
   yield_btagUp->Sumw2();
 
-  yield_btagDown = new TH1D(Form("yield_btagDown_%s", name.c_str()), "", nBins, bins);
+  //yield_btagDown = new TH1D(Form("yield_btagDown_%s", name.c_str()), "", nBins, bins);
+  yield_btagDown = new TH1D(Form("yield_btagDown_%s", name.c_str()), "", 2, 0., 2.);
   yield_btagDown->Sumw2();
 
 

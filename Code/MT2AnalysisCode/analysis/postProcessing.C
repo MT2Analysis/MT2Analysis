@@ -52,8 +52,6 @@ int run(string mData="list_postProcessing.txt",
     float filter,kfactor,xsec;
     int id;
 
-    cout<< kfactorS <<" "<< xsecS <<" "<< idS << endl;
-
     filter = (float)atof(filterS.c_str());
     kfactor = (float)atof(kfactorS.c_str());
     xsec = (float)atof(xsecS.c_str());
@@ -149,11 +147,14 @@ int postProcessing(string inputFile,
   }
   //-------------------------------------------------------------
 
+  delete t;
+  f->Close();
+  
   out->cd();
-  clone->Write(); 
+  clone->Write();
+  
   out->Close();
 
-  f->Close();
   return 0;
   
 }

@@ -484,7 +484,7 @@ std::vector<MT2SamplePostBaby> MT2Common::loadSamplesPostBaby(const std::string&
 
 
       TFile* file = TFile::Open(s.file.c_str());
-      TTree* tree = (TTree*)file->Get("treeProducerSusyFullHad");
+      TTree* tree = (TTree*)file->Get("mt2");
 
       int evt_id;
       float evt_nEvts, evt_filter, evt_kfactor, evt_xsec, evt_scale1fb;

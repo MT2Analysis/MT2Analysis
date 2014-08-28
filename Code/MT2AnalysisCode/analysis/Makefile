@@ -1,6 +1,6 @@
 
 CC = g++
-CFLAGS = -Wall -c -g
+CFLAGS = -Wall -c -g -fpermissive
 
 ROOFIT_INCLUDE := $(shell cd $(CMSSW_BASE); scram tool info roofitcore | grep INCLUDE= | sed 's|INCLUDE=||')
 ROOFIT_LIBDIR := $(shell cd $(CMSSW_BASE); scram tool info roofitcore | grep LIBDIR= | sed 's|LIBDIR=||')
@@ -16,7 +16,7 @@ EXTRALIBS := -L$(ROOTSYS)/lib -L$(ROOFIT_LIBDIR)/ -L$(CMSSW_BASE)/lib/slc5_amd64
 
 
 
-all: computeLostLepton regionEventYields regionEventYields_BabyTrees inclusivePlots_BabyTrees
+all: computeLostLepton regionEventYields regionEventYields_BabyTrees inclusivePlots_BabyTrees regionEventYields_postBabyTrees
 
 
 prova: prova.cpp 
@@ -37,6 +37,9 @@ regionEventYields_BabyTrees: regionEventYields_BabyTrees.cpp MT2Region.o MT2Regi
 
 inclusivePlots_BabyTrees: inclusivePlots_BabyTrees.cpp MT2Region.o MT2RegionAnalysisUtilities.o MT2Common.o
 	$(CC) -Wall $(INCLUDES) -o inclusivePlots_BabyTrees inclusivePlots_BabyTrees.cpp MT2Region.o MT2RegionAnalysisUtilities.o MT2Common.o $(CMSSW_BASE)/src/MT2Analysis/Code/MT2AnalysisCode/MT2Code/src/MT2tree.o $(ROOTFLAG) $(EXTRALIBS)
+
+regionEventYields_postBabyTrees: regionEventYields_postBabyTrees.cpp MT2Region.o MT2RegionAnalysisUtilities.o MT2Common.o
+	$(CC) -Wall $(INCLUDES) -o regionEventYields_postBabyTrees regionEventYields_postBabyTrees.cpp MT2Region.o MT2RegionAnalysisUtilities.o MT2Common.o $(CMSSW_BASE)/src/MT2Analysis/Code/MT2AnalysisCode/MT2Code/src/MT2tree.o $(ROOTFLAG) $(EXTRALIBS) -fpermissive
 
 
 MT2Common.o: src/MT2Common.cc

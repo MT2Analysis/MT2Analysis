@@ -55,6 +55,23 @@ struct MT2SampleBaby_basic {
 };
 
 
+struct MT2SamplePostBaby {
+
+  std::string name;
+  std::string sname;
+  std::string dir;
+  std::string file;
+  int id;
+  float nevents;
+  float xsection;
+  float lumi;
+  float kfact;
+  float filter;
+  float scale1fb;
+  float PU_avg_weight;
+
+};
+
 class MT2Common {
 
 
@@ -77,6 +94,8 @@ class MT2Common {
 
   static std::vector<MT2SampleBaby_basic> loadSamplesBaby_basic(const std::string& filename);
   
+  static std::vector<MT2SamplePostBaby> loadSamplesPostBaby(const std::string& filename);
+
  private:
 
 

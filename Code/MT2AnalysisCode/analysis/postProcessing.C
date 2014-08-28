@@ -150,11 +150,12 @@ int postProcessing(string inputFile,
   delete t;
   f->Close();
   
-  out->cd();
+  //out->cd();
   clone->Write();
-  
+  delete clone;
   out->Close();
 
+  
   return 0;
   
 }

@@ -518,9 +518,9 @@ std::vector<TH1D*> getYieldHistos( const std::string& prefix, const std::string&
       std::cout << "hist_err: " << err_histo << std::endl;
            
       if(EventYield >= 10)
-	logfile << fixed << setprecision(1) << EventYield << " \\pm " << err_histo << " & ";
+	logfile << fixed << setprecision(1) << EventYield << " $\\pm$ " << err_histo << " & ";
       else if(EventYield < 10)
-	logfile << fixed << setprecision(2) << EventYield << " \\pm " << err_histo << " & ";
+	logfile << fixed << setprecision(2) << EventYield << " $\\pm$ " << err_histo << " & ";
 
       //float statErr = sqrt(tot);
       //float sysErr_dbg = 0.5*bg; // 50% uncert on BG estimate
